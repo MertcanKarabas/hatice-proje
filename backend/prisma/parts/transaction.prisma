@@ -2,7 +2,6 @@ model Transaction {
   id                String            @id @default(cuid())
   userId            String
   user              User              @relation(fields: [userId], references: [id])
-  customer          Customer?         @relation(fields: [customerId], references: [id])
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
   items             TransactionItem[]
@@ -13,6 +12,8 @@ model Transaction {
   type              TransactionType
   status            TransactionStatus @default(PENDING)
   discounts         Discount[]
+  customerId       String?           // Müşteri ID'si (opsiyonel olabilir)
+  customer         Customer?         @relation(fields: [customerId], references: [id])
 }
 
 model TransactionItem {

@@ -37,4 +37,5 @@ model User {
   transactions  Transaction[]
   products      Product[]
   stocks        Stock[]
+  customers     Customer[]
 }

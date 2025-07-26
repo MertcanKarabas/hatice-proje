@@ -1,6 +1,7 @@
 import {
     Box,
     Button,
+    Divider,
     MenuItem,
     TextField,
     Typography,
@@ -10,10 +11,12 @@ import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { tr } from 'date-fns/locale';
 import { useForm, Controller } from 'react-hook-form';
+import AddCustomerModal from './AddCustomerModal'; // Import edin
+import API from '../services/api'; // Import edin
+import { useEffect, useState } from 'react';
 
 type FormValues = {
-    companyName: string;
-    userId: string;
+    customerId: string;
     invoiceDate: Date;
     dueDate: Date;
     vatRate: number;
@@ -21,16 +24,20 @@ type FormValues = {
     transactionType: 'SALE' | 'PURCHASE';
 };
 
+interface Customer {
+    id: string;
+    commercialTitle: string;
+}
+
 const mockUsers = [
     { id: '1', name: 'Ahmet Yılmaz' },
     { id: '2', name: 'Beta Elektrik Ltd.' },
 ];
 
 export default function TransactionForm() {
-    const { control, handleSubmit, register } = useForm<FormValues>({
+    const { control, handleSubmit, register, setValue } = useForm<FormValues>({
         defaultValues: {
-            companyName: '',
-            userId: '',
+            customerId: '',
             invoiceDate: new Date(),
             dueDate: new Date(),
             vatRate: 20,
@@ -38,6 +45,26 @@ export default function TransactionForm() {
             transactionType: 'SALE',
         },
     });
+
+    const [customers, setCustomers] = useState<Customer[]>([]);
+    const [modalOpen, setModalOpen] = useState(false);
+
+    useEffect(() => {
+        const fetchCustomers = async () => {
+            try {
+                const response = await API.get('/customers');
+                setCustomers(response.data);
+            } catch (error) {
+                console.error('Müşteriler getirilirken hata oluştu:', error);
+            }
+        };
+        fetchCustomers();
+    }, []);
+
+    const handleCustomerAdded = (newCustomer: Customer) => {
+        setCustomers(prev => [...prev, newCustomer].sort((a, b) => a.commercialTitle.localeCompare(b.commercialTitle)));
+        setValue('customerId', newCustomer.id);
+    };
 
     const onSubmit = (data: FormValues) => {
         console.log('Form submitted:', data);
@@ -54,30 +81,30 @@ export default function TransactionForm() {
                 <Grid container spacing={5} >
                     <Grid item xs={12} sm={6} size={20}>
                         <TextField
-                            fullWidth
-                            size="medium"
-                            label="Ticari Ünvan"
-                            {...register('companyName')}
-                        />
-                    </Grid>
-
-                    <Grid item xs={12} sm={6} size={20}>
-                        <TextField
-                            fullWidth
                             select
-                            size='medium'
-
-                            label="Kayıtlı Kullanıcı (Varsa)"
-                            {...register('userId')}
-                            disabled={!hasUsers}
+                            fullWidth
+                            label="Kayıtlı Müşteri"
+                            {...register('customerId')}
                         >
                             <MenuItem value="">Seçiniz</MenuItem>
-                            {mockUsers.map((user) => (
-                                <MenuItem key={user.id} value={user.id}>
-                                    {user.name}
+                            {customers.map((customer) => (
+                                <MenuItem key={customer.id} value={customer.id}>
+                                    {customer.commercialTitle}
                                 </MenuItem>
                             ))}
                         </TextField>
+                    </Grid>
+                    <Grid item xs={12} sm={4} sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Button
+                            variant="outlined"
+                            fullWidth
+                            onClick={() => setModalOpen(true)}
+                        >
+                            Yeni Müşteri Ekle
+                        </Button>
+                    </Grid>
+                    <Grid item xs={12} sm={6} size={20}>
+                        <Divider />
                     </Grid>
 
                     <Grid item xs={12} sm={6} size={20}>
@@ -162,6 +189,11 @@ export default function TransactionForm() {
                     Kaydet
                 </Button>
             </form>
+            <AddCustomerModal
+                open={modalOpen}
+                onClose={() => setModalOpen(false)}
+                onCustomerAdded={handleCustomerAdded}
+            />
         </Box>
     );
 }

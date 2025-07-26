@@ -6,13 +6,14 @@ export declare class TransactionsService {
     createTransaction(userId: string, dto: CreateTransactionDto): Promise<{
         id: string;
         userId: string;
+        type: import("generated/prisma").$Enums.TransactionType;
+        discountAmount: import("generated/prisma/runtime/library").Decimal;
         createdAt: Date;
         updatedAt: Date;
         totalAmount: import("generated/prisma/runtime/library").Decimal;
-        discountAmount: import("generated/prisma/runtime/library").Decimal;
         finalAmount: import("generated/prisma/runtime/library").Decimal;
-        type: import("generated/prisma").$Enums.TransactionType;
         status: import("generated/prisma").$Enums.TransactionStatus;
+        customerId: string | null;
     }>;
     getTransactionsByUser(userId: string): Promise<({
         items: ({
@@ -20,17 +21,17 @@ export declare class TransactionsService {
                 id: string;
                 userId: string;
                 name: string;
-                price: import("generated/prisma/runtime/library").Decimal;
                 description: string | null;
                 sku: string;
                 barcode: string | null;
+                price: import("generated/prisma/runtime/library").Decimal;
             };
         } & {
             id: string;
-            transactionId: string;
+            price: import("generated/prisma/runtime/library").Decimal;
             productId: string;
             quantity: number;
-            price: import("generated/prisma/runtime/library").Decimal;
+            transactionId: string;
         })[];
         payments: {
             id: string;
@@ -44,8 +45,8 @@ export declare class TransactionsService {
         }[];
         discounts: {
             id: string;
-            transactionId: string | null;
             description: string | null;
+            transactionId: string | null;
             amount: import("generated/prisma/runtime/library").Decimal;
             code: string | null;
             isPercentage: boolean;
@@ -53,13 +54,14 @@ export declare class TransactionsService {
     } & {
         id: string;
         userId: string;
+        type: import("generated/prisma").$Enums.TransactionType;
+        discountAmount: import("generated/prisma/runtime/library").Decimal;
         createdAt: Date;
         updatedAt: Date;
         totalAmount: import("generated/prisma/runtime/library").Decimal;
-        discountAmount: import("generated/prisma/runtime/library").Decimal;
         finalAmount: import("generated/prisma/runtime/library").Decimal;
-        type: import("generated/prisma").$Enums.TransactionType;
         status: import("generated/prisma").$Enums.TransactionStatus;
+        customerId: string | null;
     })[]>;
     getTransactionById(userId: string, transactionId: string): Promise<{
         items: ({
@@ -67,17 +69,17 @@ export declare class TransactionsService {
                 id: string;
                 userId: string;
                 name: string;
-                price: import("generated/prisma/runtime/library").Decimal;
                 description: string | null;
                 sku: string;
                 barcode: string | null;
+                price: import("generated/prisma/runtime/library").Decimal;
             };
         } & {
             id: string;
-            transactionId: string;
+            price: import("generated/prisma/runtime/library").Decimal;
             productId: string;
             quantity: number;
-            price: import("generated/prisma/runtime/library").Decimal;
+            transactionId: string;
         })[];
         payments: {
             id: string;
@@ -91,8 +93,8 @@ export declare class TransactionsService {
         }[];
         discounts: {
             id: string;
-            transactionId: string | null;
             description: string | null;
+            transactionId: string | null;
             amount: import("generated/prisma/runtime/library").Decimal;
             code: string | null;
             isPercentage: boolean;
@@ -100,12 +102,13 @@ export declare class TransactionsService {
     } & {
         id: string;
         userId: string;
+        type: import("generated/prisma").$Enums.TransactionType;
+        discountAmount: import("generated/prisma/runtime/library").Decimal;
         createdAt: Date;
         updatedAt: Date;
         totalAmount: import("generated/prisma/runtime/library").Decimal;
-        discountAmount: import("generated/prisma/runtime/library").Decimal;
         finalAmount: import("generated/prisma/runtime/library").Decimal;
-        type: import("generated/prisma").$Enums.TransactionType;
         status: import("generated/prisma").$Enums.TransactionStatus;
+        customerId: string | null;
     }>;
 }

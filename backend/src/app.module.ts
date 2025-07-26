@@ -8,6 +8,9 @@ import { PrismaModule } from './prisma/prisma.modue';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TransactionsModule } from './transactions/transactions.module';
+import { CustomersController } from './customers/customers.controller';
+import { CustomersService } from './customers/customers.service';
+import { CustomersModule } from './customers/customers.module';
 
 @Module({
   imports: [ProductsModule, AuthModule, UserModule, PrismaModule, TransactionsModule, ConfigModule.forRoot({
@@ -17,8 +20,8 @@ import { TransactionsModule } from './transactions/transactions.module';
       ttl: 60,
       limit: 10
     }]
-  }), TransactionsModule,],
-  controllers: [AppController],
-  providers: [AppService],
+  }), TransactionsModule, CustomersModule],
+  controllers: [AppController, CustomersController],
+  providers: [AppService, CustomersService],
 })
 export class AppModule { }

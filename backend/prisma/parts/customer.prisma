@@ -1,13 +1,15 @@
 model Customer {
-  id             String   @id @default(cuid())
-  name           String   // Ticari Ünvan
-  contactPerson  String   // Yetkili
-  taxOffice      String?
-  taxOrEmail     String   // Vergi No veya Email
-  phone          String?
+  id              String   @id @default(cuid())
+  commercialTitle String   // Ticari Ünvan
+  contactPerson   String   // Yetkili
+  taxOffice       String?  // Vergi Dairesi
+  taxNumber       String?  // Vergi No
+  email           String?  @unique
+  phone           String?  // Telefon No
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  transactions   Transaction[]
+  transactions Transaction[]
 }
