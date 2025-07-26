@@ -1,0 +1,41 @@
+
+services:
+  # Backend Servisi
+  api:
+    build:
+      context: . # İnşa bağlamı ana proje klasörü
+      dockerfile: backend/Dockerfile # Kullanılacak Dockerfile'ın yolu
+    container_name: stok_api
+    ports:
+      - "3000:3000" # Makinenin 3000 portunu container'ın 3000 portuna bağla
+    depends_on:
+      db:
+        condition: service_healthy # API'nin başlamadan önce DB'nin sağlıklı olmasını bekle
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+    volumes:
+      - ./backend:/usr/src/app # Kod değişikliklerinin anında yansıması için
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+
+  # PostgreSQL Veritabanı Servisi
+  db:
+    image: postgres:14-alpine
+    container_name: stok_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432" # Veritabanına dışarıdan erişmek için
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Verilerin kalıcı olması için
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
