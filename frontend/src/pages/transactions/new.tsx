@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container } from '@mui/material';
-import TransactionForm from '../../components/TransactionForm';
+import TransactionForm from '../../components/forms/TransactionForm';
 
 const NewTransactionPage = () => {
     return (

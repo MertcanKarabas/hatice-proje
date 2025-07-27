@@ -1,10 +1,11 @@
-import { IsString, IsOptional, IsEmail } from 'class-validator';
+import { IsString, IsOptional, IsEmail, IsPhoneNumber } from 'class-validator';
 
 export class CreateCustomerDto {
     @IsString()
     commercialTitle: string;
 
     @IsString()
+    @IsOptional()
     contactPerson: string;
 
     @IsOptional()
@@ -20,6 +21,6 @@ export class CreateCustomerDto {
     email?: string;
 
     @IsOptional()
-    @IsString()
+    @IsPhoneNumber('TR', { message: 'Lütfen geçerli bir telefon numarası giriniz.' })
     phone?: string;
 }

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button, Container, Typography } from '@mui/material';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import API from '../services/api';
-import ProductFormDialog from '../components/ProductFormDialog';
+import ProductFormDialog from '../components/forms/ProductFormDialog';
 
 const Products: React.FC = () => {
     const [products, setProducts] = useState<any[]>([]);

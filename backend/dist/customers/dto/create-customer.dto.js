@@ -20,6 +20,7 @@ __decorate([
 ], CreateCustomerDto.prototype, "commercialTitle", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateCustomerDto.prototype, "contactPerson", void 0);
 __decorate([
@@ -39,7 +40,7 @@ __decorate([
 ], CreateCustomerDto.prototype, "email", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsPhoneNumber)('TR', { message: 'Lütfen geçerli bir telefon numarası giriniz.' }),
     __metadata("design:type", String)
 ], CreateCustomerDto.prototype, "phone", void 0);
 //# sourceMappingURL=create-customer.dto.js.map

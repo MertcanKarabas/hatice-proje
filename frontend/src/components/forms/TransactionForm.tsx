@@ -11,8 +11,8 @@ import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { tr } from 'date-fns/locale';
 import { useForm, Controller } from 'react-hook-form';
-import AddCustomerModal from './AddCustomerModal'; // Import edin
-import API from '../services/api'; // Import edin
+import AddCustomerModal from '../AddCustomerModal'; // Import edin
+import API from '../../services/api'; // Import edin
 import { useEffect, useState } from 'react';
 
 type FormValues = {

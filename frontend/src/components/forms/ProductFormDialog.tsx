@@ -3,7 +3,7 @@ import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     TextField, Button
 } from '@mui/material';
-import API from '../services/api';
+import API from '../../services/api';
 
 interface Props {
     open: boolean;
