@@ -21,9 +21,10 @@ let ProductsController = class ProductsController {
     constructor(productService) {
         this.productService = productService;
     }
-    async getMyProducts(req) {
+    async getMyProducts(field, operator, value, req) {
         const userId = req.user.userId;
-        const products = await this.productService.findAllByUser(userId);
+        const products = await this.productService.findAllByUser(userId, field, operator, value);
+        console.log("Products:", products);
         return { message: 'Success', data: products };
     }
     async create(req, createProductDto) {
@@ -54,9 +55,12 @@ exports.ProductsController = ProductsController;
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Get)(),
-    __param(0, (0, common_1.Request)()),
+    __param(0, (0, common_1.Query)('field')),
+    __param(1, (0, common_1.Query)('operator')),
+    __param(2, (0, common_1.Query)('value')),
+    __param(3, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [String, String, String, Object]),
     __metadata("design:returntype", Promise)
 ], ProductsController.prototype, "getMyProducts", null);
 __decorate([

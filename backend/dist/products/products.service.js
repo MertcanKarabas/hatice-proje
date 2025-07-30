@@ -17,12 +17,54 @@ let ProductsService = class ProductsService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async findAllByUser(userId) {
-        return this.prisma.product.findMany({
-            where: {
-                userId,
-            },
-        });
+    async findAllByUser(userId, field, operator, value) {
+        console.log("Field:", field);
+        console.log("Operator:", operator);
+        console.log("Value:", value);
+        const where = { userId };
+        if (!field || !operator || !value)
+            return this.prisma.product.findMany({ where });
+        const allowedFields = ['name', 'sku', 'price', 'quantity', 'currency', 'unit'];
+        const allowedOperators = ['contains', 'equals', 'gt', 'lt'];
+        if (!allowedFields.includes(field) || !allowedOperators.includes(operator)) {
+            throw new common_1.BadRequestException('Geçersiz filtre');
+        }
+        function isNumericField(field) {
+            const numericFields = ['price', 'quantity'];
+            return numericFields.includes(field);
+        }
+        if (field && operator && value !== undefined) {
+            const isNumeric = isNumericField(field);
+            if (isNumeric) {
+                const numericValue = Number(value);
+                if (isNaN(numericValue)) {
+                    throw new common_1.BadRequestException(`${field} sayısal bir değer olmalı`);
+                }
+                switch (operator) {
+                    case 'equals':
+                        where[field] = numericValue;
+                        break;
+                    case 'gt':
+                        where[field] = { gt: numericValue };
+                        break;
+                    case 'lt':
+                        where[field] = { lt: numericValue };
+                        break;
+                }
+            }
+            else {
+                switch (operator) {
+                    case 'contains':
+                        where[field] = { contains: value, mode: 'insensitive' };
+                        break;
+                    case 'equals':
+                        where[field] = value;
+                        break;
+                }
+            }
+        }
+        console.log("WHERE:", where);
+        return this.prisma.product.findMany({ where });
     }
     async createProduct(userId, dto) {
         return this.prisma.product.create({
@@ -32,7 +74,10 @@ let ProductsService = class ProductsService {
                 description: dto.description,
                 sku: dto.sku,
                 barcode: dto.barcode,
-                price: dto.price,
+                price: new prisma_1.Prisma.Decimal(dto.price),
+                quantity: dto.quantity,
+                unit: dto.unit,
+                currency: dto.currency,
             },
         });
     }
@@ -48,6 +93,9 @@ let ProductsService = class ProductsService {
                 sku: dto.sku,
                 barcode: dto.barcode,
                 price: new prisma_1.Prisma.Decimal(dto.price),
+                quantity: dto.quantity,
+                unit: dto.unit,
+                currency: dto.currency,
             },
         });
     }

@@ -4,6 +4,7 @@ import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     TextField, Button, Grid
 } from '@mui/material';
+// Remove this line, as Grid is already imported from '@mui/material' above
 import API from '../services/api';
 
 interface Props {
@@ -31,6 +32,7 @@ const AddCustomerModal: React.FC<Props> = ({ open, onClose, onCustomerAdded }) =
             reset();
             onClose();
         } catch (error) {
+            console.error("Error:", error);
             console.error('Müşteri eklenirken hata oluştu:', error);
         }
     };

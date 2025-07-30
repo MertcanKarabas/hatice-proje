@@ -3,7 +3,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 export declare class ProductsController {
     private readonly productService;
     constructor(productService: ProductsService);
-    getMyProducts(req: any): Promise<{
+    getMyProducts(field: string, operator: string, value: string, req: any): Promise<{
         message: string;
         data: {
             id: string;
@@ -13,6 +13,9 @@ export declare class ProductsController {
             sku: string;
             barcode: string | null;
             price: import("generated/prisma/runtime/library").Decimal;
+            quantity: number;
+            unit: import("generated/prisma").$Enums.ProductUnit;
+            currency: import("generated/prisma").$Enums.Currency;
         }[];
     }>;
     create(req: any, createProductDto: CreateProductDto): Promise<{
@@ -25,6 +28,9 @@ export declare class ProductsController {
             sku: string;
             barcode: string | null;
             price: import("generated/prisma/runtime/library").Decimal;
+            quantity: number;
+            unit: import("generated/prisma").$Enums.ProductUnit;
+            currency: import("generated/prisma").$Enums.Currency;
         };
     }>;
     update(req: any, id: string, updateProductDto: CreateProductDto): Promise<{

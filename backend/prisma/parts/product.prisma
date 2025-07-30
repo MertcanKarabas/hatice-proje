@@ -1,3 +1,15 @@
+enum Currency {
+  TRY
+  USD
+  EUR
+}
+
+enum ProductUnit {
+  ADET
+  DESTE
+  PAKET
+}
+
 model Product {
   id              String    @id @default(cuid())
   userId          String
@@ -8,6 +20,9 @@ model Product {
   barcode         String?   @unique
   price           Decimal   @db.Decimal(10, 2)
   transactionItems TransactionItem[]
+  quantity        Float    @default(0)
+  unit            ProductUnit @default(ADET)
+  currency        Currency   @default(TRY)
   stock           Stock[]
 }
 

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -10,9 +10,14 @@ export class ProductsController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async getMyProducts(@Request() req) {
+  async getMyProducts(
+    @Query('field') field: string,
+    @Query('operator') operator: string,
+    @Query('value') value: string,
+    @Request() req) {
     const userId = req.user.userId;
-    const products = await this.productService.findAllByUser(userId);
+    const products = await this.productService.findAllByUser(userId, field, operator, value);
+    console.log("Products:", products)
     return { message: 'Success', data: products };
   }
 
@@ -52,5 +57,5 @@ export class ProductsController {
       message: 'Product deleted successfully',
     };
   }
-  
+
 }

@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import Products from './pages/Products';
 import NewTransactionPage from './pages/transactions/new';
+import Customers from './pages/Customers';
 
 const App: React.FC = () => {
   return (
@@ -34,6 +35,22 @@ const App: React.FC = () => {
           element={
             <ProtectedRoute>
               <NewTransactionPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/customers"
+          element={
+            <ProtectedRoute>
+              <Customers />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/transactions/select-products"
+          element={
+            <ProtectedRoute>
+              <div />
             </ProtectedRoute>
           }
         />

@@ -14,6 +14,9 @@ import { useForm, Controller } from 'react-hook-form';
 import AddCustomerModal from '../AddCustomerModal'; // Import edin
 import API from '../../services/api'; // Import edin
 import { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { setTransactionInfo } from '../../store/transactionSlice';
 
 type FormValues = {
     customerId: string;
@@ -48,7 +51,8 @@ export default function TransactionForm() {
 
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [modalOpen, setModalOpen] = useState(false);
-
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
     useEffect(() => {
         const fetchCustomers = async () => {
             try {
@@ -67,7 +71,8 @@ export default function TransactionForm() {
     };
 
     const onSubmit = (data: FormValues) => {
-        console.log('Form submitted:', data);
+        dispatch(setTransactionInfo(data));
+        navigate('/transactions/select-products');
     };
 
     const hasUsers = mockUsers.length > 0;
@@ -186,7 +191,7 @@ export default function TransactionForm() {
                     </Grid>
                 </Grid>
                 <Button type="submit" variant="contained">
-                    Kaydet
+                    İleri
                 </Button>
             </form>
             <AddCustomerModal

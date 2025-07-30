@@ -5,26 +5,26 @@ export declare class CustomersService {
     constructor(prisma: PrismaService);
     createCustomer(userId: string, dto: CreateCustomerDto): Promise<{
         id: string;
+        userId: string;
+        email: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         commercialTitle: string;
         contactPerson: string;
         taxOffice: string | null;
         taxNumber: string | null;
-        email: string | null;
         phone: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
     }>;
     findAllByUser(userId: string): Promise<{
         id: string;
+        userId: string;
+        email: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         commercialTitle: string;
         contactPerson: string;
         taxOffice: string | null;
         taxNumber: string | null;
-        email: string | null;
         phone: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
     }[]>;
 }

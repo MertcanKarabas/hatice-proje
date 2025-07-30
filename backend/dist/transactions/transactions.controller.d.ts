@@ -25,12 +25,15 @@ export declare class TransactionsController {
                 sku: string;
                 barcode: string | null;
                 price: import("generated/prisma/runtime/library").Decimal;
+                quantity: number;
+                unit: import("generated/prisma").$Enums.ProductUnit;
+                currency: import("generated/prisma").$Enums.Currency;
             };
         } & {
             id: string;
             price: import("generated/prisma/runtime/library").Decimal;
-            productId: string;
             quantity: number;
+            productId: string;
             transactionId: string;
         })[];
         payments: {
@@ -73,12 +76,15 @@ export declare class TransactionsController {
                 sku: string;
                 barcode: string | null;
                 price: import("generated/prisma/runtime/library").Decimal;
+                quantity: number;
+                unit: import("generated/prisma").$Enums.ProductUnit;
+                currency: import("generated/prisma").$Enums.Currency;
             };
         } & {
             id: string;
             price: import("generated/prisma/runtime/library").Decimal;
-            productId: string;
             quantity: number;
+            productId: string;
             transactionId: string;
         })[];
         payments: {

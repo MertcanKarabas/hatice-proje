@@ -14,11 +14,13 @@ const Login: React.FC = () => {
         setError(null);
         try {
             const response = await login({ email, password });
+            console.log("Response:", response);
             const token = response.data.access_token;
             localStorage.setItem('token', token); // Token'ı sakla
             alert('Giriş başarılı!');
             navigate('/dashboard')
         } catch (err: any) {
+            console.error("Error:", err);
             setError(err.response?.data?.message || 'Giriş başarısız');
         }
     };
