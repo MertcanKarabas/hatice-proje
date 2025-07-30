@@ -27,7 +27,7 @@ let AuthController = class AuthController {
         }
         catch (error) {
             if (error.status === 409) {
-                throw new common_1.BadRequestException('Email already registered');
+                throw new common_1.BadRequestException('Bu email zaten kayıtlı');
             }
             throw error;
         }
@@ -36,7 +36,7 @@ let AuthController = class AuthController {
         const user = await this.authService.validateUser(loginDto.email, loginDto.password);
         console.log("User:", user);
         if (!user) {
-            throw new common_1.BadRequestException('Invalid email or password');
+            throw new common_1.BadRequestException('Geçersiz email veya şifre');
         }
         return this.authService.login(user);
     }

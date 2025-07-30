@@ -9,7 +9,6 @@ import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TransactionsModule } from './transactions/transactions.module';
 import { CustomersController } from './customers/customers.controller';
-import { CustomersService } from './customers/customers.service';
 import { CustomersModule } from './customers/customers.module';
 
 @Module({
@@ -22,6 +21,6 @@ import { CustomersModule } from './customers/customers.module';
     }]
   }), TransactionsModule, CustomersModule],
   controllers: [AppController, CustomersController],
-  providers: [AppService, CustomersService],
+  providers: [AppService],
 })
 export class AppModule { }

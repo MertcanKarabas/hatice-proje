@@ -1,119 +1,46 @@
-import { PrismaService } from '../prisma/prisma.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { ITransactionRepository } from 'src/common/interfaces/transaction.repository.interface';
+import { ITransactionItemRepository } from 'src/common/interfaces/transaction-item.repository.interface';
+import { StockService } from 'src/stock/stock.service';
+import { Prisma } from 'generated/prisma';
 export declare class TransactionsService {
-    private readonly prisma;
-    constructor(prisma: PrismaService);
+    private readonly transactionRepository;
+    private readonly transactionItemRepository;
+    private readonly stockService;
+    constructor(transactionRepository: ITransactionRepository, transactionItemRepository: ITransactionItemRepository, stockService: StockService);
     createTransaction(userId: string, dto: CreateTransactionDto): Promise<{
         id: string;
         userId: string;
-        type: import("generated/prisma").$Enums.TransactionType;
-        discountAmount: import("generated/prisma/runtime/library").Decimal;
         createdAt: Date;
         updatedAt: Date;
-        totalAmount: import("generated/prisma/runtime/library").Decimal;
-        finalAmount: import("generated/prisma/runtime/library").Decimal;
+        totalAmount: Prisma.Decimal;
+        discountAmount: Prisma.Decimal;
+        finalAmount: Prisma.Decimal;
+        type: import("generated/prisma").$Enums.TransactionType;
         status: import("generated/prisma").$Enums.TransactionStatus;
         customerId: string | null;
     }>;
-    getTransactionsByUser(userId: string): Promise<({
-        items: ({
-            product: {
-                id: string;
-                userId: string;
-                name: string;
-                description: string | null;
-                sku: string;
-                barcode: string | null;
-                price: import("generated/prisma/runtime/library").Decimal;
-                quantity: number;
-                unit: import("generated/prisma").$Enums.ProductUnit;
-                currency: import("generated/prisma").$Enums.Currency;
-            };
-        } & {
-            id: string;
-            price: import("generated/prisma/runtime/library").Decimal;
-            quantity: number;
-            productId: string;
-            transactionId: string;
-        })[];
-        payments: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            status: import("generated/prisma").$Enums.PaymentStatus;
-            transactionId: string | null;
-            amount: import("generated/prisma/runtime/library").Decimal;
-            exchangeId: string;
-            paymentMethod: import("generated/prisma").$Enums.PaymentMethod;
-        }[];
-        discounts: {
-            id: string;
-            description: string | null;
-            transactionId: string | null;
-            amount: import("generated/prisma/runtime/library").Decimal;
-            code: string | null;
-            isPercentage: boolean;
-        }[];
-    } & {
+    getTransactionsByUser(userId: string): Promise<{
         id: string;
         userId: string;
-        type: import("generated/prisma").$Enums.TransactionType;
-        discountAmount: import("generated/prisma/runtime/library").Decimal;
         createdAt: Date;
         updatedAt: Date;
-        totalAmount: import("generated/prisma/runtime/library").Decimal;
-        finalAmount: import("generated/prisma/runtime/library").Decimal;
+        totalAmount: Prisma.Decimal;
+        discountAmount: Prisma.Decimal;
+        finalAmount: Prisma.Decimal;
+        type: import("generated/prisma").$Enums.TransactionType;
         status: import("generated/prisma").$Enums.TransactionStatus;
         customerId: string | null;
-    })[]>;
+    }[]>;
     getTransactionById(userId: string, transactionId: string): Promise<{
-        items: ({
-            product: {
-                id: string;
-                userId: string;
-                name: string;
-                description: string | null;
-                sku: string;
-                barcode: string | null;
-                price: import("generated/prisma/runtime/library").Decimal;
-                quantity: number;
-                unit: import("generated/prisma").$Enums.ProductUnit;
-                currency: import("generated/prisma").$Enums.Currency;
-            };
-        } & {
-            id: string;
-            price: import("generated/prisma/runtime/library").Decimal;
-            quantity: number;
-            productId: string;
-            transactionId: string;
-        })[];
-        payments: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            status: import("generated/prisma").$Enums.PaymentStatus;
-            transactionId: string | null;
-            amount: import("generated/prisma/runtime/library").Decimal;
-            exchangeId: string;
-            paymentMethod: import("generated/prisma").$Enums.PaymentMethod;
-        }[];
-        discounts: {
-            id: string;
-            description: string | null;
-            transactionId: string | null;
-            amount: import("generated/prisma/runtime/library").Decimal;
-            code: string | null;
-            isPercentage: boolean;
-        }[];
-    } & {
         id: string;
         userId: string;
-        type: import("generated/prisma").$Enums.TransactionType;
-        discountAmount: import("generated/prisma/runtime/library").Decimal;
         createdAt: Date;
         updatedAt: Date;
-        totalAmount: import("generated/prisma/runtime/library").Decimal;
-        finalAmount: import("generated/prisma/runtime/library").Decimal;
+        totalAmount: Prisma.Decimal;
+        discountAmount: Prisma.Decimal;
+        finalAmount: Prisma.Decimal;
+        type: import("generated/prisma").$Enums.TransactionType;
         status: import("generated/prisma").$Enums.TransactionStatus;
         customerId: string | null;
     }>;

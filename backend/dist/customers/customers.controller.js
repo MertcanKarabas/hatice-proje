@@ -23,6 +23,7 @@ let CustomersController = class CustomersController {
     }
     async create(req, createCustomerDto) {
         const userId = req.user.userId;
+        console.log(createCustomerDto);
         return this.customersService.createCustomer(userId, createCustomerDto);
     }
     async findAll(req) {

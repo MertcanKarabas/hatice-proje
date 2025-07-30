@@ -11,106 +11,59 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductsService = void 0;
 const common_1 = require("@nestjs/common");
-const prisma_service_1 = require("../prisma/prisma.service");
 const prisma_1 = require("../../generated/prisma/index.js");
+const product_repository_interface_1 = require("../common/interfaces/product.repository.interface");
+const product_filter_service_interface_1 = require("./interfaces/product-filter.service.interface");
 let ProductsService = class ProductsService {
-    constructor(prisma) {
-        this.prisma = prisma;
+    constructor(productRepository, productFilterService) {
+        this.productRepository = productRepository;
+        this.productFilterService = productFilterService;
     }
     async findAllByUser(userId, field, operator, value) {
-        console.log("Field:", field);
-        console.log("Operator:", operator);
-        console.log("Value:", value);
-        const where = { userId };
-        if (!field || !operator || !value)
-            return this.prisma.product.findMany({ where });
-        const allowedFields = ['name', 'sku', 'price', 'quantity', 'currency', 'unit'];
-        const allowedOperators = ['contains', 'equals', 'gt', 'lt'];
-        if (!allowedFields.includes(field) || !allowedOperators.includes(operator)) {
-            throw new common_1.BadRequestException('Geçersiz filtre');
-        }
-        function isNumericField(field) {
-            const numericFields = ['price', 'quantity'];
-            return numericFields.includes(field);
-        }
-        if (field && operator && value !== undefined) {
-            const isNumeric = isNumericField(field);
-            if (isNumeric) {
-                const numericValue = Number(value);
-                if (isNaN(numericValue)) {
-                    throw new common_1.BadRequestException(`${field} sayısal bir değer olmalı`);
-                }
-                switch (operator) {
-                    case 'equals':
-                        where[field] = numericValue;
-                        break;
-                    case 'gt':
-                        where[field] = { gt: numericValue };
-                        break;
-                    case 'lt':
-                        where[field] = { lt: numericValue };
-                        break;
-                }
-            }
-            else {
-                switch (operator) {
-                    case 'contains':
-                        where[field] = { contains: value, mode: 'insensitive' };
-                        break;
-                    case 'equals':
-                        where[field] = value;
-                        break;
-                }
-            }
-        }
-        console.log("WHERE:", where);
-        return this.prisma.product.findMany({ where });
+        const whereClause = await this.productFilterService.buildWhereClause(userId, field, operator, value);
+        return this.productRepository.findAllByUser(whereClause);
     }
     async createProduct(userId, dto) {
-        return this.prisma.product.create({
-            data: {
-                userId,
-                name: dto.name,
-                description: dto.description,
-                sku: dto.sku,
-                barcode: dto.barcode,
-                price: new prisma_1.Prisma.Decimal(dto.price),
-                quantity: dto.quantity,
-                unit: dto.unit,
-                currency: dto.currency,
-            },
+        return this.productRepository.create({
+            userId,
+            name: dto.name,
+            description: dto.description,
+            sku: dto.sku,
+            barcode: dto.barcode,
+            price: new prisma_1.Prisma.Decimal(dto.price),
+            quantity: dto.quantity,
+            unit: dto.unit,
+            currency: dto.currency,
         });
     }
     async updateProduct(userId, productId, dto) {
-        return this.prisma.product.updateMany({
-            where: {
-                id: productId,
-                userId,
-            },
-            data: {
-                name: dto.name,
-                description: dto.description,
-                sku: dto.sku,
-                barcode: dto.barcode,
-                price: new prisma_1.Prisma.Decimal(dto.price),
-                quantity: dto.quantity,
-                unit: dto.unit,
-                currency: dto.currency,
-            },
+        const existingProduct = await this.productRepository.findById(productId);
+        if (!existingProduct || existingProduct.userId !== userId) {
+            throw new common_1.NotFoundException(`Product with ID ${productId} not found or access denied.`);
+        }
+        return this.productRepository.update(productId, {
+            name: dto.name,
+            description: dto.description,
+            sku: dto.sku,
+            barcode: dto.barcode,
+            price: new prisma_1.Prisma.Decimal(dto.price),
+            quantity: dto.quantity,
+            unit: dto.unit,
+            currency: dto.currency,
         });
     }
     async deleteProduct(userId, productId) {
-        return this.prisma.product.deleteMany({
-            where: {
-                id: productId,
-                userId,
-            },
-        });
+        const existingProduct = await this.productRepository.findById(productId);
+        if (!existingProduct || existingProduct.userId !== userId) {
+            throw new common_1.NotFoundException(`Product with ID ${productId} not found or access denied.`);
+        }
+        return this.productRepository.delete(productId);
     }
 };
 exports.ProductsService = ProductsService;
 exports.ProductsService = ProductsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [product_repository_interface_1.IProductRepository,
+        product_filter_service_interface_1.IProductFilterService])
 ], ProductsService);
 //# sourceMappingURL=products.service.js.map

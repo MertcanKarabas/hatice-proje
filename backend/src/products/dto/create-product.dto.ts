@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsString, IsOptional, IsNumber, Min, IsNotEmpty, IsPositive, IsEnum } from 'class-validator';
+import { IsString, IsOptional, IsNumber, Min, IsNotEmpty, IsEnum } from 'class-validator';
 import { ProductUnit, Currency } from 'generated/prisma';
 
 export class CreateProductDto {

@@ -5,8 +5,10 @@ export class CreateCustomerDto {
     commercialTitle: string;
 
     @IsString()
-    @IsOptional()
-    contactPerson: string;
+    address?: string
+
+    @IsPhoneNumber('TR', { message: 'Lütfen geçerli bir telefon numarası giriniz.' })
+    phone?: string;
 
     @IsOptional()
     @IsString()
@@ -19,8 +21,4 @@ export class CreateCustomerDto {
     @IsOptional()
     @IsEmail()
     email?: string;
-
-    @IsOptional()
-    @IsPhoneNumber('TR', { message: 'Lütfen geçerli bir telefon numarası giriniz.' })
-    phone?: string;
 }

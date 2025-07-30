@@ -11,6 +11,7 @@ export class CustomersController {
   @Post()
   async create(@Req() req, @Body() createCustomerDto: CreateCustomerDto) {
     const userId = req.user.userId;
+    console.log(createCustomerDto);
     return this.customersService.createCustomer(userId, createCustomerDto);
   }
 

@@ -18,7 +18,6 @@ const config_1 = require("@nestjs/config");
 const throttler_1 = require("@nestjs/throttler");
 const transactions_module_1 = require("./transactions/transactions.module");
 const customers_controller_1 = require("./customers/customers.controller");
-const customers_service_1 = require("./customers/customers.service");
 const customers_module_1 = require("./customers/customers.module");
 let AppModule = class AppModule {
 };
@@ -34,7 +33,7 @@ exports.AppModule = AppModule = __decorate([
                     }]
             }), transactions_module_1.TransactionsModule, customers_module_1.CustomersModule],
         controllers: [app_controller_1.AppController, customers_controller_1.CustomersController],
-        providers: [app_service_1.AppService, customers_service_1.CustomersService],
+        providers: [app_service_1.AppService],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

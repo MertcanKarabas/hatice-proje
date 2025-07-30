@@ -13,7 +13,7 @@ export class AuthController {
             return await this.authService.register(registerDto);
         } catch (error) {
             if (error.status === 409) {
-                throw new BadRequestException('Email already registered');
+                throw new BadRequestException('Bu email zaten kayıtlı');
             }
             throw error;
         }
@@ -27,7 +27,7 @@ export class AuthController {
         );
         console.log("User:", user)
         if (!user) {
-            throw new BadRequestException('Invalid email or password');
+            throw new BadRequestException('Geçersiz email veya şifre');
         }
         return this.authService.login(user);
     }

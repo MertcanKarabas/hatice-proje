@@ -1,7 +1,7 @@
 model Customer {
   id              String   @id @default(cuid())
   commercialTitle String   // Ticari Ünvan
-  contactPerson   String   // Yetkili
+  address         String   // Adress
   taxOffice       String?  // Vergi Dairesi
   taxNumber       String?  // Vergi No
   email           String?  @unique
@@ -10,6 +10,5 @@ model Customer {
   updatedAt       DateTime @updatedAt
   userId          String
   user            User     @relation(fields: [userId], references: [id])
-
   transactions Transaction[]
 }

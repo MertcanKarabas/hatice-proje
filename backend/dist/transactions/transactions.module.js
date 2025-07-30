@@ -11,12 +11,29 @@ const common_1 = require("@nestjs/common");
 const transactions_service_1 = require("./transactions.service");
 const transactions_controller_1 = require("./transactions.controller");
 const prisma_service_1 = require("../prisma/prisma.service");
+const transaction_repository_1 = require("./repositories/transaction.repository");
+const transaction_item_repository_1 = require("./repositories/transaction-item.repository");
+const stock_module_1 = require("../stock/stock.module");
+const transaction_repository_interface_1 = require("../common/interfaces/transaction.repository.interface");
+const transaction_item_repository_interface_1 = require("../common/interfaces/transaction-item.repository.interface");
 let TransactionsModule = class TransactionsModule {
 };
 exports.TransactionsModule = TransactionsModule;
 exports.TransactionsModule = TransactionsModule = __decorate([
     (0, common_1.Module)({
-        providers: [transactions_service_1.TransactionsService, prisma_service_1.PrismaService],
+        imports: [stock_module_1.StockModule],
+        providers: [
+            transactions_service_1.TransactionsService,
+            prisma_service_1.PrismaService,
+            {
+                provide: transaction_repository_interface_1.ITransactionRepository,
+                useClass: transaction_repository_1.TransactionRepository,
+            },
+            {
+                provide: transaction_item_repository_interface_1.ITransactionItemRepository,
+                useClass: transaction_item_repository_1.TransactionItemRepository,
+            },
+        ],
         controllers: [transactions_controller_1.TransactionsController]
     })
 ], TransactionsModule);

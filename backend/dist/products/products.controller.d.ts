@@ -6,9 +6,9 @@ export declare class ProductsController {
     getMyProducts(field: string, operator: string, value: string, req: any): Promise<{
         message: string;
         data: {
+            name: string;
             id: string;
             userId: string;
-            name: string;
             description: string | null;
             sku: string;
             barcode: string | null;
@@ -21,9 +21,9 @@ export declare class ProductsController {
     create(req: any, createProductDto: CreateProductDto): Promise<{
         message: string;
         data: {
+            name: string;
             id: string;
             userId: string;
-            name: string;
             description: string | null;
             sku: string;
             barcode: string | null;
@@ -35,7 +35,18 @@ export declare class ProductsController {
     }>;
     update(req: any, id: string, updateProductDto: CreateProductDto): Promise<{
         message: string;
-        data: import("generated/prisma").Prisma.BatchPayload;
+        data: {
+            name: string;
+            id: string;
+            userId: string;
+            description: string | null;
+            sku: string;
+            barcode: string | null;
+            price: import("generated/prisma/runtime/library").Decimal;
+            quantity: number;
+            unit: import("generated/prisma").$Enums.ProductUnit;
+            currency: import("generated/prisma").$Enums.Currency;
+        };
     }>;
     remove(req: any, id: string): Promise<{
         message: string;

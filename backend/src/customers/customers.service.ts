@@ -1,28 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
+import { ICustomerRepository } from 'src/common/interfaces/customer.repository.interface';
 
 @Injectable()
 export class CustomersService {
-    constructor(private prisma: PrismaService) { }
+    constructor(private customerRepository: ICustomerRepository) { }
 
     async createCustomer(userId: string, dto: CreateCustomerDto) {
-        return this.prisma.customer.create({
-            data: {
-                userId,
-                ...dto,
-            },
+        return this.customerRepository.create({
+            userId,
+            ...dto,
         });
     }
 
     async findAllByUser(userId: string) {
-        return this.prisma.customer.findMany({
-            where: {
-                userId,
-            },
-            orderBy: {
-                commercialTitle: 'asc',
-            },
-        });
+        return this.customerRepository.findAllByUser(userId);
     }
 }

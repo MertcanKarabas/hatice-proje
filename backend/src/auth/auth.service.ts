@@ -1,6 +1,7 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { User } from 'generated/prisma';
 import { UserService } from '../user/user.service';
 import { RegisterDto } from './dto/register.dto';
 @Injectable()
@@ -20,7 +21,7 @@ export class AuthService {
         return user;
     }
 
-    async login(user: any) {
+    async login(user: User) {
         const payload = { email: user.email, sub: user.id };
         return {
             access_token: this.jwtService.sign(payload),
@@ -32,7 +33,7 @@ export class AuthService {
         // Önce kullanıcı var mı kontrol et
         const existingUser = await this.userService.findByEmail(data.email);
         if (existingUser) {
-            throw new ConflictException('Email already in use');
+            throw new ConflictException('Email zaten kayıtlı');
         }
         // Şifreyi hash'le
         const hashedPassword = await bcrypt.hash(data.password, 10);
@@ -42,7 +43,7 @@ export class AuthService {
             name: data.name,
             password: hashedPassword
         });
-        const { password, ...userWithoutPassword } = newUser;
+        const { ...userWithoutPassword } = newUser;
         // İstersen parola hariç dönebilirsin
         return userWithoutPassword;
     }

@@ -1,8 +1,8 @@
 export declare class CreateCustomerDto {
     commercialTitle: string;
-    contactPerson: string;
+    address?: string;
+    phone?: string;
     taxOffice?: string;
     taxNumber?: string;
     email?: string;
-    phone?: string;
 }

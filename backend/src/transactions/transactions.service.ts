@@ -1,11 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { BadRequestException } from '@nestjs/common';
+import { ITransactionRepository } from 'src/common/interfaces/transaction.repository.interface';
+import { ITransactionItemRepository } from 'src/common/interfaces/transaction-item.repository.interface';
+import { StockService } from 'src/stock/stock.service';
+import { Prisma } from 'generated/prisma';
 
 @Injectable()
 export class TransactionsService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly transactionRepository: ITransactionRepository,
+        private readonly transactionItemRepository: ITransactionItemRepository,
+        private readonly stockService: StockService,
+    ) { }
 
     async createTransaction(
         userId: string,
@@ -13,102 +19,36 @@ export class TransactionsService {
     ) {
         const { type, discountAmount = 0, items } = dto;
 
-        // Toplam ve net tutar hesaplama
-        const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-        const finalAmount = totalAmount - discountAmount;
+        const totalAmount = new Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
+        const finalAmount = new Prisma.Decimal(totalAmount.minus(discountAmount));
 
-        return this.prisma.$transaction(async (tx) => {
-            // Transaction oluştur
-            const transaction = await tx.transaction.create({
-                data: {
-                    userId,
-                    type,
-                    totalAmount,
-                    discountAmount,
-                    finalAmount,
-                },
-            });
-
-            // Item'ları oluştur
-            await tx.transactionItem.createMany({
-                data: items.map((item) => ({
-                    transactionId: transaction.id,
-                    productId: item.productId,
-                    quantity: item.quantity,
-                    price: item.price,
-                })),
-            });
-
-            // Stokları güncelle
-            for (const item of items) {
-                const existingStock = await tx.stock.findFirst({
-                    where: {
-                        userId,
-                        productId: item.productId,
-                    },
-                });
-
-                if (existingStock) {
-                    await tx.stock.update({
-                        where: { id: existingStock.id },
-                        data: {
-                            quantity:
-                                type === 'PURCHASE'
-                                    ? existingStock.quantity + item.quantity
-                                    : existingStock.quantity - item.quantity,
-                        },
-                    });
-                } else {
-                    // Stok yoksa ve bu bir alış ise oluştur, satış ise hata
-                    if (type === 'SALE' && !existingStock) {
-                        throw new BadRequestException(`Stok bulunamadı: ${item.productId}`);
-                    }
-
-                    await tx.stock.create({
-                        data: {
-                            userId,
-                            productId: item.productId,
-                            quantity: item.quantity,
-                        },
-                    });
-                }
-            }
-
-            return transaction;
+        const transaction = await this.transactionRepository.create({
+            userId,
+            type,
+            totalAmount,
+            discountAmount: new Prisma.Decimal(discountAmount),
+            finalAmount,
         });
+
+        await this.transactionItemRepository.createMany(
+            items.map((item) => ({
+                transactionId: transaction.id,
+                productId: item.productId,
+                quantity: item.quantity,
+                price: item.price,
+            })),
+        );
+
+        for (const item of items) {
+            await this.stockService.updateStock(userId, item.productId, item.quantity, type);
+        }
+
+        return transaction;
     }
     async getTransactionsByUser(userId: string) {
-        return this.prisma.transaction.findMany({
-            where: { userId },
-            include: {
-                items: {
-                    include: {
-                        product: true,
-                    },
-                },
-                payments: true,
-                discounts: true,
-            },
-            orderBy: {
-                createdAt: 'desc',
-            },
-        });
+        return this.transactionRepository.getTransactionsByUser(userId);
     }
     async getTransactionById(userId: string, transactionId: string) {
-        return this.prisma.transaction.findFirst({
-            where: {
-                id: transactionId,
-                userId,
-            },
-            include: {
-                items: {
-                    include: {
-                        product: true,
-                    },
-                },
-                payments: true,
-                discounts: true,
-            },
-        });
+        return this.transactionRepository.getTransactionById(userId, transactionId);
     }
 }

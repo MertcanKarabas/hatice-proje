@@ -1,33 +1,13 @@
-import { PrismaService } from '../prisma/prisma.service';
+import { IUserRepository } from 'src/common/interfaces/user.repository.interface';
+import { User } from 'generated/prisma';
 export declare class UserService {
-    private prisma;
-    constructor(prisma: PrismaService);
-    findByEmail(email: string): Promise<{
-        id: string;
-        name: string | null;
-        email: string;
-        emailVerified: Date | null;
-        password: string;
-        image: string | null;
-    }>;
+    private userRepository;
+    constructor(userRepository: IUserRepository);
+    findByEmail(email: string): Promise<User | null>;
     createUser(data: {
         email: string;
         password: string;
         name: string;
-    }): Promise<{
-        id: string;
-        name: string | null;
-        email: string;
-        emailVerified: Date | null;
-        password: string;
-        image: string | null;
-    }>;
-    findById(id: string): Promise<{
-        id: string;
-        name: string | null;
-        email: string;
-        emailVerified: Date | null;
-        password: string;
-        image: string | null;
-    }>;
+    }): Promise<User>;
+    findById(id: string): Promise<User | null>;
 }

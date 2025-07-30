@@ -48,7 +48,7 @@ let AuthService = class AuthService {
     async register(data) {
         const existingUser = await this.userService.findByEmail(data.email);
         if (existingUser) {
-            throw new common_1.ConflictException('Email already in use');
+            throw new common_1.ConflictException('Email zaten kayıtlı');
         }
         const hashedPassword = await bcrypt.hash(data.password, 10);
         const newUser = await this.userService.createUser({
@@ -56,7 +56,7 @@ let AuthService = class AuthService {
             name: data.name,
             password: hashedPassword
         });
-        const { password } = newUser, userWithoutPassword = __rest(newUser, ["password"]);
+        const userWithoutPassword = __rest(newUser, []);
         return userWithoutPassword;
     }
 };
