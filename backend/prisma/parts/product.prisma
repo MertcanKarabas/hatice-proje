@@ -11,19 +11,31 @@ enum ProductUnit {
 }
 
 model Product {
-  id              String    @id @default(cuid())
-  userId          String
-  user            User      @relation(fields: [userId], references: [id])
-  name            String
-  description     String?
-  sku             String    @unique
-  barcode         String?   @unique
-  price           Decimal   @db.Decimal(10, 2)
-  transactionItems TransactionItem[]
-  quantity        Float    @default(0)
-  unit            ProductUnit @default(ADET)
-  currency        Currency   @default(TRY)
-  stock           Stock[]
+  id                 String             @id @default(cuid())
+  userId             String
+  user               User               @relation(fields: [userId], references: [id])
+  name               String
+  description        String?
+  sku                String             @unique
+  barcode            String?            @unique
+  price              Decimal            @db.Decimal(10, 2)
+  transactionItems   TransactionItem[]
+  quantity           Float              @default(0)
+  unit               ProductUnit        @default(ADET)
+  currency           Currency           @default(TRY)
+  stock              Stock[]
+  isPackage          Boolean            @default(false)
+  packageComponents  ProductComponent[] @relation("Package")
+  componentOfPackages ProductComponent[] @relation("Component")
+}
+
+model ProductComponent {
+  id          String  @id @default(cuid())
+  packageId   String
+  package     Product @relation("Package", fields: [packageId], references: [id])
+  componentId String
+  component   Product @relation("Component", fields: [componentId], references: [id])
+  quantity    Int
 }
 
 model Stock {

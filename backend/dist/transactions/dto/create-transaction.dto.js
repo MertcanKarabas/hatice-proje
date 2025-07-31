@@ -27,6 +27,14 @@ __decorate([
     (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
 ], CreateTransactionItemDto.prototype, "price", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateTransactionItemDto.prototype, "unit", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], CreateTransactionItemDto.prototype, "vatRate", void 0);
 class CreateTransactionDto {
 }
 exports.CreateTransactionDto = CreateTransactionDto;

@@ -5,4 +5,5 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export declare class ProductRepository extends BaseRepository<Product> implements IProductRepository {
     constructor(prisma: PrismaService);
     findAllByUser(whereClause: Prisma.ProductWhereInput): Promise<Product[]>;
+    findById(id: string): Promise<Product | null>;
 }

@@ -10,6 +10,12 @@ export class CreateTransactionItemDto {
   
   @IsNumber()
   price: number;
+
+  @IsString()
+  unit: string;
+
+  @IsNumber()
+  vatRate: number;
 }
 
 export class CreateTransactionDto {

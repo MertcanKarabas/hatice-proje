@@ -22,6 +22,14 @@ export class ProductsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  async findOne(@Request() req, @Param('id') id: string) {
+    const userId = req.user.userId;
+    const product = await this.productService.findOne(userId, id);
+    return { message: 'Success', data: product };
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post()
   async create(@Request() req, @Body() createProductDto: CreateProductDto) {
     const userId = req.user.userId; // JWT'den gelen userId

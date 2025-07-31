@@ -22,20 +22,29 @@ let TransactionsController = class TransactionsController {
         this.transactionsService = transactionsService;
     }
     async create(req, dto) {
-        const userId = req.user.id;
+        const userId = req.user.userId;
         return this.transactionsService.createTransaction(userId, dto);
     }
     async findAll(req) {
-        const userId = req.user.id;
+        const userId = req.user.userId;
         return this.transactionsService.getTransactionsByUser(userId);
     }
     async getTransactionById(req, id) {
-        const userId = req.user.id;
+        const userId = req.user.userId;
         const transaction = await this.transactionsService.getTransactionById(userId, id);
         if (!transaction) {
             return { message: 'Transaction not found or access denied.' };
         }
         return transaction;
+    }
+    async update(req, id, dto) {
+        const userId = req.user.userId;
+        return this.transactionsService.updateTransaction(userId, id, dto);
+    }
+    async remove(req, id) {
+        const userId = req.user.userId;
+        await this.transactionsService.deleteTransaction(userId, id);
+        return { message: 'Transaction deleted successfully' };
     }
 };
 exports.TransactionsController = TransactionsController;
@@ -63,6 +72,23 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], TransactionsController.prototype, "getTransactionById", null);
+__decorate([
+    (0, common_1.Put)(':id'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, create_transaction_dto_1.CreateTransactionDto]),
+    __metadata("design:returntype", Promise)
+], TransactionsController.prototype, "update", null);
+__decorate([
+    (0, common_1.Delete)(':id'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], TransactionsController.prototype, "remove", null);
 exports.TransactionsController = TransactionsController = __decorate([
     (0, common_1.Controller)('transactions'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

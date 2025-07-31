@@ -16,7 +16,24 @@ export declare class ProductsController {
             quantity: number;
             unit: import("generated/prisma").$Enums.ProductUnit;
             currency: import("generated/prisma").$Enums.Currency;
+            isPackage: boolean;
         }[];
+    }>;
+    findOne(req: any, id: string): Promise<{
+        message: string;
+        data: {
+            name: string;
+            id: string;
+            userId: string;
+            description: string | null;
+            sku: string;
+            barcode: string | null;
+            price: import("generated/prisma/runtime/library").Decimal;
+            quantity: number;
+            unit: import("generated/prisma").$Enums.ProductUnit;
+            currency: import("generated/prisma").$Enums.Currency;
+            isPackage: boolean;
+        };
     }>;
     create(req: any, createProductDto: CreateProductDto): Promise<{
         message: string;
@@ -31,6 +48,7 @@ export declare class ProductsController {
             quantity: number;
             unit: import("generated/prisma").$Enums.ProductUnit;
             currency: import("generated/prisma").$Enums.Currency;
+            isPackage: boolean;
         };
     }>;
     update(req: any, id: string, updateProductDto: CreateProductDto): Promise<{
@@ -46,6 +64,7 @@ export declare class ProductsController {
             quantity: number;
             unit: import("generated/prisma").$Enums.ProductUnit;
             currency: import("generated/prisma").$Enums.Currency;
+            isPackage: boolean;
         };
     }>;
     remove(req: any, id: string): Promise<{

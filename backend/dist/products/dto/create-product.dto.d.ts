@@ -1,4 +1,8 @@
 import { ProductUnit, Currency } from 'generated/prisma';
+declare class ProductComponentDto {
+    componentId: string;
+    quantity: number;
+}
 export declare class CreateProductDto {
     name: string;
     description?: string;
@@ -8,4 +12,7 @@ export declare class CreateProductDto {
     sku: string;
     barcode?: string;
     price: number;
+    isPackage?: boolean;
+    components?: ProductComponentDto[];
 }
+export {};

@@ -22,6 +22,21 @@ let CustomersService = class CustomersService {
     async findAllByUser(userId) {
         return this.customerRepository.findAllByUser(userId);
     }
+    async findOne(userId, customerId) {
+        const customer = await this.customerRepository.findById(customerId);
+        if (!customer || customer.userId !== userId) {
+            throw new common_1.NotFoundException(`Customer with ID ${customerId} not found or access denied.`);
+        }
+        return customer;
+    }
+    async updateCustomer(userId, customerId, dto) {
+        const customer = await this.findOne(userId, customerId);
+        return this.customerRepository.update(customer.id, dto);
+    }
+    async deleteCustomer(userId, customerId) {
+        const customer = await this.findOne(userId, customerId);
+        await this.customerRepository.delete(customer.id);
+    }
 };
 exports.CustomersService = CustomersService;
 exports.CustomersService = CustomersService = __decorate([

@@ -6,6 +6,7 @@ export interface Customer {
     taxOffice: string;
     taxNumber: string;
     email: string;
+    type: 'SALES' | 'PURCHASE';
 }
 
 export interface Product {
@@ -17,6 +18,8 @@ export interface Product {
     price: number;
     currency: string;
     description: string;
+    isPackage: boolean;
+    packageComponents: { component: Product; quantity: number }[];
 }
 
 export interface Transaction {
@@ -26,4 +29,14 @@ export interface Transaction {
     vatRate: number;
     currency: string;
     transactionType: 'SALE' | 'PURCHASE';
+    items: TransactionItem[];
+}
+
+export interface TransactionItem {
+    productId: string;
+    quantity: number;
+    unit: string;
+    price: number;
+    vatRate: number;
+    total: number;
 }

@@ -27,6 +27,11 @@ let ProductsController = class ProductsController {
         console.log("Products:", products);
         return { message: 'Success', data: products };
     }
+    async findOne(req, id) {
+        const userId = req.user.userId;
+        const product = await this.productService.findOne(userId, id);
+        return { message: 'Success', data: product };
+    }
     async create(req, createProductDto) {
         const userId = req.user.userId;
         const product = await this.productService.createProduct(userId, createProductDto);
@@ -63,6 +68,15 @@ __decorate([
     __metadata("design:paramtypes", [String, String, String, Object]),
     __metadata("design:returntype", Promise)
 ], ProductsController.prototype, "getMyProducts", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)(':id'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], ProductsController.prototype, "findOne", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Post)(),

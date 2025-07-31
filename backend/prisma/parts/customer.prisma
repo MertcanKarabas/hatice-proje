@@ -1,3 +1,8 @@
+enum CustomerType {
+  SALES
+  PURCHASE
+}
+
 model Customer {
   id              String   @id @default(cuid())
   commercialTitle String   // Ticari Ünvan
@@ -6,9 +11,11 @@ model Customer {
   taxNumber       String?  // Vergi No
   email           String?  @unique
   phone           String?  // Telefon No
+  balance         Decimal  @db.Decimal(18, 2) @default(0)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   userId          String
   user            User     @relation(fields: [userId], references: [id])
   transactions Transaction[]
+  type            CustomerType @default(SALES)
 }

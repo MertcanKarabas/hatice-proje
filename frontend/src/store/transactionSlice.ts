@@ -1,4 +1,14 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { Product } from '../types';
+
+interface TransactionItem {
+    productId: string;
+    quantity: number;
+    unit: string;
+    price: number;
+    vatRate: number;
+    total: number;
+}
 
 interface TransactionFormState {
     customerId: string;
@@ -6,7 +16,10 @@ interface TransactionFormState {
     dueDate?: Date;
     vatRate: number;
     currency: string;
+    transactionType: 'SALE' | 'PURCHASE';
     step: number;
+    items?: TransactionItem[];
+    products?: Product[]; // To store all products for client-side filtering
 }
 
 const initialState: TransactionFormState = {
@@ -15,7 +28,10 @@ const initialState: TransactionFormState = {
     dueDate: new Date(),
     vatRate: 20,
     currency: 'TRY',
+    transactionType: 'SALE',
     step: 0,
+    items: [],
+    products: [],
 };
 
 const transactionSlice = createSlice({

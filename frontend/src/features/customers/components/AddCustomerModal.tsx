@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
-    TextField, Button, Grid
+    TextField, Button, Grid,
+    MenuItem
 } from '@mui/material';
 import { createCustomer } from '../services/customerService';
 import axiosClient from '../../../services/axiosClient';
@@ -23,9 +24,16 @@ interface Props {
 const AddCustomerModal: React.FC<Props> = ({ open, onClose, onCustomerAdded }) => {
     const { register, handleSubmit, reset } = useForm<CustomerFormValues>();
     const [error, setError] = useState<unknown>("");
+
+    useEffect(() => {
+        if (open) {
+            reset();
+        }
+    }, [open, reset]);
+
     const onSubmit = async (data: CustomerFormValues) => {
         try {
-            const response = await createCustomer(axiosClient, data) as Customer;
+            const response = await createCustomer(axiosClient, data);
             onCustomerAdded(response);
             reset();
             onClose();
@@ -68,6 +76,18 @@ const AddCustomerModal: React.FC<Props> = ({ open, onClose, onCustomerAdded }) =
                         </Grid>
                         <Grid size={{ xs: 6, sm: 12 }}>
                             <TextField label="Email" type="email" {...register('email')} fullWidth />
+                        </Grid>
+                        <Grid size={{ xs: 6, sm: 12 }}>
+                            <TextField select label="Tipi" {...register('type')} fullWidth defaultValue="SALES">
+                                <MenuItem value="SALES">Satış</MenuItem>
+                                <MenuItem value="PURCHASE">Alış</MenuItem>
+                            </TextField>
+                        </Grid>
+                        <Grid size={{ xs: 6, sm: 12 }}>
+                            <TextField select label="Tipi" {...register('type')} fullWidth defaultValue="SALES">
+                                <MenuItem value="SALES">Satış</MenuItem>
+                                <MenuItem value="PURCHASE">Alış</MenuItem>
+                            </TextField>
                         </Grid>
                     </Grid>
                 </DialogContent>

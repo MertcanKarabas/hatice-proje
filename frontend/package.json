@@ -22,6 +22,8 @@
     "axios": "^1.10.0",
     "dat": "^14.0.3",
     "date-fns": "^4.1.0",
+    "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
     "libphonenumber-js": "^1.12.10",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

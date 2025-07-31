@@ -18,7 +18,25 @@ let ProductRepository = class ProductRepository extends base_repository_1.BaseRe
         super(prisma, 'product');
     }
     async findAllByUser(whereClause) {
-        return this.prisma.product.findMany({ where: whereClause });
+        return this.prisma.product.findMany({
+            where: whereClause,
+            include: {
+                packageComponents: {
+                    include: {
+                        component: true,
+                    },
+                },
+            },
+        });
+    }
+    async findById(id) {
+        return this.prisma.product.findUnique({
+            where: { id },
+            include: {
+                packageComponents: { include: { component: true } },
+                componentOfPackages: { include: { package: true } }
+            }
+        });
     }
 };
 exports.ProductRepository = ProductRepository;

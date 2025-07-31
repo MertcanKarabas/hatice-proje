@@ -7,6 +7,8 @@ import NewTransactionPage from '../features/transactions/routes/NewTransactionPa
 import Customers from '../features/customers/components/Customers';
 import ProtectedRoute from '../features/auth/components/ProtectedRoute';
 import MainLayout from '../layouts/MainLayout';
+import TransactionSelectProducts from '../features/transactions/components/TransactionSelectProducts';
+import TransactionSummaryPage from '../features/transactions/routes/TransactionSummaryPage';
 
 export const router = createBrowserRouter([
   {
@@ -39,7 +41,11 @@ export const router = createBrowserRouter([
       },
       {
         path: 'transactions/select-products',
-        element: <></>
+        element: <TransactionSelectProducts />
+      },
+      {
+        path: 'transactions/summary',
+        element: <TransactionSummaryPage />
       }
     ],
   },

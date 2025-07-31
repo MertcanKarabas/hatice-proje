@@ -1,6 +1,15 @@
 import { Type } from 'class-transformer';
-import { IsString, IsOptional, IsNumber, Min, IsNotEmpty, IsEnum } from 'class-validator';
+import { IsString, IsOptional, IsNumber, Min, IsNotEmpty, IsEnum, IsBoolean, ValidateNested, IsArray } from 'class-validator';
 import { ProductUnit, Currency } from 'generated/prisma';
+
+class ProductComponentDto {
+    @IsString()
+    componentId: string;
+
+    @IsNumber()
+    @Min(1)
+    quantity: number;
+}
 
 export class CreateProductDto {
     @IsString()
@@ -35,4 +44,14 @@ export class CreateProductDto {
     @IsNumber()
     @Min(0)
     price: number;
+
+    @IsOptional()
+    @IsBoolean()
+    isPackage?: boolean;
+
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => ProductComponentDto)
+    components?: ProductComponentDto[];
 }

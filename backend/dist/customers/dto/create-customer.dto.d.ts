@@ -1,6 +1,8 @@
+import { CustomerType } from 'generated/prisma';
 export declare class CreateCustomerDto {
     commercialTitle: string;
-    address?: string;
+    address: string;
+    type?: CustomerType;
     phone?: string;
     taxOffice?: string;
     taxNumber?: string;

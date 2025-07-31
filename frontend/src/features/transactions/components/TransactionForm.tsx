@@ -24,6 +24,7 @@ export default function TransactionForm() {
             vatRate: 0,
             currency: 'TRY',
             transactionType: 'SALE',
+            items: [],
         },
     });
 
@@ -34,7 +35,7 @@ export default function TransactionForm() {
     useEffect(() => {
         const fetchCustomers = async () => {
             try {
-                const response = await getCustomers(axiosClient) as Customer[];
+                const response = await getCustomers(axiosClient);
                 setCustomers(response);
             } catch (error) {
                 console.error('Müşteriler getirilirken hata oluştu:', error);
@@ -58,10 +59,13 @@ export default function TransactionForm() {
             <Typography fontSize={{ xs: 20, sm: 30 }} variant="h5" mb={2}>
                 Sipraiş Teklif Formu
             </Typography>
-            <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }}>
+            <form onSubmit={(e) => {
+                void handleSubmit(onSubmit)(e);
+            }}>
                 <Grid container spacing={5} >
                     <Grid size={{ xs: 12, sm: 20 }} component="div">
                         <TextField
+                            required
                             select
                             fullWidth
                             size='small'
