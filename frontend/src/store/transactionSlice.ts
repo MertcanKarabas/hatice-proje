@@ -12,8 +12,8 @@ interface TransactionItem {
 
 interface TransactionFormState {
     customerId: string;
-    invoiceDate: Date;
-    dueDate?: Date;
+    invoiceDate: string;
+    dueDate?: string;
     vatRate: number;
     currency: string;
     transactionType: 'SALE' | 'PURCHASE';
@@ -24,8 +24,8 @@ interface TransactionFormState {
 
 const initialState: TransactionFormState = {
     customerId: '',
-    invoiceDate: new Date(),
-    dueDate: new Date(),
+    invoiceDate: new Date().toISOString(),
+    dueDate: new Date().toISOString(),
     vatRate: 20,
     currency: 'TRY',
     transactionType: 'SALE',

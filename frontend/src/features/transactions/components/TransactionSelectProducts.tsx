@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
-    Container, Typography, TextField, Button, Box, MenuItem, Select, FormControl
+    Container, Typography, TextField, Button, Box, MenuItem, Select, FormControl, Alert
 } from '@mui/material';
 import { DataGrid, type GridColDef, type GridRenderCellParams } from '@mui/x-data-grid';
 import { getProducts } from '../../products/services/productService';
@@ -34,6 +34,7 @@ const TransactionSelectProducts: React.FC = () => {
     const [filteredProducts, setFilteredProducts] = useState<SelectedProduct[]>([]);
     const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
     const [searchTerm, setSearchTerm] = useState<string>('');
+    const [warning, setWarning] = useState<string | null>(null);
 
     useEffect(() => {
         if (transactionInfo.transactionType === 'SALE') {
@@ -57,8 +58,6 @@ const TransactionSelectProducts: React.FC = () => {
             };
             void fetchProducts();
         } else {
-            // Handle PURCHASE or other types if needed
-            // For now, navigate back or show an error
             console.warn('Only SALE transactions are supported for product selection.');
             void navigate('/transactions/new');
         }
@@ -71,7 +70,7 @@ const TransactionSelectProducts: React.FC = () => {
             product.sku.toLowerCase().includes(lowerCaseSearchTerm)
         ).map(product => {
             const existingSelected = selectedProducts.find(p => p.id === product.id);
-            return existingSelected || {
+            return existingSelected ?? {
                 ...product,
                 selectedQuantity: 0,
                 selectedUnit: product.unit,
@@ -92,10 +91,17 @@ const TransactionSelectProducts: React.FC = () => {
         field: keyof SelectedProduct,
         value: string | number
     ) => {
+        const product = allProducts.find(p => p.id === id);
+        if (field === 'selectedQuantity' && product && Number(value) > product.quantity) {
+            setWarning(`Stokta yeterli ürün yok. Kalan: ${product.quantity}`);
+            return;
+        }
+        setWarning(null);
+
         setSelectedProducts(prevProducts =>
-            prevProducts.map(product => {
-                if (product.id === id) {
-                    const updatedProduct = { ...product, [field]: value };
+            prevProducts.map(p => {
+                if (p.id === id) {
+                    const updatedProduct = { ...p, [field]: value };
                     const total = calculateTotal(
                         Number(updatedProduct.selectedQuantity),
                         Number(updatedProduct.selectedPrice),
@@ -103,13 +109,13 @@ const TransactionSelectProducts: React.FC = () => {
                     );
                     return { ...updatedProduct, total };
                 }
-                return product;
+                return p;
             })
         );
         setFilteredProducts(prevFiltered =>
-            prevFiltered.map(product => {
-                if (product.id === id) {
-                    const updatedProduct = { ...product, [field]: value };
+            prevFiltered.map(p => {
+                if (p.id === id) {
+                    const updatedProduct = { ...p, [field]: value };
                     const total = calculateTotal(
                         Number(updatedProduct.selectedQuantity),
                         Number(updatedProduct.selectedPrice),
@@ -117,7 +123,7 @@ const TransactionSelectProducts: React.FC = () => {
                     );
                     return { ...updatedProduct, total };
                 }
-                return product;
+                return p;
             })
         );
     };
@@ -136,7 +142,9 @@ const TransactionSelectProducts: React.FC = () => {
                     onChange={(e) => handleInputChange(params.row.id, 'selectedQuantity', Number(e.target.value))}
                     size="small"
                     fullWidth
-                    inputProps={{ min: 0 }}
+                    inputProps={{ min: 0, max: params.row.quantity }}
+                    error={params.row.selectedQuantity > params.row.quantity}
+                    helperText={params.row.selectedQuantity > params.row.quantity ? `Stok: ${params.row.quantity}` : ''}
                 />
             ),
         },
@@ -192,6 +200,12 @@ const TransactionSelectProducts: React.FC = () => {
     ];
 
     const handleNext = () => {
+        const hasInvalidQuantity = selectedProducts.some(p => p.selectedQuantity > p.quantity);
+        if (hasInvalidQuantity) {
+            setWarning('Lütfen stok miktarını aşan ürünleri düzeltin.');
+            return;
+        }
+
         const items = selectedProducts.filter(p => p.selectedQuantity > 0).map(p => ({
             productId: p.id,
             quantity: p.selectedQuantity,
@@ -208,6 +222,7 @@ const TransactionSelectProducts: React.FC = () => {
     return (
         <Container maxWidth="xl">
             <Typography variant="h4" gutterBottom>Ürün Seçimi</Typography>
+            {warning && <Alert severity="warning">{warning}</Alert>}
             <Box mb={2}>
                 <TextField
                     label="Ürün Ara (Stok Kodu veya Adı)"
@@ -223,8 +238,6 @@ const TransactionSelectProducts: React.FC = () => {
                     columns={columns}
                     getRowId={(row) => row.id}
                     processRowUpdate={(newRow) => {
-                        // This is a workaround for DataGrid's internal state management
-                        // The actual state update happens in handleInputChange
                         return newRow;
                     }}
                     onProcessRowUpdateError={(error) => console.error(error)}
@@ -238,5 +251,6 @@ const TransactionSelectProducts: React.FC = () => {
         </Container>
     );
 };
+
 
 export default TransactionSelectProducts;

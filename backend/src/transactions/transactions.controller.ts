@@ -11,6 +11,7 @@ export class TransactionsController {
     @Post()
     async create(@Req() req, @Body() dto: CreateTransactionDto) {
         const userId = req.user.userId;
+        console.log('Creating transaction for user:', userId, 'with data:', dto);
         return this.transactionsService.createTransaction(userId, dto);
     }
 

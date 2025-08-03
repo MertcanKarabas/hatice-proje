@@ -83,12 +83,6 @@ const AddCustomerModal: React.FC<Props> = ({ open, onClose, onCustomerAdded }) =
                                 <MenuItem value="PURCHASE">Alış</MenuItem>
                             </TextField>
                         </Grid>
-                        <Grid size={{ xs: 6, sm: 12 }}>
-                            <TextField select label="Tipi" {...register('type')} fullWidth defaultValue="SALES">
-                                <MenuItem value="SALES">Satış</MenuItem>
-                                <MenuItem value="PURCHASE">Alış</MenuItem>
-                            </TextField>
-                        </Grid>
                     </Grid>
                 </DialogContent>
                 <DialogActions>

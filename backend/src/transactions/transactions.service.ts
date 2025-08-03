@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { ITransactionRepository } from 'src/common/interfaces/transaction.repository.interface';
 import { ITransactionItemRepository } from 'src/common/interfaces/transaction-item.repository.interface';
@@ -19,7 +19,15 @@ export class TransactionsService {
         userId: string,
         dto: CreateTransactionDto,
     ) {
-        const { type, discountAmount = 0, items } = dto;
+        const { type, discountAmount = 0, items, customerId } = dto;
+
+        for (const item of items) {
+            const stock = await this.prisma.stock.findFirst({ where: { productId: item.productId, userId } });
+            if (!stock || stock.quantity < item.quantity) {
+                const product = await this.prisma.product.findUnique({ where: { id: item.productId } });
+                throw new BadRequestException(`Yetersiz stok: ${product?.name ?? item.productId}`);
+            }
+        }
 
         const totalAmount = new Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
         const finalAmount = new Prisma.Decimal(totalAmount.minus(discountAmount));
@@ -27,6 +35,7 @@ export class TransactionsService {
         const transaction = await this.transactionRepository.create({
             userId,
             type,
+            customerId,
             totalAmount,
             discountAmount: new Prisma.Decimal(discountAmount),
             finalAmount,
@@ -57,53 +66,86 @@ export class TransactionsService {
     }
 
     async updateTransaction(userId: string, transactionId: string, dto: CreateTransactionDto) {
-        const transaction = await this.getTransactionById(userId, transactionId);
-        if (!transaction) {
-            throw new NotFoundException(`Transaction with ID ${transactionId} not found or access denied.`);
-        }
+        return this.prisma.$transaction(async (prisma) => {
+            const existingTransaction = await prisma.transaction.findUnique({
+                where: { id: transactionId, userId },
+                include: { items: true },
+            });
 
-        // Logic to update a transaction is complex and depends on business rules.
-        // This is a simplified example. You might need to handle item changes, stock updates, etc.
-        const { type, discountAmount = 0, items } = dto;
+            if (!existingTransaction) {
+                throw new NotFoundException(`Transaction with ID ${transactionId} not found or access denied.`);
+            }
 
-        const totalAmount = new Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
-        const finalAmount = new Prisma.Decimal(totalAmount.minus(discountAmount));
+            // Revert old stock quantities
+            for (const item of existingTransaction.items) {
+                await this.stockService.updateStock(userId, item.productId, -item.quantity, existingTransaction.type);
+            }
 
-        // For simplicity, we'll delete old items and create new ones.
-        // In a real app, you'd want a more sophisticated update logic.
-        await this.prisma.transactionItem.deleteMany({ where: { transactionId } });
-        await this.transactionItemRepository.createMany(
-            items.map((item) => ({
-                transactionId: transaction.id,
-                productId: item.productId,
-                quantity: item.quantity,
-                price: item.price,
-                unit: item.unit,
-                vatRate: item.vatRate,
-            })),
-        );
+            const { type, discountAmount = 0, items } = dto;
 
-        // You would also need to revert old stock changes and apply new ones.
-        // This is not implemented here for brevity.
+            // Check new stock quantities
+            for (const item of items) {
+                const stock = await prisma.stock.findFirst({ where: { productId: item.productId, userId } });
+                if (!stock || stock.quantity < item.quantity) {
+                    const product = await prisma.product.findUnique({ where: { id: item.productId } });
+                    throw new BadRequestException(`Yetersiz stok: ${product?.name ?? item.productId}`);
+                }
+            }
 
-        return this.transactionRepository.update(transactionId, {
-            type,
-            totalAmount,
-            discountAmount: new Prisma.Decimal(discountAmount),
-            finalAmount,
+            const totalAmount = new Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
+            const finalAmount = new Prisma.Decimal(totalAmount.minus(discountAmount));
+
+            await prisma.transactionItem.deleteMany({ where: { transactionId } });
+
+            await prisma.transactionItem.createMany({
+                data: items.map((item) => ({
+                    transactionId: transactionId,
+                    productId: item.productId,
+                    quantity: item.quantity,
+                    price: item.price,
+                    unit: item.unit,
+                    vatRate: item.vatRate,
+                })),
+            });
+
+            // Update stock with new quantities
+            for (const item of items) {
+                await this.stockService.updateStock(userId, item.productId, item.quantity, type);
+            }
+
+            return prisma.transaction.update({
+                where: { id: transactionId },
+                data: {
+                    type,
+                    totalAmount,
+                    discountAmount: new Prisma.Decimal(discountAmount),
+                    finalAmount,
+                },
+            });
         });
     }
 
     async deleteTransaction(userId: string, transactionId: string) {
-        const transaction = await this.getTransactionById(userId, transactionId);
-        if (!transaction) {
-            throw new NotFoundException(`Transaction with ID ${transactionId} not found or access denied.`);
-        }
+        await this.prisma.$transaction(async (prisma) => {
+            const transaction = await prisma.transaction.findUnique({
+                where: { id: transactionId, userId },
+                include: { items: true },
+            });
 
-        // Also, consider how to handle stock when a transaction is deleted.
-        // Reverting stock changes might be necessary.
+            if (!transaction) {
+                throw new NotFoundException(`Transaction with ID ${transactionId} not found or access denied.`);
+            }
 
-        await this.prisma.transactionItem.deleteMany({ where: { transactionId } });
-        await this.transactionRepository.delete(transactionId);
+            // Revert stock quantities before deleting the transaction
+            for (const item of transaction.items) {
+                await this.stockService.updateStock(userId, item.productId, -item.quantity, transaction.type);
+            }
+
+            await prisma.transactionItem.deleteMany({ where: { transactionId } });
+            await prisma.transaction.delete({ where: { id: transactionId } });
+        });
     }
 }
+
+
+

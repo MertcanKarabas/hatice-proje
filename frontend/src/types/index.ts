@@ -24,8 +24,8 @@ export interface Product {
 
 export interface Transaction {
     customerId: string;
-    invoiceDate: Date;
-    dueDate: Date;
+    invoiceDate: string;
+    dueDate: string;
     vatRate: number;
     currency: string;
     transactionType: 'SALE' | 'PURCHASE';

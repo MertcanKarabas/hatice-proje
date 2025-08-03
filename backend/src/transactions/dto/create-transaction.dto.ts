@@ -23,6 +23,10 @@ export class CreateTransactionDto {
   type: 'SALE' | 'PURCHASE';
 
   @IsOptional()
+  @IsString()
+  customerId?: string;
+
+  @IsOptional()
   @IsNumber()
   discountAmount?: number;
 

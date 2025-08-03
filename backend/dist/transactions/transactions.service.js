@@ -24,12 +24,21 @@ let TransactionsService = class TransactionsService {
         this.prisma = prisma;
     }
     async createTransaction(userId, dto) {
-        const { type, discountAmount = 0, items } = dto;
+        var _a;
+        const { type, discountAmount = 0, items, customerId } = dto;
+        for (const item of items) {
+            const stock = await this.prisma.stock.findFirst({ where: { productId: item.productId, userId } });
+            if (!stock || stock.quantity < item.quantity) {
+                const product = await this.prisma.product.findUnique({ where: { id: item.productId } });
+                throw new common_1.BadRequestException(`Yetersiz stok: ${(_a = product === null || product === void 0 ? void 0 : product.name) !== null && _a !== void 0 ? _a : item.productId}`);
+            }
+        }
         const totalAmount = new prisma_1.Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
         const finalAmount = new prisma_1.Prisma.Decimal(totalAmount.minus(discountAmount));
         const transaction = await this.transactionRepository.create({
             userId,
             type,
+            customerId,
             totalAmount,
             discountAmount: new prisma_1.Prisma.Decimal(discountAmount),
             finalAmount,
@@ -54,36 +63,68 @@ let TransactionsService = class TransactionsService {
         return this.transactionRepository.getTransactionById(userId, transactionId);
     }
     async updateTransaction(userId, transactionId, dto) {
-        const transaction = await this.getTransactionById(userId, transactionId);
-        if (!transaction) {
-            throw new common_1.NotFoundException(`Transaction with ID ${transactionId} not found or access denied.`);
-        }
-        const { type, discountAmount = 0, items } = dto;
-        const totalAmount = new prisma_1.Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
-        const finalAmount = new prisma_1.Prisma.Decimal(totalAmount.minus(discountAmount));
-        await this.prisma.transactionItem.deleteMany({ where: { transactionId } });
-        await this.transactionItemRepository.createMany(items.map((item) => ({
-            transactionId: transaction.id,
-            productId: item.productId,
-            quantity: item.quantity,
-            price: item.price,
-            unit: item.unit,
-            vatRate: item.vatRate,
-        })));
-        return this.transactionRepository.update(transactionId, {
-            type,
-            totalAmount,
-            discountAmount: new prisma_1.Prisma.Decimal(discountAmount),
-            finalAmount,
+        return this.prisma.$transaction(async (prisma) => {
+            var _a;
+            const existingTransaction = await prisma.transaction.findUnique({
+                where: { id: transactionId, userId },
+                include: { items: true },
+            });
+            if (!existingTransaction) {
+                throw new common_1.NotFoundException(`Transaction with ID ${transactionId} not found or access denied.`);
+            }
+            for (const item of existingTransaction.items) {
+                await this.stockService.updateStock(userId, item.productId, -item.quantity, existingTransaction.type);
+            }
+            const { type, discountAmount = 0, items } = dto;
+            for (const item of items) {
+                const stock = await prisma.stock.findFirst({ where: { productId: item.productId, userId } });
+                if (!stock || stock.quantity < item.quantity) {
+                    const product = await prisma.product.findUnique({ where: { id: item.productId } });
+                    throw new common_1.BadRequestException(`Yetersiz stok: ${(_a = product === null || product === void 0 ? void 0 : product.name) !== null && _a !== void 0 ? _a : item.productId}`);
+                }
+            }
+            const totalAmount = new prisma_1.Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
+            const finalAmount = new prisma_1.Prisma.Decimal(totalAmount.minus(discountAmount));
+            await prisma.transactionItem.deleteMany({ where: { transactionId } });
+            await prisma.transactionItem.createMany({
+                data: items.map((item) => ({
+                    transactionId: transactionId,
+                    productId: item.productId,
+                    quantity: item.quantity,
+                    price: item.price,
+                    unit: item.unit,
+                    vatRate: item.vatRate,
+                })),
+            });
+            for (const item of items) {
+                await this.stockService.updateStock(userId, item.productId, item.quantity, type);
+            }
+            return prisma.transaction.update({
+                where: { id: transactionId },
+                data: {
+                    type,
+                    totalAmount,
+                    discountAmount: new prisma_1.Prisma.Decimal(discountAmount),
+                    finalAmount,
+                },
+            });
         });
     }
     async deleteTransaction(userId, transactionId) {
-        const transaction = await this.getTransactionById(userId, transactionId);
-        if (!transaction) {
-            throw new common_1.NotFoundException(`Transaction with ID ${transactionId} not found or access denied.`);
-        }
-        await this.prisma.transactionItem.deleteMany({ where: { transactionId } });
-        await this.transactionRepository.delete(transactionId);
+        await this.prisma.$transaction(async (prisma) => {
+            const transaction = await prisma.transaction.findUnique({
+                where: { id: transactionId, userId },
+                include: { items: true },
+            });
+            if (!transaction) {
+                throw new common_1.NotFoundException(`Transaction with ID ${transactionId} not found or access denied.`);
+            }
+            for (const item of transaction.items) {
+                await this.stockService.updateStock(userId, item.productId, -item.quantity, transaction.type);
+            }
+            await prisma.transactionItem.deleteMany({ where: { transactionId } });
+            await prisma.transaction.delete({ where: { id: transactionId } });
+        });
     }
 };
 exports.TransactionsService = TransactionsService;

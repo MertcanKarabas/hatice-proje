@@ -58,9 +58,9 @@ export class ProductsService {
 
           // Update stock for each component
           for (const component of components) {
-            await prisma.product.update({
-              where: { id: component.componentId },
-              data: { quantity: { decrement: component.quantity * dto.quantity } },
+            await prisma.stock.updateMany({
+              where: { productId: component.componentId, userId },
+              data: { quantity: { decrement: component.quantity } },
             });
           }
 

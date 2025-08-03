@@ -13,7 +13,10 @@ import { useNavigate } from 'react-router-dom';
 import { setTransactionInfo } from '../../../store/transactionSlice';
 import type { Customer, Transaction } from '../../../types';
 
-type FormValues = Transaction;
+type FormValues = Omit<Transaction, 'invoiceDate' | 'dueDate'> & {
+    invoiceDate: Date;
+    dueDate: Date;
+};
 
 export default function TransactionForm() {
     const { control, handleSubmit, register, setValue } = useForm<FormValues>({
@@ -50,7 +53,7 @@ export default function TransactionForm() {
     };
 
     const onSubmit = (data: FormValues) => {
-        dispatch(setTransactionInfo(data));
+        dispatch(setTransactionInfo({ ...data, invoiceDate: data.invoiceDate.toISOString(), dueDate: data.dueDate.toISOString() }));
         void navigate('/transactions/select-products');
     };
 

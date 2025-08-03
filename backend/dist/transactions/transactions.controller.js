@@ -23,6 +23,7 @@ let TransactionsController = class TransactionsController {
     }
     async create(req, dto) {
         const userId = req.user.userId;
+        console.log('Creating transaction for user:', userId, 'with data:', dto);
         return this.transactionsService.createTransaction(userId, dto);
     }
     async findAll(req) {

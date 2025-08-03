@@ -7,6 +7,7 @@ export declare class CreateTransactionItemDto {
 }
 export declare class CreateTransactionDto {
     type: 'SALE' | 'PURCHASE';
+    customerId?: string;
     discountAmount?: number;
     items: CreateTransactionItemDto[];
 }
