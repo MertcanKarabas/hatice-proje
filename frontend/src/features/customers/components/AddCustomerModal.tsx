@@ -69,6 +69,15 @@ const AddCustomerModal: React.FC<Props> = ({ open, onClose, onCustomerAdded }) =
                             <TextField required label="Adres" {...register('address', { required: true })} fullWidth />
                         </Grid>
                         <Grid size={{ xs: 6, sm: 12 }}>
+                            <TextField label="Bakiye" type="number" {...register('balance')} fullWidth />
+                        </Grid>
+                        <Grid size={{ xs: 6, sm: 12 }}>
+                            <TextField select label="Tipi" {...register('type')} fullWidth defaultValue="SALES">
+                                <MenuItem value="SALES">Satış</MenuItem>
+                                <MenuItem value="PURCHASE">Alış</MenuItem>
+                            </TextField>
+                        </Grid>
+                        <Grid size={{ xs: 6, sm: 12 }}>
                             <TextField label="Vergi Dairesi" {...register('taxOffice')} fullWidth />
                         </Grid>
                         <Grid size={{ xs: 6, sm: 12 }}>
@@ -76,12 +85,6 @@ const AddCustomerModal: React.FC<Props> = ({ open, onClose, onCustomerAdded }) =
                         </Grid>
                         <Grid size={{ xs: 6, sm: 12 }}>
                             <TextField label="Email" type="email" {...register('email')} fullWidth />
-                        </Grid>
-                        <Grid size={{ xs: 6, sm: 12 }}>
-                            <TextField select label="Tipi" {...register('type')} fullWidth defaultValue="SALES">
-                                <MenuItem value="SALES">Satış</MenuItem>
-                                <MenuItem value="PURCHASE">Alış</MenuItem>
-                            </TextField>
                         </Grid>
                     </Grid>
                 </DialogContent>

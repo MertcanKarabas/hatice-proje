@@ -4,12 +4,14 @@ import { ITransactionItemRepository } from 'src/common/interfaces/transaction-it
 import { StockService } from 'src/stock/stock.service';
 import { Prisma } from 'generated/prisma';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CustomerRepository } from 'src/customers/repositories/customer.repository';
 export declare class TransactionsService {
     private readonly transactionRepository;
     private readonly transactionItemRepository;
     private readonly stockService;
     private readonly prisma;
-    constructor(transactionRepository: ITransactionRepository, transactionItemRepository: ITransactionItemRepository, stockService: StockService, prisma: PrismaService);
+    private readonly customerRepository;
+    constructor(transactionRepository: ITransactionRepository, transactionItemRepository: ITransactionItemRepository, stockService: StockService, prisma: PrismaService, customerRepository: CustomerRepository);
     createTransaction(userId: string, dto: CreateTransactionDto): Promise<{
         id: string;
         userId: string;

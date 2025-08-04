@@ -7,6 +7,7 @@ import { TransactionItemRepository } from './repositories/transaction-item.repos
 import { StockModule } from '../stock/stock.module';
 import { ITransactionRepository } from 'src/common/interfaces/transaction.repository.interface';
 import { ITransactionItemRepository } from 'src/common/interfaces/transaction-item.repository.interface';
+import { CustomerRepository } from 'src/customers/repositories/customer.repository';
 
 @Module({
   imports: [StockModule],
@@ -21,6 +22,7 @@ import { ITransactionItemRepository } from 'src/common/interfaces/transaction-it
       provide: ITransactionItemRepository,
       useClass: TransactionItemRepository,
     },
+    CustomerRepository,
   ],
   controllers: [TransactionsController]
 })

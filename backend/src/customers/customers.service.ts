@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCustomerDto } from './dto/create-customer.dto';
+import { CreatePaymentCollectionDto, PaymentCollectionType } from './dto/create-payment-collection.dto';
 import { ICustomerRepository } from 'src/common/interfaces/customer.repository.interface';
 
 @Injectable()
@@ -33,5 +34,13 @@ export class CustomersService {
     async deleteCustomer(userId: string, customerId: string) {
         const customer = await this.findOne(userId, customerId);
         await this.customerRepository.delete(customer.id);
+    }
+
+    async createPaymentCollection(userId: string, dto: CreatePaymentCollectionDto) {
+        const customer = await this.findOne(userId, dto.customerId);
+        const amount = dto.type === PaymentCollectionType.COLLECTION ? dto.amount : -dto.amount;
+        const newBalance = customer.balance.plus(amount);
+
+        return this.customerRepository.update(customer.id, { balance: newBalance });
     }
 }

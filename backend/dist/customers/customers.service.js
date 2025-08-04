@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CustomersService = void 0;
 const common_1 = require("@nestjs/common");
+const create_payment_collection_dto_1 = require("./dto/create-payment-collection.dto");
 const customer_repository_interface_1 = require("../common/interfaces/customer.repository.interface");
 let CustomersService = class CustomersService {
     constructor(customerRepository) {
@@ -36,6 +37,12 @@ let CustomersService = class CustomersService {
     async deleteCustomer(userId, customerId) {
         const customer = await this.findOne(userId, customerId);
         await this.customerRepository.delete(customer.id);
+    }
+    async createPaymentCollection(userId, dto) {
+        const customer = await this.findOne(userId, dto.customerId);
+        const amount = dto.type === create_payment_collection_dto_1.PaymentCollectionType.COLLECTION ? dto.amount : -dto.amount;
+        const newBalance = customer.balance.plus(amount);
+        return this.customerRepository.update(customer.id, { balance: newBalance });
     }
 };
 exports.CustomersService = CustomersService;

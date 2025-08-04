@@ -72,17 +72,24 @@ const TransactionSummaryPage: React.FC = () => {
     };
 
     const handleSaveTransaction = async () => {
-        const { customerId, transactionType, items } = transactionInfo;
+        const { customerId, transactionType, items, invoiceDate, dueDate, vatRate, currency, discountAmount } = transactionInfo;
         const transactionData = {
             customerId,
             type: transactionType,
+            invoiceDate,
+            dueDate,
+            vatRate,
+            currency,
             items: items?.map(item => ({
                 productId: item.productId,
                 quantity: item.quantity,
                 price: Number(item.price),
                 unit: item.unit,
                 vatRate: item.vatRate,
-            })),
+            })) || [],
+            totalAmount: grandTotal,
+            discountAmount: discountAmount ?? 0,
+            finalAmount: grandTotal - (discountAmount ?? 0),
         };
 
         try {

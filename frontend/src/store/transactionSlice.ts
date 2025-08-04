@@ -17,6 +17,7 @@ interface TransactionFormState {
     vatRate: number;
     currency: string;
     transactionType: 'SALE' | 'PURCHASE';
+    discountAmount?: number;
     step: number;
     items?: TransactionItem[];
     products?: Product[]; // To store all products for client-side filtering

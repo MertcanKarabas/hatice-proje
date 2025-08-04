@@ -29,38 +29,60 @@ export class ProductsService {
   async createProduct(userId: string, dto: CreateProductDto) {
     const { components, ...productData } = dto;
 
-    if (dto.isPackage && (!components || components.length === 0)) {
-      throw new ConflictException('Paket ürünler için bileşenler gereklidir.');
-    }
-
     try {
+      // PAKET ÜRÜN OLUŞTURMA LOGIĞI
       if (dto.isPackage) {
-        // Check stock for all components
-        for (const component of components) {
-          const product = await this.productRepository.findById(component.componentId);
-          if (!product || product.quantity < component.quantity * dto.quantity) {
-            throw new ConflictException(`Yetersiz stok: ${product.name}`);
-          }
+        if (!components || components.length === 0) {
+          throw new ConflictException('Paket ürünler için bileşenler gereklidir.');
         }
 
-        // Create the package product and its components
         return this.prisma.$transaction(async (prisma) => {
+          // 1. Bileşenlerin stoklarını transaction içinde kontrol et
+          for (const component of components) {
+            const componentStock = await prisma.stock.findUnique({
+              where: { productId_userId: { productId: component.componentId, userId } },
+              include: { product: { select: { name: true } } }
+            });
+
+            const requiredQuantity = component.quantity * dto.quantity;
+            if (!componentStock || componentStock.quantity < requiredQuantity) {
+              const productName = componentStock?.product.name || `ID: ${component.componentId}`;
+              throw new ConflictException(`Bileşen için yetersiz stok: ${productName}`);
+            }
+          }
+
+          // 2. Paket ürünü oluştur
           const newPackage = await prisma.product.create({
             data: {
               ...productData,
               userId,
               price: new Prisma.Decimal(dto.price),
+              quantity: dto.quantity, // Ürünün kendi miktarını da set edelim
               packageComponents: {
-                create: components.map(c => ({ ...c, componentId: c.componentId }))
-              }
-            }
+                create: components.map(c => ({
+                  componentId: c.componentId,
+                  quantity: c.quantity,
+                })),
+              },
+            },
           });
 
-          // Update stock for each component
+          // 3. Yeni paket ürün için bir stok kaydı oluştur
+          await prisma.stock.create({
+            data: {
+              userId,
+              productId: newPackage.id,
+              quantity: dto.quantity,
+            },
+          });
+
+          // 4. Bileşenlerin stoklarını doğru miktarda düş
           for (const component of components) {
-            await prisma.stock.updateMany({
-              where: { productId: component.componentId, userId },
-              data: { quantity: { decrement: component.quantity } },
+            await prisma.stock.update({
+              where: { productId_userId: { productId: component.componentId, userId } },
+              data: {
+                quantity: { decrement: component.quantity * dto.quantity },
+              },
             });
           }
 
@@ -68,17 +90,45 @@ export class ProductsService {
         });
       }
 
-      // Create a regular product
-      return await this.productRepository.create({
-        userId,
-        ...productData,
-        price: new Prisma.Decimal(dto.price),
+      // NORMAL ÜRÜN OLUŞTURMA LOGIĞI
+      return this.prisma.$transaction(async (prisma) => {
+        const newProduct = await prisma.product.create({
+          data: {
+            userId,
+            ...productData,
+            price: new Prisma.Decimal(dto.price),
+            quantity: dto.quantity,
+          },
+        });
+
+        // Yeni ürün için stok kaydı oluştur
+        await prisma.stock.create({
+          data: {
+            userId: userId,
+            productId: newProduct.id,
+            quantity: dto.quantity,
+          },
+        });
+
+        return newProduct;
       });
+
     } catch (error) {
-      if (error.code === 'P2002' && error.meta?.target?.includes('sku')) {
-        throw new ConflictException('Bu stok kodu (SKU) zaten mevcut.');
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (
+          error.code === 'P2002' &&
+          Array.isArray((error.meta as { target?: unknown })?.target) &&
+          ((error.meta as { target?: unknown })?.target as string[]).includes('sku')
+        ) {
+          throw new ConflictException('Bu stok kodu (SKU) zaten mevcut.');
+        }
       }
-      throw error;
+      // ConflictException gibi beklenen hataları tekrar fırlat
+      if (error instanceof ConflictException) {
+        throw error;
+      }
+      // Diğer beklenmedik hatalar için genel bir hata fırlat
+      throw new Error(`Ürün oluşturulurken bir hata oluştu: ${error.message}`);
     }
   }
 

@@ -51,4 +51,9 @@ __decorate([
     (0, class_validator_1.IsEmail)(),
     __metadata("design:type", String)
 ], CreateCustomerDto.prototype, "email", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => value ? new prisma_1.Prisma.Decimal(value) : undefined),
+    __metadata("design:type", prisma_1.Prisma.Decimal)
+], CreateCustomerDto.prototype, "balance", void 0);
 //# sourceMappingURL=create-customer.dto.js.map

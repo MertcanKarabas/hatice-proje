@@ -1,4 +1,4 @@
-import { CustomerType } from 'generated/prisma';
+import { CustomerType, Prisma } from 'generated/prisma';
 export declare class CreateCustomerDto {
     commercialTitle: string;
     address: string;
@@ -7,4 +7,5 @@ export declare class CreateCustomerDto {
     taxOffice?: string;
     taxNumber?: string;
     email?: string;
+    balance?: Prisma.Decimal;
 }

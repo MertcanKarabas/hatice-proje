@@ -103,6 +103,7 @@ export default function TransactionForm() {
                             render={({ field }) => (
                                 <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={tr}>
                                     <DateTimePicker
+                                        sx={{ width: '100%'}}
                                         label="Fatura Tarihi ve Saati"
                                         {...field}
                                     />
@@ -118,6 +119,7 @@ export default function TransactionForm() {
                             render={({ field }) => (
                                 <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={tr}>
                                     <DateTimePicker
+                                        sx={{ width: '100%'}}
                                         label="Vade Tarihi ve Saati"
                                         {...field}
                                     />

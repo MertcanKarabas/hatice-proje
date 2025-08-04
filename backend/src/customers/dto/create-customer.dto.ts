@@ -1,6 +1,6 @@
 import { IsString, IsOptional, IsEmail, IsPhoneNumber, IsEnum } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { CustomerType } from 'generated/prisma';
+import { CustomerType, Prisma } from 'generated/prisma';
 
 export class CreateCustomerDto {
     @IsString()
@@ -30,4 +30,8 @@ export class CreateCustomerDto {
     @IsOptional()
     @IsEmail()
     email?: string;
+
+    @IsOptional()
+    @Transform(({ value }) => value ? new Prisma.Decimal(value) : undefined)
+    balance?: Prisma.Decimal;
 }

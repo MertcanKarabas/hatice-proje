@@ -2,6 +2,7 @@ import { Controller, Post, Body, UseGuards, Req, Get, Put, Param, Delete } from 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
+import { CreatePaymentCollectionDto } from './dto/create-payment-collection.dto';
 
 @Controller('customers')
 @UseGuards(JwtAuthGuard)
@@ -37,5 +38,11 @@ export class CustomersController {
     const userId = req.user.userId;
     await this.customersService.deleteCustomer(userId, id);
     return { message: 'Customer deleted successfully' };
+  }
+
+  @Post('payment-collection')
+  async createPaymentCollection(@Req() req, @Body() createPaymentCollectionDto: CreatePaymentCollectionDto) {
+    const userId = req.user.userId;
+    return this.customersService.createPaymentCollection(userId, createPaymentCollectionDto);
   }
 }

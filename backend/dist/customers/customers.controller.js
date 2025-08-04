@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const customers_service_1 = require("./customers.service");
 const create_customer_dto_1 = require("./dto/create-customer.dto");
+const create_payment_collection_dto_1 = require("./dto/create-payment-collection.dto");
 let CustomersController = class CustomersController {
     constructor(customersService) {
         this.customersService = customersService;
@@ -41,6 +42,10 @@ let CustomersController = class CustomersController {
         const userId = req.user.userId;
         await this.customersService.deleteCustomer(userId, id);
         return { message: 'Customer deleted successfully' };
+    }
+    async createPaymentCollection(req, createPaymentCollectionDto) {
+        const userId = req.user.userId;
+        return this.customersService.createPaymentCollection(userId, createPaymentCollectionDto);
     }
 };
 exports.CustomersController = CustomersController;
@@ -84,6 +89,14 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], CustomersController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Post)('payment-collection'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, create_payment_collection_dto_1.CreatePaymentCollectionDto]),
+    __metadata("design:returntype", Promise)
+], CustomersController.prototype, "createPaymentCollection", null);
 exports.CustomersController = CustomersController = __decorate([
     (0, common_1.Controller)('customers'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

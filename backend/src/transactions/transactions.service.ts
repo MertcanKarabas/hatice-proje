@@ -3,8 +3,9 @@ import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { ITransactionRepository } from 'src/common/interfaces/transaction.repository.interface';
 import { ITransactionItemRepository } from 'src/common/interfaces/transaction-item.repository.interface';
 import { StockService } from 'src/stock/stock.service';
-import { Prisma } from 'generated/prisma';
+import { Prisma, CustomerType, TransactionType } from 'generated/prisma';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CustomerRepository } from 'src/customers/repositories/customer.repository';
 
 @Injectable()
 export class TransactionsService {
@@ -13,6 +14,7 @@ export class TransactionsService {
         private readonly transactionItemRepository: ITransactionItemRepository,
         private readonly stockService: StockService,
         private readonly prisma: PrismaService,
+        private readonly customerRepository: CustomerRepository,
     ) { }
 
     async createTransaction(
@@ -23,6 +25,9 @@ export class TransactionsService {
 
         for (const item of items) {
             const stock = await this.prisma.stock.findFirst({ where: { productId: item.productId, userId } });
+            console.log('Checking stock for item:', item.productId, 'Stock:', stock);
+            console.log('Required quantity:', item.quantity);
+            console.log("Item:", item);
             if (!stock || stock.quantity < item.quantity) {
                 const product = await this.prisma.product.findUnique({ where: { id: item.productId } });
                 throw new BadRequestException(`Yetersiz stok: ${product?.name ?? item.productId}`);
@@ -56,6 +61,19 @@ export class TransactionsService {
             await this.stockService.updateStock(userId, item.productId, item.quantity, type);
         }
 
+        if (customerId) {
+            const customer = await this.customerRepository.findById(customerId);
+            if (customer) {
+                let newBalance = new Prisma.Decimal(customer.balance);
+                if (transaction.type === TransactionType.SALE) {
+                    newBalance = newBalance.plus(finalAmount);
+                } else if (transaction.type === TransactionType.PURCHASE) {
+                    newBalance = newBalance.minus(finalAmount);
+                }
+                await this.customerRepository.update(customerId, { balance: newBalance });
+            }
+        }
+
         return transaction;
     }
     async getTransactionsByUser(userId: string) {
@@ -76,9 +94,22 @@ export class TransactionsService {
                 throw new NotFoundException(`Transaction with ID ${transactionId} not found or access denied.`);
             }
 
-            // Revert old stock quantities
+            // Revert old stock quantities and customer balance
             for (const item of existingTransaction.items) {
                 await this.stockService.updateStock(userId, item.productId, -item.quantity, existingTransaction.type);
+            }
+
+            if (existingTransaction.customerId) {
+                const customer = await prisma.customer.findUnique({ where: { id: existingTransaction.customerId } });
+                if (customer) {
+                    let oldBalance = new Prisma.Decimal(customer.balance);
+                    if (existingTransaction.type === TransactionType.SALE) {
+                        oldBalance = oldBalance.minus(existingTransaction.finalAmount);
+                    } else if (existingTransaction.type === TransactionType.PURCHASE) {
+                        oldBalance = oldBalance.plus(existingTransaction.finalAmount);
+                    }
+                    await prisma.customer.update({ where: { id: existingTransaction.customerId }, data: { balance: oldBalance } });
+                }
             }
 
             const { type, discountAmount = 0, items } = dto;
@@ -113,7 +144,7 @@ export class TransactionsService {
                 await this.stockService.updateStock(userId, item.productId, item.quantity, type);
             }
 
-            return prisma.transaction.update({
+            const updatedTransaction = await prisma.transaction.update({
                 where: { id: transactionId },
                 data: {
                     type,
@@ -122,6 +153,21 @@ export class TransactionsService {
                     finalAmount,
                 },
             });
+
+            if (updatedTransaction.customerId) {
+                const customer = await prisma.customer.findUnique({ where: { id: updatedTransaction.customerId } });
+                if (customer) {
+                    let newBalance = new Prisma.Decimal(customer.balance);
+                    if (updatedTransaction.type === TransactionType.SALE) {
+                        newBalance = newBalance.plus(finalAmount);
+                    } else if (updatedTransaction.type === TransactionType.PURCHASE) {
+                        newBalance = newBalance.minus(finalAmount);
+                    }
+                    await prisma.customer.update({ where: { id: updatedTransaction.customerId }, data: { balance: newBalance } });
+                }
+            }
+
+            return updatedTransaction;
         });
     }
 
@@ -136,9 +182,22 @@ export class TransactionsService {
                 throw new NotFoundException(`Transaction with ID ${transactionId} not found or access denied.`);
             }
 
-            // Revert stock quantities before deleting the transaction
+            // Revert stock quantities and customer balance before deleting the transaction
             for (const item of transaction.items) {
                 await this.stockService.updateStock(userId, item.productId, -item.quantity, transaction.type);
+            }
+
+            if (transaction.customerId) {
+                const customer = await prisma.customer.findUnique({ where: { id: transaction.customerId } });
+                if (customer) {
+                    let oldBalance = new Prisma.Decimal(customer.balance);
+                    if (transaction.type === TransactionType.SALE) {
+                        oldBalance = oldBalance.minus(transaction.finalAmount);
+                    } else if (transaction.type === TransactionType.PURCHASE) {
+                        oldBalance = oldBalance.plus(transaction.finalAmount);
+                    }
+                    await prisma.customer.update({ where: { id: transaction.customerId }, data: { balance: oldBalance } });
+                }
             }
 
             await prisma.transactionItem.deleteMany({ where: { transactionId } });

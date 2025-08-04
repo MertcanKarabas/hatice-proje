@@ -16,6 +16,7 @@ const transaction_item_repository_1 = require("./repositories/transaction-item.r
 const stock_module_1 = require("../stock/stock.module");
 const transaction_repository_interface_1 = require("../common/interfaces/transaction.repository.interface");
 const transaction_item_repository_interface_1 = require("../common/interfaces/transaction-item.repository.interface");
+const customer_repository_1 = require("../customers/repositories/customer.repository");
 let TransactionsModule = class TransactionsModule {
 };
 exports.TransactionsModule = TransactionsModule;
@@ -33,6 +34,7 @@ exports.TransactionsModule = TransactionsModule = __decorate([
                 provide: transaction_item_repository_interface_1.ITransactionItemRepository,
                 useClass: transaction_item_repository_1.TransactionItemRepository,
             },
+            customer_repository_1.CustomerRepository,
         ],
         controllers: [transactions_controller_1.TransactionsController]
     })

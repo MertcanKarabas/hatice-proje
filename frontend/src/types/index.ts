@@ -7,6 +7,7 @@ export interface Customer {
     taxNumber: string;
     email: string;
     type: 'SALES' | 'PURCHASE';
+    balance: number;
 }
 
 export interface Product {
@@ -23,12 +24,18 @@ export interface Product {
 }
 
 export interface Transaction {
+    id: string;
     customerId: string;
     invoiceDate: string;
     dueDate: string;
     vatRate: number;
     currency: string;
     transactionType: 'SALE' | 'PURCHASE';
+    totalAmount: number;
+    discountAmount: number;
+    finalAmount: number;
+    createdAt: string;
+    updatedAt: string;
     items: TransactionItem[];
 }
 
@@ -39,4 +46,34 @@ export interface TransactionItem {
     price: number;
     vatRate: number;
     total: number;
+}
+
+export interface CreateTransactionDtoFrontend {
+    customerId: string;
+    invoiceDate: string;
+    dueDate?: string;
+    vatRate: number;
+    currency: string;
+    type: 'SALE' | 'PURCHASE';
+    items: { productId: string; quantity: number; price: number; unit: string; vatRate: number; }[];
+    totalAmount: number;
+    discountAmount: number;
+    finalAmount: number;
+}
+
+export interface PaymentCollection {
+    id: string;
+    customerId: string;
+    type: 'PAYMENT' | 'COLLECTION';
+    amount: number;
+    date: string;
+    description?: string;
+}
+
+export interface CreatePaymentCollectionDtoFrontend {
+    customerId: string;
+    type: 'PAYMENT' | 'COLLECTION';
+    amount: number;
+    date: string;
+    description?: string;
 }

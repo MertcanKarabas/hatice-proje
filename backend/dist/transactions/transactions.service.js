@@ -16,18 +16,23 @@ const transaction_item_repository_interface_1 = require("../common/interfaces/tr
 const stock_service_1 = require("../stock/stock.service");
 const prisma_1 = require("../../generated/prisma/index.js");
 const prisma_service_1 = require("../prisma/prisma.service");
+const customer_repository_1 = require("../customers/repositories/customer.repository");
 let TransactionsService = class TransactionsService {
-    constructor(transactionRepository, transactionItemRepository, stockService, prisma) {
+    constructor(transactionRepository, transactionItemRepository, stockService, prisma, customerRepository) {
         this.transactionRepository = transactionRepository;
         this.transactionItemRepository = transactionItemRepository;
         this.stockService = stockService;
         this.prisma = prisma;
+        this.customerRepository = customerRepository;
     }
     async createTransaction(userId, dto) {
         var _a;
         const { type, discountAmount = 0, items, customerId } = dto;
         for (const item of items) {
             const stock = await this.prisma.stock.findFirst({ where: { productId: item.productId, userId } });
+            console.log('Checking stock for item:', item.productId, 'Stock:', stock);
+            console.log('Required quantity:', item.quantity);
+            console.log("Item:", item);
             if (!stock || stock.quantity < item.quantity) {
                 const product = await this.prisma.product.findUnique({ where: { id: item.productId } });
                 throw new common_1.BadRequestException(`Yetersiz stok: ${(_a = product === null || product === void 0 ? void 0 : product.name) !== null && _a !== void 0 ? _a : item.productId}`);
@@ -54,6 +59,19 @@ let TransactionsService = class TransactionsService {
         for (const item of items) {
             await this.stockService.updateStock(userId, item.productId, item.quantity, type);
         }
+        if (customerId) {
+            const customer = await this.customerRepository.findById(customerId);
+            if (customer) {
+                let newBalance = new prisma_1.Prisma.Decimal(customer.balance);
+                if (transaction.type === prisma_1.TransactionType.SALE) {
+                    newBalance = newBalance.plus(finalAmount);
+                }
+                else if (transaction.type === prisma_1.TransactionType.PURCHASE) {
+                    newBalance = newBalance.minus(finalAmount);
+                }
+                await this.customerRepository.update(customerId, { balance: newBalance });
+            }
+        }
         return transaction;
     }
     async getTransactionsByUser(userId) {
@@ -74,6 +92,19 @@ let TransactionsService = class TransactionsService {
             }
             for (const item of existingTransaction.items) {
                 await this.stockService.updateStock(userId, item.productId, -item.quantity, existingTransaction.type);
+            }
+            if (existingTransaction.customerId) {
+                const customer = await prisma.customer.findUnique({ where: { id: existingTransaction.customerId } });
+                if (customer) {
+                    let oldBalance = new prisma_1.Prisma.Decimal(customer.balance);
+                    if (existingTransaction.type === prisma_1.TransactionType.SALE) {
+                        oldBalance = oldBalance.minus(existingTransaction.finalAmount);
+                    }
+                    else if (existingTransaction.type === prisma_1.TransactionType.PURCHASE) {
+                        oldBalance = oldBalance.plus(existingTransaction.finalAmount);
+                    }
+                    await prisma.customer.update({ where: { id: existingTransaction.customerId }, data: { balance: oldBalance } });
+                }
             }
             const { type, discountAmount = 0, items } = dto;
             for (const item of items) {
@@ -99,7 +130,7 @@ let TransactionsService = class TransactionsService {
             for (const item of items) {
                 await this.stockService.updateStock(userId, item.productId, item.quantity, type);
             }
-            return prisma.transaction.update({
+            const updatedTransaction = await prisma.transaction.update({
                 where: { id: transactionId },
                 data: {
                     type,
@@ -108,6 +139,20 @@ let TransactionsService = class TransactionsService {
                     finalAmount,
                 },
             });
+            if (updatedTransaction.customerId) {
+                const customer = await prisma.customer.findUnique({ where: { id: updatedTransaction.customerId } });
+                if (customer) {
+                    let newBalance = new prisma_1.Prisma.Decimal(customer.balance);
+                    if (updatedTransaction.type === prisma_1.TransactionType.SALE) {
+                        newBalance = newBalance.plus(finalAmount);
+                    }
+                    else if (updatedTransaction.type === prisma_1.TransactionType.PURCHASE) {
+                        newBalance = newBalance.minus(finalAmount);
+                    }
+                    await prisma.customer.update({ where: { id: updatedTransaction.customerId }, data: { balance: newBalance } });
+                }
+            }
+            return updatedTransaction;
         });
     }
     async deleteTransaction(userId, transactionId) {
@@ -122,6 +167,19 @@ let TransactionsService = class TransactionsService {
             for (const item of transaction.items) {
                 await this.stockService.updateStock(userId, item.productId, -item.quantity, transaction.type);
             }
+            if (transaction.customerId) {
+                const customer = await prisma.customer.findUnique({ where: { id: transaction.customerId } });
+                if (customer) {
+                    let oldBalance = new prisma_1.Prisma.Decimal(customer.balance);
+                    if (transaction.type === prisma_1.TransactionType.SALE) {
+                        oldBalance = oldBalance.minus(transaction.finalAmount);
+                    }
+                    else if (transaction.type === prisma_1.TransactionType.PURCHASE) {
+                        oldBalance = oldBalance.plus(transaction.finalAmount);
+                    }
+                    await prisma.customer.update({ where: { id: transaction.customerId }, data: { balance: oldBalance } });
+                }
+            }
             await prisma.transactionItem.deleteMany({ where: { transactionId } });
             await prisma.transaction.delete({ where: { id: transactionId } });
         });
@@ -133,6 +191,7 @@ exports.TransactionsService = TransactionsService = __decorate([
     __metadata("design:paramtypes", [transaction_repository_interface_1.ITransactionRepository,
         transaction_item_repository_interface_1.ITransactionItemRepository,
         stock_service_1.StockService,
-        prisma_service_1.PrismaService])
+        prisma_service_1.PrismaService,
+        customer_repository_1.CustomerRepository])
 ], TransactionsService);
 //# sourceMappingURL=transactions.service.js.map

@@ -46,39 +46,75 @@ let ProductsService = class ProductsService {
     async createProduct(userId, dto) {
         var _a, _b;
         const { components } = dto, productData = __rest(dto, ["components"]);
-        if (dto.isPackage && (!components || components.length === 0)) {
-            throw new common_1.ConflictException('Paket ürünler için bileşenler gereklidir.');
-        }
         try {
             if (dto.isPackage) {
-                for (const component of components) {
-                    const product = await this.productRepository.findById(component.componentId);
-                    if (!product || product.quantity < component.quantity * dto.quantity) {
-                        throw new common_1.ConflictException(`Yetersiz stok: ${product.name}`);
-                    }
+                if (!components || components.length === 0) {
+                    throw new common_1.ConflictException('Paket ürünler için bileşenler gereklidir.');
                 }
                 return this.prisma.$transaction(async (prisma) => {
+                    for (const component of components) {
+                        const componentStock = await prisma.stock.findUnique({
+                            where: { productId_userId: { productId: component.componentId, userId } },
+                            include: { product: { select: { name: true } } }
+                        });
+                        const requiredQuantity = component.quantity * dto.quantity;
+                        if (!componentStock || componentStock.quantity < requiredQuantity) {
+                            const productName = (componentStock === null || componentStock === void 0 ? void 0 : componentStock.product.name) || `ID: ${component.componentId}`;
+                            throw new common_1.ConflictException(`Bileşen için yetersiz stok: ${productName}`);
+                        }
+                    }
                     const newPackage = await prisma.product.create({
-                        data: Object.assign(Object.assign({}, productData), { userId, price: new prisma_1.Prisma.Decimal(dto.price), packageComponents: {
-                                create: components.map(c => (Object.assign(Object.assign({}, c), { componentId: c.componentId })))
-                            } })
+                        data: Object.assign(Object.assign({}, productData), { userId, price: new prisma_1.Prisma.Decimal(dto.price), quantity: dto.quantity, packageComponents: {
+                                create: components.map(c => ({
+                                    componentId: c.componentId,
+                                    quantity: c.quantity,
+                                })),
+                            } }),
+                    });
+                    await prisma.stock.create({
+                        data: {
+                            userId,
+                            productId: newPackage.id,
+                            quantity: dto.quantity,
+                        },
                     });
                     for (const component of components) {
-                        await prisma.stock.updateMany({
-                            where: { productId: component.componentId, userId },
-                            data: { quantity: { decrement: component.quantity } },
+                        await prisma.stock.update({
+                            where: { productId_userId: { productId: component.componentId, userId } },
+                            data: {
+                                quantity: { decrement: component.quantity * dto.quantity },
+                            },
                         });
                     }
                     return newPackage;
                 });
             }
-            return await this.productRepository.create(Object.assign(Object.assign({ userId }, productData), { price: new prisma_1.Prisma.Decimal(dto.price) }));
+            return this.prisma.$transaction(async (prisma) => {
+                const newProduct = await prisma.product.create({
+                    data: Object.assign(Object.assign({ userId }, productData), { price: new prisma_1.Prisma.Decimal(dto.price), quantity: dto.quantity }),
+                });
+                await prisma.stock.create({
+                    data: {
+                        userId: userId,
+                        productId: newProduct.id,
+                        quantity: dto.quantity,
+                    },
+                });
+                return newProduct;
+            });
         }
         catch (error) {
-            if (error.code === 'P2002' && ((_b = (_a = error.meta) === null || _a === void 0 ? void 0 : _a.target) === null || _b === void 0 ? void 0 : _b.includes('sku'))) {
-                throw new common_1.ConflictException('Bu stok kodu (SKU) zaten mevcut.');
+            if (error instanceof prisma_1.Prisma.PrismaClientKnownRequestError) {
+                if (error.code === 'P2002' &&
+                    Array.isArray((_a = error.meta) === null || _a === void 0 ? void 0 : _a.target) &&
+                    ((_b = error.meta) === null || _b === void 0 ? void 0 : _b.target).includes('sku')) {
+                    throw new common_1.ConflictException('Bu stok kodu (SKU) zaten mevcut.');
+                }
             }
-            throw error;
+            if (error instanceof common_1.ConflictException) {
+                throw error;
+            }
+            throw new Error(`Ürün oluşturulurken bir hata oluştu: ${error.message}`);
         }
     }
     async updateProduct(userId, productId, dto) {
