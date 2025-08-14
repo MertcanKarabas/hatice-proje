@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Customer } from 'generated/prisma';
+import { Customer, Prisma } from 'generated/prisma';
 import { BaseRepository } from '../../common/database/repositories/base.repository';
 import { ICustomerRepository } from '../../common/interfaces/customer.repository.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -10,11 +10,9 @@ export class CustomerRepository extends BaseRepository<Customer> implements ICus
     super(prisma, 'customer');
   }
 
-  async findAllByUser(userId: string): Promise<Customer[]> {
+  async findAllByUser(whereClause: Prisma.CustomerWhereInput): Promise<Customer[]> {
     return this.prisma.customer.findMany({
-      where: {
-        userId,
-      },
+      where: whereClause,
       orderBy: {
         commercialTitle: 'asc',
       },

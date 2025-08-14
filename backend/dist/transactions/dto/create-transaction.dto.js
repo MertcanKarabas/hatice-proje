@@ -39,7 +39,7 @@ class CreateTransactionDto {
 }
 exports.CreateTransactionDto = CreateTransactionDto;
 __decorate([
-    (0, class_validator_1.IsEnum)(['SALE', 'PURCHASE']),
+    (0, class_validator_1.IsEnum)(['SALE', 'PURCHASE', 'PAYMENT', 'COLLECTION']),
     __metadata("design:type", String)
 ], CreateTransactionDto.prototype, "type", void 0);
 __decorate([
@@ -57,4 +57,24 @@ __decorate([
     (0, class_transformer_1.Type)(() => CreateTransactionItemDto),
     __metadata("design:type", Array)
 ], CreateTransactionDto.prototype, "items", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsDateString)(),
+    __metadata("design:type", String)
+], CreateTransactionDto.prototype, "invoiceDate", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsDateString)(),
+    __metadata("design:type", String)
+], CreateTransactionDto.prototype, "dueDate", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], CreateTransactionDto.prototype, "vatRate", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateTransactionDto.prototype, "currency", void 0);
 //# sourceMappingURL=create-transaction.dto.js.map

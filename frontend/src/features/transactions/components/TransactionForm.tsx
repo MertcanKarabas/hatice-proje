@@ -26,7 +26,7 @@ export default function TransactionForm() {
             dueDate: new Date(),
             vatRate: 0,
             currency: 'TRY',
-            transactionType: 'SALE',
+            type: 'SALE',
             items: [],
         },
     });
@@ -154,7 +154,7 @@ export default function TransactionForm() {
 
                     <Grid size={{ xs: 12, sm: 20 }} component="div">
                         <Controller
-                            name="transactionType"
+                            name="type"
                             control={control}
                             render={({ field }) => (
                                 <TextField select fullWidth size="small" label="İşlem Türü" {...field}>

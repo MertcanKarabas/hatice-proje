@@ -10,12 +10,16 @@ import {
     TableHead,
     TableRow,
     CircularProgress,
-    Box
+    Box,
+    Button
 } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { getTransactionById } from '../services/transactionService';
 import axiosClient from '../../../services/axiosClient';
 import type { Transaction } from '../../../types';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { localizeTransactionType } from '../services/localization.service';
 
 const TransactionDetails: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -42,6 +46,52 @@ const TransactionDetails: React.FC = () => {
         };
         void fetchTransactionDetails();
     }, [id]);
+
+    const generatePdf = () => {
+        if (!transaction) return;
+
+        const doc = new jsPDF();
+        doc.text("Sipariş Özeti", 14, 16);
+
+        const tableColumn = ["Ürün Adı", "Miktar", "Birim", "Birim Fiyat", "KDV Oranı", "KDV Tutarı", "Toplam"];
+        const tableRows: any[] = [];
+
+        const totalVat = transaction.items?.reduce((acc, item) => acc + (Number(item.price) * item.quantity * item.vatRate / 100), 0) ?? 0;
+
+        transaction.items?.forEach(item => {
+            const vatAmount = Number(item.price) * item.quantity * item.vatRate / 100;
+            const total = (Number(item.price) * item.quantity) + vatAmount;
+            const itemData = [
+                item.product.name ?? 'N/A',
+                item.quantity,
+                item.unit,
+                Number(item.price).toFixed(2),
+                `%${item.vatRate}`,
+                vatAmount.toFixed(2),
+                total.toFixed(2),
+            ];
+            tableRows.push(itemData);
+        });
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 20,
+            headStyles: { fillColor: [100, 100, 100] },
+            footStyles: { fillColor: [100, 100, 100] },
+            bodyStyles: { fillColor: [240, 240, 240] },
+            alternateRowStyles: { fillColor: [255, 255, 255] },
+        });
+
+        const finalY = (doc as any).lastAutoTable.finalY;
+        doc.text(`Müşteri: ${transaction.customer?.commercialTitle || 'N/A'}`, 14, finalY + 10);
+        doc.text(`Fatura Tarihi: ${new Date(transaction.createdAt).toLocaleDateString()}`, 14, finalY + 20);
+        doc.text(`Vade Tarihi: ${transaction.dueDate ? new Date(transaction.dueDate).toLocaleDateString() : 'N/A'}`, 14, finalY + 30);
+        doc.text(`Toplam KDV: ${totalVat.toFixed(2)}`, 14, finalY + 40);
+        doc.text(`Genel Toplam: ${Number(transaction.finalAmount).toFixed(2)}`, 14, finalY + 50);
+
+        doc.save('siparis_ozeti.pdf');
+    };
 
     if (loading) {
         return (
@@ -71,9 +121,14 @@ const TransactionDetails: React.FC = () => {
 
     return (
         <Container maxWidth="xl">
-            <Typography variant="h4" component="h2" gutterBottom>
-                İşlem Detayları: {transaction.id}
-            </Typography>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+                <Typography variant="h4" component="h2" gutterBottom>
+                    İşlem Detayları: {transaction.id}
+                </Typography>
+                <Button variant="contained" onClick={generatePdf}>
+                    PDF İndir
+                </Button>
+            </Box>
 
             <Paper sx={{ p: 3, mb: 3 }}>
                 <Typography variant="h6" gutterBottom>Genel Bilgiler</Typography>
@@ -81,11 +136,11 @@ const TransactionDetails: React.FC = () => {
                     <TableBody>
                         <TableRow>
                             <TableCell component="th" scope="row">Müşteri ID:</TableCell>
-                            <TableCell>{transaction.customerId}</TableCell>
+                            <TableCell>{transaction.customer?.commercialTitle ?? transaction.customerId}</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell component="th" scope="row">İşlem Tipi:</TableCell>
-                            <TableCell>{transaction.transactionType}</TableCell>
+                            <TableCell>{localizeTransactionType(transaction.type)}</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell component="th" scope="row">Toplam Tutar:</TableCell>
@@ -116,7 +171,7 @@ const TransactionDetails: React.FC = () => {
                 <Table size="small">
                     <TableHead>
                         <TableRow>
-                            <TableCell>Ürün ID</TableCell>
+                            <TableCell>Ürün Adı</TableCell>
                             <TableCell>Miktar</TableCell>
                             <TableCell>Birim Fiyat</TableCell>
                             <TableCell>KDV Oranı</TableCell>
@@ -126,7 +181,7 @@ const TransactionDetails: React.FC = () => {
                     <TableBody>
                         {transaction.items.map((item, index) => (
                             <TableRow key={index}>
-                                <TableCell>{item.productId}</TableCell>
+                                <TableCell>{item.product.name}</TableCell>
                                 <TableCell>{item.quantity}</TableCell>
                                 <TableCell>{Number(item.price).toFixed(2)}</TableCell>
                                 <TableCell>{item.vatRate}%</TableCell>

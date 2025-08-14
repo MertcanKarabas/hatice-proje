@@ -1,9 +1,14 @@
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { CreatePaymentCollectionDto } from './dto/create-payment-collection.dto';
 import { ICustomerRepository } from 'src/common/interfaces/customer.repository.interface';
+import { ITransactionRepository } from 'src/common/interfaces/transaction.repository.interface';
+import { ICustomerFilterService } from './interfaces/customer-filter.service.interface';
+import { Prisma } from 'generated/prisma';
 export declare class CustomersService {
-    private customerRepository;
-    constructor(customerRepository: ICustomerRepository);
+    private readonly customerRepository;
+    private readonly transactionRepository;
+    private readonly customerFilterService;
+    constructor(customerRepository: ICustomerRepository, transactionRepository: ITransactionRepository, customerFilterService: ICustomerFilterService);
     createCustomer(userId: string, dto: CreateCustomerDto): Promise<{
         id: string;
         commercialTitle: string;
@@ -12,13 +17,13 @@ export declare class CustomersService {
         taxNumber: string | null;
         email: string | null;
         phone: string | null;
-        balance: import("generated/prisma/runtime/library").Decimal;
+        balance: Prisma.Decimal;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
         type: import("generated/prisma").$Enums.CustomerType;
     }>;
-    findAllByUser(userId: string): Promise<{
+    findAllByUser(userId: string, field?: string, operator?: string, value?: string): Promise<{
         id: string;
         commercialTitle: string;
         address: string;
@@ -26,7 +31,7 @@ export declare class CustomersService {
         taxNumber: string | null;
         email: string | null;
         phone: string | null;
-        balance: import("generated/prisma/runtime/library").Decimal;
+        balance: Prisma.Decimal;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
@@ -40,7 +45,7 @@ export declare class CustomersService {
         taxNumber: string | null;
         email: string | null;
         phone: string | null;
-        balance: import("generated/prisma/runtime/library").Decimal;
+        balance: Prisma.Decimal;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
@@ -54,25 +59,43 @@ export declare class CustomersService {
         taxNumber: string | null;
         email: string | null;
         phone: string | null;
-        balance: import("generated/prisma/runtime/library").Decimal;
+        balance: Prisma.Decimal;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
         type: import("generated/prisma").$Enums.CustomerType;
     }>;
     deleteCustomer(userId: string, customerId: string): Promise<void>;
-    createPaymentCollection(userId: string, dto: CreatePaymentCollectionDto): Promise<{
+    getTransactions(userId: string, customerId: string): Promise<{
         id: string;
-        commercialTitle: string;
-        address: string;
-        taxOffice: string | null;
-        taxNumber: string | null;
-        email: string | null;
-        phone: string | null;
-        balance: import("generated/prisma/runtime/library").Decimal;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
-        type: import("generated/prisma").$Enums.CustomerType;
+        type: import("generated/prisma").$Enums.TransactionType;
+        totalAmount: Prisma.Decimal;
+        discountAmount: Prisma.Decimal;
+        finalAmount: Prisma.Decimal;
+        status: import("generated/prisma").$Enums.TransactionStatus;
+        customerId: string | null;
+        invoiceDate: Date | null;
+        dueDate: Date | null;
+        vatRate: number | null;
+        currency: string | null;
+    }[]>;
+    createPaymentCollection(userId: string, dto: CreatePaymentCollectionDto): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        type: import("generated/prisma").$Enums.TransactionType;
+        totalAmount: Prisma.Decimal;
+        discountAmount: Prisma.Decimal;
+        finalAmount: Prisma.Decimal;
+        status: import("generated/prisma").$Enums.TransactionStatus;
+        customerId: string | null;
+        invoiceDate: Date | null;
+        dueDate: Date | null;
+        vatRate: number | null;
+        currency: string | null;
     }>;
 }

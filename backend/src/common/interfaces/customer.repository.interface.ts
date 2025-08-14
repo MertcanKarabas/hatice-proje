@@ -1,8 +1,8 @@
-import { Customer } from 'generated/prisma';
+import { Customer, Prisma } from 'generated/prisma';
 import { IBaseRepository } from './base.repository.interface';
 
 export abstract class ICustomerRepository implements IBaseRepository<Customer> {
-  abstract findAllByUser(userId: string): Promise<Customer[]>;
+  abstract findAllByUser(whereClause: Prisma.CustomerWhereInput): Promise<Customer[]>;
   abstract findById(id: string): Promise<Customer | null>;
   abstract findAll(): Promise<Customer[]>;
   abstract create(data: Partial<Customer>): Promise<Customer>;

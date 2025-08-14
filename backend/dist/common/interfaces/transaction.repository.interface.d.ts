@@ -1,8 +1,9 @@
-import { Transaction } from 'generated/prisma';
+import { Transaction, Prisma } from 'generated/prisma';
 import { IBaseRepository } from './base.repository.interface';
 export declare abstract class ITransactionRepository implements IBaseRepository<Transaction> {
-    abstract getTransactionsByUser(userId: string): Promise<Transaction[]>;
+    abstract getTransactionsByUser(whereClause: Prisma.TransactionWhereInput): Promise<Transaction[]>;
     abstract getTransactionById(userId: string, transactionId: string): Promise<Transaction | null>;
+    abstract getTransactionsByCustomer(customerId: string): Promise<Transaction[]>;
     abstract findById(id: string): Promise<Transaction | null>;
     abstract findAll(): Promise<Transaction[]>;
     abstract create(data: Partial<Transaction>): Promise<Transaction>;

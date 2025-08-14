@@ -6,8 +6,12 @@ export declare class CreateTransactionItemDto {
     vatRate: number;
 }
 export declare class CreateTransactionDto {
-    type: 'SALE' | 'PURCHASE';
+    type: 'SALE' | 'PURCHASE' | 'PAYMENT' | 'COLLECTION';
     customerId?: string;
     discountAmount?: number;
     items: CreateTransactionItemDto[];
+    invoiceDate?: string;
+    dueDate?: string;
+    vatRate?: number;
+    currency?: string;
 }

@@ -16,7 +16,7 @@ interface TransactionFormState {
     dueDate?: string;
     vatRate: number;
     currency: string;
-    transactionType: 'SALE' | 'PURCHASE';
+    type: 'SALE' | 'PURCHASE' | 'PAYMENT' | 'COLLECTION';
     discountAmount?: number;
     step: number;
     items?: TransactionItem[];
@@ -29,7 +29,7 @@ const initialState: TransactionFormState = {
     dueDate: new Date().toISOString(),
     vatRate: 20,
     currency: 'TRY',
-    transactionType: 'SALE',
+    type: 'SALE',
     step: 0,
     items: [],
     products: [],

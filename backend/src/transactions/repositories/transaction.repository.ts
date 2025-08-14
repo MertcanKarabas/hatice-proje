@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Transaction } from 'generated/prisma';
+import { Transaction, Prisma } from 'generated/prisma';
 import { BaseRepository } from '../../common/database/repositories/base.repository';
 import { ITransactionRepository } from '../../common/interfaces/transaction.repository.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -10,10 +10,11 @@ export class TransactionRepository extends BaseRepository<Transaction> implement
     super(prisma, 'transaction');
   }
 
-  async getTransactionsByUser(userId: string): Promise<Transaction[]> {
+  async getTransactionsByUser(whereClause: Prisma.TransactionWhereInput): Promise<Transaction[]> {
     return this.prisma.transaction.findMany({
-      where: { userId },
+      where: whereClause,
       include: {
+        customer: true,
         items: {
           include: {
             product: true,
@@ -35,6 +36,7 @@ export class TransactionRepository extends BaseRepository<Transaction> implement
         userId,
       },
       include: {
+        customer: true,
         items: {
           include: {
             product: true,
@@ -42,6 +44,25 @@ export class TransactionRepository extends BaseRepository<Transaction> implement
         },
         payments: true,
         discounts: true,
+      },
+    });
+  }
+
+  async getTransactionsByCustomer(customerId: string): Promise<Transaction[]> {
+    return this.prisma.transaction.findMany({
+      where: { customerId },
+      include: {
+        customer: true,
+        items: {
+          include: {
+            product: true,
+          },
+        },
+        payments: true,
+        discounts: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
     });
   }

@@ -17,10 +17,11 @@ let TransactionRepository = class TransactionRepository extends base_repository_
     constructor(prisma) {
         super(prisma, 'transaction');
     }
-    async getTransactionsByUser(userId) {
+    async getTransactionsByUser(whereClause) {
         return this.prisma.transaction.findMany({
-            where: { userId },
+            where: whereClause,
             include: {
+                customer: true,
                 items: {
                     include: {
                         product: true,
@@ -41,6 +42,7 @@ let TransactionRepository = class TransactionRepository extends base_repository_
                 userId,
             },
             include: {
+                customer: true,
                 items: {
                     include: {
                         product: true,
@@ -48,6 +50,24 @@ let TransactionRepository = class TransactionRepository extends base_repository_
                 },
                 payments: true,
                 discounts: true,
+            },
+        });
+    }
+    async getTransactionsByCustomer(customerId) {
+        return this.prisma.transaction.findMany({
+            where: { customerId },
+            include: {
+                customer: true,
+                items: {
+                    include: {
+                        product: true,
+                    },
+                },
+                payments: true,
+                discounts: true,
+            },
+            orderBy: {
+                createdAt: 'desc',
             },
         });
     }

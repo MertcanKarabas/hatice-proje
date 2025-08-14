@@ -1,6 +1,5 @@
 import { createBrowserRouter } from 'react-router-dom';
 import Login from '../features/auth/components/Login';
-import Register from '../features/auth/components/Register';
 import Dashboard from '../features/dashboard/Dashboard';
 import Products from '../features/products/components/Products';
 import NewTransactionPage from '../features/transactions/routes/NewTransactionPage';
@@ -19,10 +18,10 @@ export const router = createBrowserRouter([
     path: '/login',
     element: <Login />,
   },
-  {
+  /*{
     path: '/register',
     element: <Register />,
-  },
+  },*/
   {
     path: '/',
     element: <ProtectedRoute><MainLayout /></ProtectedRoute>,

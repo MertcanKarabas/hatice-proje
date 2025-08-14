@@ -37,31 +37,26 @@ const TransactionSelectProducts: React.FC = () => {
     const [warning, setWarning] = useState<string | null>(null);
 
     useEffect(() => {
-        if (transactionInfo.transactionType === 'SALE') {
-            const fetchProducts = async () => {
-                try {
-                    const response = await getProducts(axiosClient);
-                    const productsWithDefaults: SelectedProduct[] = response.data.map(product => ({
-                        ...product,
-                        selectedQuantity: 0,
-                        selectedUnit: product.unit,
-                        selectedPrice: product.price,
-                        selectedVatRate: transactionInfo.vatRate || 0,
-                        total: 0,
-                    }));
-                    setAllProducts(response.data);
-                    setFilteredProducts(productsWithDefaults);
-                    setSelectedProducts(productsWithDefaults);
-                } catch (error) {
-                    console.error('Ürünler getirilirken hata oluştu:', error);
-                }
-            };
-            void fetchProducts();
-        } else {
-            console.warn('Only SALE transactions are supported for product selection.');
-            void navigate('/transactions/new');
-        }
-    }, [transactionInfo.transactionType, transactionInfo.vatRate, navigate]);
+        const fetchProducts = async () => {
+            try {
+                const response = await getProducts(axiosClient);
+                const productsWithDefaults: SelectedProduct[] = response.data.map(product => ({
+                    ...product,
+                    selectedQuantity: 0,
+                    selectedUnit: product.unit,
+                    selectedPrice: product.price,
+                    selectedVatRate: transactionInfo.vatRate || 0,
+                    total: 0,
+                }));
+                setAllProducts(response.data);
+                setFilteredProducts(productsWithDefaults);
+                setSelectedProducts(productsWithDefaults);
+            } catch (error) {
+                console.error('Ürünler getirilirken hata oluştu:', error);
+            }
+        };
+        void fetchProducts();
+    }, [transactionInfo.type, transactionInfo.vatRate, navigate]);
 
     useEffect(() => {
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
@@ -92,7 +87,7 @@ const TransactionSelectProducts: React.FC = () => {
         value: string | number
     ) => {
         const product = allProducts.find(p => p.id === id);
-        if (field === 'selectedQuantity' && product && Number(value) > product.quantity) {
+        if (field === 'selectedQuantity' && product && transactionInfo.type === 'SALE' && Number(value) > product.quantity) {
             setWarning(`Stokta yeterli ürün yok. Kalan: ${product.quantity}`);
             return;
         }
@@ -142,9 +137,9 @@ const TransactionSelectProducts: React.FC = () => {
                     onChange={(e) => handleInputChange(params.row.id, 'selectedQuantity', Number(e.target.value))}
                     size="small"
                     fullWidth
-                    inputProps={{ min: 0, max: params.row.quantity }}
-                    error={params.row.selectedQuantity > params.row.quantity}
-                    helperText={params.row.selectedQuantity > params.row.quantity ? `Stok: ${params.row.quantity}` : ''}
+                    inputProps={{ min: 0, ...(transactionInfo.type === 'SALE' && { max: params.row.quantity }) }}
+                    error={transactionInfo.type === 'SALE' && params.row.selectedQuantity > params.row.quantity}
+                    helperText={transactionInfo.type === 'SALE' && params.row.selectedQuantity > params.row.quantity ? `Stok: ${params.row.quantity}` : ''}
                 />
             ),
         },
@@ -200,10 +195,12 @@ const TransactionSelectProducts: React.FC = () => {
     ];
 
     const handleNext = () => {
-        const hasInvalidQuantity = selectedProducts.some(p => p.selectedQuantity > p.quantity);
-        if (hasInvalidQuantity) {
-            setWarning('Lütfen stok miktarını aşan ürünleri düzeltin.');
-            return;
+        if (transactionInfo.type === 'SALE') {
+            const hasInvalidQuantity = selectedProducts.some(p => p.selectedQuantity > p.quantity);
+            if (hasInvalidQuantity) {
+                setWarning('Lütfen stok miktarını aşan ürünleri düzeltin.');
+                return;
+            }
         }
 
         const items = selectedProducts.filter(p => p.selectedQuantity > 0).map(p => ({
@@ -225,9 +222,9 @@ const TransactionSelectProducts: React.FC = () => {
             {warning && <Alert severity="warning">{warning}</Alert>}
             <Box mb={2}>
                 <TextField
+                    fullWidth
                     label="Ürün Ara (Stok Kodu veya Adı)"
                     variant="outlined"
-                    fullWidth
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />

@@ -1,6 +1,5 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import type { IHttpClient } from './httpClient';
-
 const axiosInstance = axios.create({
     baseURL: 'http://localhost:3000', // Backend adresi
 });
@@ -13,6 +12,19 @@ axiosInstance.interceptors.request.use(config => {
     }
     return config;
 });
+
+
+
+axiosInstance.interceptors.response.use(
+    (response) => response,
+    (error: AxiosError) => {
+        if (error.response && error.response.status === 401) {
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        }
+        return Promise.reject(error as Error);
+    }
+);
 
 const axiosClient: IHttpClient = {
     get: async <T>(url: string, config?: Record<string, unknown>) => {

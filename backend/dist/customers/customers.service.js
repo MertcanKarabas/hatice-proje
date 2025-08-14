@@ -13,15 +13,21 @@ exports.CustomersService = void 0;
 const common_1 = require("@nestjs/common");
 const create_payment_collection_dto_1 = require("./dto/create-payment-collection.dto");
 const customer_repository_interface_1 = require("../common/interfaces/customer.repository.interface");
+const transaction_repository_interface_1 = require("../common/interfaces/transaction.repository.interface");
+const customer_filter_service_interface_1 = require("./interfaces/customer-filter.service.interface");
+const prisma_1 = require("../../generated/prisma/index.js");
 let CustomersService = class CustomersService {
-    constructor(customerRepository) {
+    constructor(customerRepository, transactionRepository, customerFilterService) {
         this.customerRepository = customerRepository;
+        this.transactionRepository = transactionRepository;
+        this.customerFilterService = customerFilterService;
     }
     async createCustomer(userId, dto) {
         return this.customerRepository.create(Object.assign({ userId }, dto));
     }
-    async findAllByUser(userId) {
-        return this.customerRepository.findAllByUser(userId);
+    async findAllByUser(userId, field, operator, value) {
+        const whereClause = await this.customerFilterService.buildWhereClause(userId, field, operator, value);
+        return this.customerRepository.findAllByUser(whereClause);
     }
     async findOne(userId, customerId) {
         const customer = await this.customerRepository.findById(customerId);
@@ -38,16 +44,36 @@ let CustomersService = class CustomersService {
         const customer = await this.findOne(userId, customerId);
         await this.customerRepository.delete(customer.id);
     }
+    async getTransactions(userId, customerId) {
+        await this.findOne(userId, customerId);
+        return this.transactionRepository.getTransactionsByCustomer(customerId);
+    }
     async createPaymentCollection(userId, dto) {
         const customer = await this.findOne(userId, dto.customerId);
-        const amount = dto.type === create_payment_collection_dto_1.PaymentCollectionType.COLLECTION ? dto.amount : -dto.amount;
-        const newBalance = customer.balance.plus(amount);
-        return this.customerRepository.update(customer.id, { balance: newBalance });
+        const amount = new prisma_1.Prisma.Decimal(dto.amount);
+        const transactionType = dto.type === create_payment_collection_dto_1.PaymentCollectionType.COLLECTION
+            ? prisma_1.TransactionType.COLLECTION
+            : prisma_1.TransactionType.PAYMENT;
+        const newBalance = dto.type === create_payment_collection_dto_1.PaymentCollectionType.COLLECTION
+            ? customer.balance.minus(amount)
+            : customer.balance.plus(amount);
+        await this.customerRepository.update(customer.id, { balance: newBalance });
+        const transaction = await this.transactionRepository.create({
+            userId,
+            customerId: dto.customerId,
+            type: transactionType,
+            totalAmount: amount,
+            finalAmount: amount,
+            discountAmount: new prisma_1.Prisma.Decimal(0),
+        });
+        return transaction;
     }
 };
 exports.CustomersService = CustomersService;
 exports.CustomersService = CustomersService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [customer_repository_interface_1.ICustomerRepository])
+    __metadata("design:paramtypes", [customer_repository_interface_1.ICustomerRepository,
+        transaction_repository_interface_1.ITransactionRepository,
+        customer_filter_service_interface_1.ICustomerFilterService])
 ], CustomersService);
 //# sourceMappingURL=customers.service.js.map

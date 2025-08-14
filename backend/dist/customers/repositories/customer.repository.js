@@ -17,11 +17,9 @@ let CustomerRepository = class CustomerRepository extends base_repository_1.Base
     constructor(prisma) {
         super(prisma, 'customer');
     }
-    async findAllByUser(userId) {
+    async findAllByUser(whereClause) {
         return this.prisma.customer.findMany({
-            where: {
-                userId,
-            },
+            where: whereClause,
             orderBy: {
                 commercialTitle: 'asc',
             },

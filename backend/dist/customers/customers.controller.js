@@ -26,9 +26,9 @@ let CustomersController = class CustomersController {
         const userId = req.user.userId;
         return this.customersService.createCustomer(userId, createCustomerDto);
     }
-    async findAll(req) {
+    async findAll(req, field, operator, value) {
         const userId = req.user.userId;
-        return this.customersService.findAllByUser(userId);
+        return this.customersService.findAllByUser(userId, field, operator, value);
     }
     async findOne(req, id) {
         const userId = req.user.userId;
@@ -47,6 +47,10 @@ let CustomersController = class CustomersController {
         const userId = req.user.userId;
         return this.customersService.createPaymentCollection(userId, createPaymentCollectionDto);
     }
+    async getTransactions(req, id) {
+        const userId = req.user.userId;
+        return this.customersService.getTransactions(userId, id);
+    }
 };
 exports.CustomersController = CustomersController;
 __decorate([
@@ -60,8 +64,11 @@ __decorate([
 __decorate([
     (0, common_1.Get)(),
     __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Query)('field')),
+    __param(2, (0, common_1.Query)('operator')),
+    __param(3, (0, common_1.Query)('value')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, String, String, String]),
     __metadata("design:returntype", Promise)
 ], CustomersController.prototype, "findAll", null);
 __decorate([
@@ -97,6 +104,14 @@ __decorate([
     __metadata("design:paramtypes", [Object, create_payment_collection_dto_1.CreatePaymentCollectionDto]),
     __metadata("design:returntype", Promise)
 ], CustomersController.prototype, "createPaymentCollection", null);
+__decorate([
+    (0, common_1.Get)(':id/transactions'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], CustomersController.prototype, "getTransactions", null);
 exports.CustomersController = CustomersController = __decorate([
     (0, common_1.Controller)('customers'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

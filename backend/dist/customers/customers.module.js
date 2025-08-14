@@ -13,6 +13,10 @@ const customers_controller_1 = require("./customers.controller");
 const customer_repository_1 = require("./repositories/customer.repository");
 const prisma_service_1 = require("../prisma/prisma.service");
 const customer_repository_interface_1 = require("../common/interfaces/customer.repository.interface");
+const transaction_repository_interface_1 = require("../common/interfaces/transaction.repository.interface");
+const transaction_repository_1 = require("../transactions/repositories/transaction.repository");
+const customer_filter_service_interface_1 = require("./interfaces/customer-filter.service.interface");
+const customer_filter_service_1 = require("./services/customer-filter.service");
 let CustomersModule = class CustomersModule {
 };
 exports.CustomersModule = CustomersModule;
@@ -24,6 +28,14 @@ exports.CustomersModule = CustomersModule = __decorate([
             {
                 provide: customer_repository_interface_1.ICustomerRepository,
                 useClass: customer_repository_1.CustomerRepository,
+            },
+            {
+                provide: transaction_repository_interface_1.ITransactionRepository,
+                useClass: transaction_repository_1.TransactionRepository,
+            },
+            {
+                provide: customer_filter_service_interface_1.ICustomerFilterService,
+                useClass: customer_filter_service_1.CustomerFilterService,
             },
         ],
         controllers: [customers_controller_1.CustomersController],

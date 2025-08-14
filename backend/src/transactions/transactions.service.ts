@@ -6,6 +6,7 @@ import { StockService } from 'src/stock/stock.service';
 import { Prisma, CustomerType, TransactionType } from 'generated/prisma';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CustomerRepository } from 'src/customers/repositories/customer.repository';
+import { ITransactionFilterService } from './interfaces/transaction-filter.service.interface';
 
 @Injectable()
 export class TransactionsService {
@@ -15,69 +16,82 @@ export class TransactionsService {
         private readonly stockService: StockService,
         private readonly prisma: PrismaService,
         private readonly customerRepository: CustomerRepository,
+        private readonly transactionFilterService: ITransactionFilterService,
     ) { }
 
     async createTransaction(
         userId: string,
         dto: CreateTransactionDto,
     ) {
-        const { type, discountAmount = 0, items, customerId } = dto;
+        return this.prisma.$transaction(async (prisma) => {
+            const { type, discountAmount = 0, items, customerId, invoiceDate, dueDate, vatRate, currency } = dto;
 
-        for (const item of items) {
-            const stock = await this.prisma.stock.findFirst({ where: { productId: item.productId, userId } });
-            console.log('Checking stock for item:', item.productId, 'Stock:', stock);
-            console.log('Required quantity:', item.quantity);
-            console.log("Item:", item);
-            if (!stock || stock.quantity < item.quantity) {
-                const product = await this.prisma.product.findUnique({ where: { id: item.productId } });
-                throw new BadRequestException(`Yetersiz stok: ${product?.name ?? item.productId}`);
-            }
-        }
-
-        const totalAmount = new Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
-        const finalAmount = new Prisma.Decimal(totalAmount.minus(discountAmount));
-
-        const transaction = await this.transactionRepository.create({
-            userId,
-            type,
-            customerId,
-            totalAmount,
-            discountAmount: new Prisma.Decimal(discountAmount),
-            finalAmount,
-        });
-
-        await this.transactionItemRepository.createMany(
-            items.map((item) => ({
-                transactionId: transaction.id,
-                productId: item.productId,
-                quantity: item.quantity,
-                price: item.price,
-                unit: item.unit,
-                vatRate: item.vatRate,
-            })),
-        );
-
-        for (const item of items) {
-            await this.stockService.updateStock(userId, item.productId, item.quantity, type);
-        }
-
-        if (customerId) {
-            const customer = await this.customerRepository.findById(customerId);
-            if (customer) {
-                let newBalance = new Prisma.Decimal(customer.balance);
-                if (transaction.type === TransactionType.SALE) {
-                    newBalance = newBalance.plus(finalAmount);
-                } else if (transaction.type === TransactionType.PURCHASE) {
-                    newBalance = newBalance.minus(finalAmount);
+            if (type === 'SALE' || type === 'PURCHASE') {
+                for (const item of items) {
+                    const stock = await prisma.stock.findFirst({ where: { productId: item.productId, userId } });
+                    if (!stock || stock.quantity < item.quantity) {
+                        const product = await prisma.product.findUnique({ where: { id: item.productId } });
+                        throw new BadRequestException(`Yetersiz stok: ${product?.name ?? item.productId}`);
+                    }
                 }
-                await this.customerRepository.update(customerId, { balance: newBalance });
             }
-        }
 
-        return transaction;
+            const totalAmount = new Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
+            const finalAmount = new Prisma.Decimal(totalAmount.minus(discountAmount));
+
+            const transaction = await prisma.transaction.create({
+                data: {
+                    userId,
+                    type,
+                    customerId,
+                    totalAmount,
+                    discountAmount: new Prisma.Decimal(discountAmount),
+                    finalAmount,
+                    invoiceDate: invoiceDate ? new Date(invoiceDate) : null,
+                    dueDate: dueDate ? new Date(dueDate) : null,
+                    vatRate,
+                    currency,
+                },
+            });
+
+            if (items && items.length > 0) {
+                await prisma.transactionItem.createMany({
+                    data: items.map((item) => ({
+                        transactionId: transaction.id,
+                        productId: item.productId,
+                        quantity: item.quantity,
+                        price: item.price,
+                        unit: item.unit,
+                        vatRate: item.vatRate,
+                    })),
+                });
+
+                if (type === 'SALE' || type === 'PURCHASE') {
+                    for (const item of items) {
+                        await this.stockService.updateStock(userId, item.productId, item.quantity, type);
+                    }
+                }
+            }
+
+            if (customerId) {
+                const customer = await prisma.customer.findUnique({ where: { id: customerId } });
+                if (customer) {
+                    let newBalance = new Prisma.Decimal(customer.balance);
+                    if (transaction.type === TransactionType.SALE) {
+                        newBalance = newBalance.plus(finalAmount);
+                    } else if (transaction.type === TransactionType.PURCHASE) {
+                        newBalance = newBalance.minus(finalAmount);
+                    }
+                    await prisma.customer.update({ where: { id: customerId }, data: { balance: newBalance } });
+                }
+            }
+
+            return transaction;
+        });
     }
-    async getTransactionsByUser(userId: string) {
-        return this.transactionRepository.getTransactionsByUser(userId);
+    async getTransactionsByUser(userId: string, field?: string, operator?: string, value?: string) {
+        const whereClause = await this.transactionFilterService.buildWhereClause(userId, field, operator, value);
+        return this.transactionRepository.getTransactionsByUser(whereClause);
     }
     async getTransactionById(userId: string, transactionId: string) {
         return this.transactionRepository.getTransactionById(userId, transactionId);
@@ -95,8 +109,10 @@ export class TransactionsService {
             }
 
             // Revert old stock quantities and customer balance
-            for (const item of existingTransaction.items) {
-                await this.stockService.updateStock(userId, item.productId, -item.quantity, existingTransaction.type);
+            if (existingTransaction.type === 'SALE' || existingTransaction.type === 'PURCHASE') {
+                for (const item of existingTransaction.items) {
+                    await this.stockService.updateStock(userId, item.productId, -item.quantity, existingTransaction.type);
+                }
             }
 
             if (existingTransaction.customerId) {
@@ -112,14 +128,16 @@ export class TransactionsService {
                 }
             }
 
-            const { type, discountAmount = 0, items } = dto;
+            const { type, discountAmount = 0, items, invoiceDate, dueDate, vatRate, currency } = dto;
 
             // Check new stock quantities
-            for (const item of items) {
-                const stock = await prisma.stock.findFirst({ where: { productId: item.productId, userId } });
-                if (!stock || stock.quantity < item.quantity) {
-                    const product = await prisma.product.findUnique({ where: { id: item.productId } });
-                    throw new BadRequestException(`Yetersiz stok: ${product?.name ?? item.productId}`);
+            if (type === 'SALE' || type === 'PURCHASE') {
+                for (const item of items) {
+                    const stock = await prisma.stock.findFirst({ where: { productId: item.productId, userId } });
+                    if (!stock || stock.quantity < item.quantity) {
+                        const product = await prisma.product.findUnique({ where: { id: item.productId } });
+                        throw new BadRequestException(`Yetersiz stok: ${product?.name ?? item.productId}`);
+                    }
                 }
             }
 
@@ -128,20 +146,24 @@ export class TransactionsService {
 
             await prisma.transactionItem.deleteMany({ where: { transactionId } });
 
-            await prisma.transactionItem.createMany({
-                data: items.map((item) => ({
-                    transactionId: transactionId,
-                    productId: item.productId,
-                    quantity: item.quantity,
-                    price: item.price,
-                    unit: item.unit,
-                    vatRate: item.vatRate,
-                })),
-            });
+            if (items && items.length > 0) {
+                await prisma.transactionItem.createMany({
+                    data: items.map((item) => ({
+                        transactionId: transactionId,
+                        productId: item.productId,
+                        quantity: item.quantity,
+                        price: item.price,
+                        unit: item.unit,
+                        vatRate: item.vatRate,
+                    })),
+                });
+            }
 
             // Update stock with new quantities
-            for (const item of items) {
-                await this.stockService.updateStock(userId, item.productId, item.quantity, type);
+            if (type === 'SALE' || type === 'PURCHASE') {
+                for (const item of items) {
+                    await this.stockService.updateStock(userId, item.productId, item.quantity, type);
+                }
             }
 
             const updatedTransaction = await prisma.transaction.update({
@@ -151,6 +173,10 @@ export class TransactionsService {
                     totalAmount,
                     discountAmount: new Prisma.Decimal(discountAmount),
                     finalAmount,
+                    invoiceDate: invoiceDate ? new Date(invoiceDate) : null,
+                    dueDate: dueDate ? new Date(dueDate) : null,
+                    vatRate,
+                    currency,
                 },
             });
 
@@ -183,8 +209,10 @@ export class TransactionsService {
             }
 
             // Revert stock quantities and customer balance before deleting the transaction
-            for (const item of transaction.items) {
-                await this.stockService.updateStock(userId, item.productId, -item.quantity, transaction.type);
+            if (transaction.type === 'SALE' || transaction.type === 'PURCHASE') {
+                for (const item of transaction.items) {
+                    await this.stockService.updateStock(userId, item.productId, -item.quantity, transaction.type);
+                }
             }
 
             if (transaction.customerId) {

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Req, Get, Put, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Req, Get, Put, Param, Delete, Query } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -16,9 +16,14 @@ export class CustomersController {
   }
 
   @Get()
-  async findAll(@Req() req) {
+  async findAll(
+    @Req() req,
+    @Query('field') field?: string,
+    @Query('operator') operator?: string,
+    @Query('value') value?: string,
+  ) {
     const userId = req.user.userId;
-    return this.customersService.findAllByUser(userId);
+    return this.customersService.findAllByUser(userId, field, operator, value);
   }
 
   @Get(':id')
@@ -44,5 +49,11 @@ export class CustomersController {
   async createPaymentCollection(@Req() req, @Body() createPaymentCollectionDto: CreatePaymentCollectionDto) {
     const userId = req.user.userId;
     return this.customersService.createPaymentCollection(userId, createPaymentCollectionDto);
+  }
+
+  @Get(':id/transactions')
+  async getTransactions(@Req() req, @Param('id') id: string) {
+    const userId = req.user.userId;
+    return this.customersService.getTransactions(userId, id);
   }
 }

@@ -8,6 +8,8 @@ import { StockModule } from '../stock/stock.module';
 import { ITransactionRepository } from 'src/common/interfaces/transaction.repository.interface';
 import { ITransactionItemRepository } from 'src/common/interfaces/transaction-item.repository.interface';
 import { CustomerRepository } from 'src/customers/repositories/customer.repository';
+import { ITransactionFilterService } from './interfaces/transaction-filter.service.interface';
+import { TransactionFilterService } from './services/transaction-filter.service';
 
 @Module({
   imports: [StockModule],
@@ -23,6 +25,10 @@ import { CustomerRepository } from 'src/customers/repositories/customer.reposito
       useClass: TransactionItemRepository,
     },
     CustomerRepository,
+    {
+      provide: ITransactionFilterService,
+      useClass: TransactionFilterService,
+    },
   ],
   controllers: [TransactionsController]
 })

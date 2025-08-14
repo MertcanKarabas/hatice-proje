@@ -14,6 +14,10 @@ model Transaction {
   discounts         Discount[]
   customerId       String?           // Müşteri ID'si (opsiyonel olabilir)
   customer         Customer?         @relation(fields: [customerId], references: [id])
+  invoiceDate      DateTime?
+  dueDate          DateTime?
+  vatRate          Int?
+  currency         String?
 }
 
 model TransactionItem {
@@ -62,6 +66,8 @@ model Discount {
 enum TransactionType {
   SALE
   PURCHASE
+  PAYMENT
+  COLLECTION
 }
 
 enum TransactionStatus {

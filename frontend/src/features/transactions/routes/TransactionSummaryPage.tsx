@@ -3,13 +3,14 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../../store/store';
 import { Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box } from '@mui/material';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { getCustomers } from '../../customers/services/customerService';
 import axiosClient from '../../../services/axiosClient';
 import type { Customer } from '../../../types';
 import { createTransaction } from '../services/transactionService';
 import { resetTransaction } from '../../../store/transactionSlice';
 import { useNavigate } from 'react-router-dom';
+import { localizeTransactionType } from '../services/localization.service';
 
 const TransactionSummaryPage: React.FC = () => {
     const transactionInfo = useSelector((state: RootState) => state.transaction);
@@ -33,7 +34,8 @@ const TransactionSummaryPage: React.FC = () => {
 
     const generatePdf = () => {
         const doc = new jsPDF();
-        doc.text("Sipariş Özeti", 14, 16);
+        const title = transactionInfo.type === 'SALE' ? 'Satış Özeti' : 'Alış Özeti';
+        doc.text(title, 14, 16);
 
         const tableColumn = ["Ürün Adı", "Miktar", "Birim", "Birim Fiyat", "KDV Oranı", "KDV Tutarı", "Toplam"];
         const tableRows: any[] = [];
@@ -53,7 +55,9 @@ const TransactionSummaryPage: React.FC = () => {
             tableRows.push(itemData);
         });
 
-        (doc as any).autoTable(tableColumn, tableRows, {
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
             startY: 20,
             headStyles: { fillColor: [100, 100, 100] },
             footStyles: { fillColor: [100, 100, 100] },
@@ -61,7 +65,7 @@ const TransactionSummaryPage: React.FC = () => {
             alternateRowStyles: { fillColor: [255, 255, 255] },
         });
 
-        const finalY = (doc as any).autoTable.previous.finalY;
+        const finalY = (doc as any).lastAutoTable.finalY;
         doc.text(`Müşteri: ${customer?.commercialTitle || 'N/A'}`, 14, finalY + 10);
         doc.text(`Fatura Tarihi: ${new Date(transactionInfo.invoiceDate).toLocaleDateString()}`, 14, finalY + 20);
         doc.text(`Vade Tarihi: ${transactionInfo.dueDate ? new Date(transactionInfo.dueDate).toLocaleDateString() : 'N/A'}`, 14, finalY + 30);
@@ -72,10 +76,13 @@ const TransactionSummaryPage: React.FC = () => {
     };
 
     const handleSaveTransaction = async () => {
-        const { customerId, transactionType, items, invoiceDate, dueDate, vatRate, currency, discountAmount } = transactionInfo;
+        const { customerId, type, items, invoiceDate, dueDate, vatRate, currency, discountAmount } = transactionInfo;
+        const totalAmount = items?.reduce((sum, item) => sum + (Number(item.price) * item.quantity), 0) ?? 0;
+        const finalAmount = grandTotal;
+
         const transactionData = {
             customerId,
-            type: transactionType,
+            type,
             invoiceDate,
             dueDate,
             vatRate,
@@ -87,9 +94,7 @@ const TransactionSummaryPage: React.FC = () => {
                 unit: item.unit,
                 vatRate: item.vatRate,
             })) || [],
-            totalAmount: grandTotal,
             discountAmount: discountAmount ?? 0,
-            finalAmount: grandTotal - (discountAmount ?? 0),
         };
 
         try {
@@ -145,11 +150,11 @@ const TransactionSummaryPage: React.FC = () => {
                 <Typography variant="h6">Müşteri: {customer?.commercialTitle ?? 'N/A'}</Typography>
                 <Typography variant="h6">Fatura Tarihi: {new Date(transactionInfo.invoiceDate).toLocaleDateString()}</Typography>
                 <Typography variant="h6">Vade Tarihi: {transactionInfo.dueDate ? new Date(transactionInfo.dueDate).toLocaleDateString() : 'N/A'}</Typography>
-                <Typography variant="h6">İşlem Türü: {transactionInfo.transactionType}</Typography>
+                <Typography variant="h6">İşlem Türü: {localizeTransactionType(transactionInfo.type)}</Typography>
             </Box>
             <Box mt={2} display="flex" justifyContent="flex-end">
                 <Button variant="contained" onClick={() => { void handleSaveTransaction() }}>
-                    {transactionInfo.transactionType === 'SALE' ? 'Satış' : 'Alış'}
+                    {localizeTransactionType(transactionInfo.type)}
                 </Button>
             </Box>
         </Container>

@@ -30,17 +30,19 @@ export interface Transaction {
     dueDate: string;
     vatRate: number;
     currency: string;
-    transactionType: 'SALE' | 'PURCHASE';
+    type: 'SALE' | 'PURCHASE' | 'PAYMENT' | 'COLLECTION';
     totalAmount: number;
     discountAmount: number;
     finalAmount: number;
     createdAt: string;
     updatedAt: string;
     items: TransactionItem[];
+    customer?: Customer;
 }
 
 export interface TransactionItem {
     productId: string;
+    product: Product;
     quantity: number;
     unit: string;
     price: number;
@@ -54,11 +56,9 @@ export interface CreateTransactionDtoFrontend {
     dueDate?: string;
     vatRate: number;
     currency: string;
-    type: 'SALE' | 'PURCHASE';
+    type: 'SALE' | 'PURCHASE' | 'PAYMENT' | 'COLLECTION';
     items: { productId: string; quantity: number; price: number; unit: string; vatRate: number; }[];
-    totalAmount: number;
     discountAmount: number;
-    finalAmount: number;
 }
 
 export interface PaymentCollection {

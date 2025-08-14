@@ -18,7 +18,7 @@ export declare class CustomersController {
         userId: string;
         type: import("generated/prisma").$Enums.CustomerType;
     }>;
-    findAll(req: any): Promise<{
+    findAll(req: any, field?: string, operator?: string, value?: string): Promise<{
         id: string;
         commercialTitle: string;
         address: string;
@@ -65,16 +65,34 @@ export declare class CustomersController {
     }>;
     createPaymentCollection(req: any, createPaymentCollectionDto: CreatePaymentCollectionDto): Promise<{
         id: string;
-        commercialTitle: string;
-        address: string;
-        taxOffice: string | null;
-        taxNumber: string | null;
-        email: string | null;
-        phone: string | null;
-        balance: import("generated/prisma/runtime/library").Decimal;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
-        type: import("generated/prisma").$Enums.CustomerType;
+        type: import("generated/prisma").$Enums.TransactionType;
+        totalAmount: import("generated/prisma/runtime/library").Decimal;
+        discountAmount: import("generated/prisma/runtime/library").Decimal;
+        finalAmount: import("generated/prisma/runtime/library").Decimal;
+        status: import("generated/prisma").$Enums.TransactionStatus;
+        customerId: string | null;
+        invoiceDate: Date | null;
+        dueDate: Date | null;
+        vatRate: number | null;
+        currency: string | null;
     }>;
+    getTransactions(req: any, id: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        type: import("generated/prisma").$Enums.TransactionType;
+        totalAmount: import("generated/prisma/runtime/library").Decimal;
+        discountAmount: import("generated/prisma/runtime/library").Decimal;
+        finalAmount: import("generated/prisma/runtime/library").Decimal;
+        status: import("generated/prisma").$Enums.TransactionStatus;
+        customerId: string | null;
+        invoiceDate: Date | null;
+        dueDate: Date | null;
+        vatRate: number | null;
+        currency: string | null;
+    }[]>;
 }

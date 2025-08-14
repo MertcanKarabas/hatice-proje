@@ -1,7 +1,7 @@
 import type { Customer, Transaction, CreatePaymentCollectionDtoFrontend } from '../../../types';
 import type { IHttpClient } from '../../../services/httpClient';
 
-export const getCustomers = (client: IHttpClient) => client.get<Customer[]>('/customers');
+export const getCustomers = (client: IHttpClient, params?: Record<string, string | number>) => client.get<Customer[]>('/customers', { params });
 
 export const createCustomer = (client: IHttpClient, data: Omit<Customer, 'id'>) => client.post<Customer>('/customers', data);
 

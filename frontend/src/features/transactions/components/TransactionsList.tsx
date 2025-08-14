@@ -16,21 +16,26 @@ import { useNavigate } from 'react-router-dom';
 import { getTransactions } from '../services/transactionService';
 import axiosClient from '../../../services/axiosClient';
 import type { Transaction } from '../../../types';
+import { localizeTransactionType } from '../services/localization.service';
+import TransactionFilter from './TransactionFilter';
 
 const TransactionsList: React.FC = () => {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [filter, setFilter] = useState<{ field: string; operator: string; value: string }>({ 
+        field: 'customer.commercialTitle',
+        operator: 'contains',
+        value: '',
+    });
     const navigate = useNavigate();
 
+    const applyFilter = async () => {
+        console.log('Applying filter with state:', filter);
+        const response = await getTransactions(axiosClient, filter);
+        setTransactions(response);
+    };
+
     useEffect(() => {
-        const fetchTransactions = async () => {
-            try {
-                const response = await getTransactions(axiosClient);
-                setTransactions(response);
-            } catch (error) {
-                console.error('İşlemler getirilirken hata oluştu:', error);
-            }
-        };
-        void fetchTransactions();
+        void applyFilter();
     }, []);
 
     const handleViewDetails = (id: string) => {
@@ -51,6 +56,7 @@ const TransactionsList: React.FC = () => {
                     Yeni İşlem
                 </Button>
             </Box>
+            <TransactionFilter filter={filter} setFilter={setFilter} onApply={applyFilter} />
             <TableContainer component={Paper}>
                 <Table>
                     <TableHead>
@@ -68,8 +74,8 @@ const TransactionsList: React.FC = () => {
                         {transactions.map((transaction) => (
                             <TableRow key={transaction.id}>
                                 <TableCell>{transaction.id}</TableCell>
-                                <TableCell>{transaction.customerId}</TableCell>
-                                <TableCell>{transaction.transactionType}</TableCell>
+                                <TableCell>{transaction.customer?.commercialTitle ?? transaction.customerId}</TableCell>
+                                <TableCell>{localizeTransactionType(transaction.type)}</TableCell>
                                 <TableCell>{Number(transaction.totalAmount).toFixed(2)}</TableCell>
                                 <TableCell>{Number(transaction.finalAmount).toFixed(2)}</TableCell>
                                 <TableCell>{new Date(transaction.createdAt).toLocaleDateString()}</TableCell>

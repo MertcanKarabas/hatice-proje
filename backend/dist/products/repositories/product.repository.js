@@ -18,7 +18,7 @@ let ProductRepository = class ProductRepository extends base_repository_1.BaseRe
         super(prisma, 'product');
     }
     async findAllByUser(whereClause) {
-        return this.prisma.product.findMany({
+        const productsWithStock = await this.prisma.product.findMany({
             where: whereClause,
             include: {
                 packageComponents: {
@@ -26,17 +26,24 @@ let ProductRepository = class ProductRepository extends base_repository_1.BaseRe
                         component: true,
                     },
                 },
+                stock: true,
             },
         });
+        return productsWithStock.map(product => (Object.assign(Object.assign({}, product), { quantity: product.stock.length > 0 ? product.stock[0].quantity : 0 })));
     }
     async findById(id) {
-        return this.prisma.product.findUnique({
+        const productWithStock = await this.prisma.product.findUnique({
             where: { id },
             include: {
                 packageComponents: { include: { component: true } },
-                componentOfPackages: { include: { package: true } }
+                componentOfPackages: { include: { package: true } },
+                stock: true,
             }
         });
+        if (!productWithStock) {
+            return null;
+        }
+        return Object.assign(Object.assign({}, productWithStock), { quantity: productWithStock.stock.length > 0 ? productWithStock.stock[0].quantity : 0 });
     }
 };
 exports.ProductRepository = ProductRepository;

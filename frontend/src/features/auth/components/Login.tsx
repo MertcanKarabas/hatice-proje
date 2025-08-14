@@ -29,9 +29,6 @@ const Login: React.FC = () => {
             setError(axiosError.response?.data?.message ?? 'Giriş başarısız');
         }
     };
-    const handleRegister = () => {
-        void navigate('/register');
-    }
     return (
         <Box maxWidth={400} mx="auto" mt={5}>
             <Typography variant="h4" mb={2}>Giriş Yap</Typography>
@@ -58,9 +55,6 @@ const Login: React.FC = () => {
                 />
                 <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
                     Giriş Yap
-                </Button>
-                <Button type='button' variant='text' fullWidth sx={{ mt: 2 }} onClick={handleRegister}>
-                    Hesabınız yok mu? Kayıt olun.
                 </Button>
             </form>
         </Box>

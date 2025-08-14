@@ -11,7 +11,7 @@ export class ProductRepository extends BaseRepository<Product> implements IProdu
   }
 
   async findAllByUser(whereClause: Prisma.ProductWhereInput): Promise<Product[]> {
-    return this.prisma.product.findMany({
+    const productsWithStock = await this.prisma.product.findMany({
       where: whereClause,
       include: {
         packageComponents: {
@@ -19,17 +19,37 @@ export class ProductRepository extends BaseRepository<Product> implements IProdu
             component: true,
           },
         },
+        stock: true, // Include the stock relation
       },
     });
+
+    // Map the result to include the current stock quantity directly on the product
+    return productsWithStock.map(product => ({
+      ...product,
+      // Assuming there's only one stock entry per product per user due to unique constraint
+      // If stock is empty, default to 0
+      quantity: product.stock.length > 0 ? product.stock[0].quantity : 0,
+    })) as Product[]; // Cast back to Product[]
   }
 
   async findById(id: string): Promise<Product | null> {
-    return this.prisma.product.findUnique({ 
-      where: { id }, 
-      include: { 
+    const productWithStock = await this.prisma.product.findUnique({
+      where: { id },
+      include: {
         packageComponents: { include: { component: true } },
-        componentOfPackages: { include: { package: true } }
-      } 
+        componentOfPackages: { include: { package: true } },
+        stock: true, // Include the stock relation
+      }
     });
+
+    if (!productWithStock) {
+      return null;
+    }
+
+    // Map the result to include the current stock quantity directly on the product
+    return {
+      ...productWithStock,
+      quantity: productWithStock.stock.length > 0 ? productWithStock.stock[0].quantity : 0,
+    } as Product; // Cast back to Product
   }
 }

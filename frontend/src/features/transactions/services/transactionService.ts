@@ -5,7 +5,7 @@ import type { IHttpClient } from '../../../services/httpClient';
 
 export const createTransaction = (client: IHttpClient, data: CreateTransactionDtoFrontend) => client.post('/transactions', data);
 
-export const getTransactions = (client: IHttpClient) => client.get<Transaction[]>('/transactions');
+export const getTransactions = (client: IHttpClient, filter?: { field: string; operator: string; value: string }) => client.get<Transaction[]>('/transactions', { params: filter });
 
 export const getTransactionById = (client: IHttpClient, id: string) => client.get<Transaction>(`/transactions/${id}`);
 

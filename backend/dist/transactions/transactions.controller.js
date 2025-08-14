@@ -26,9 +26,9 @@ let TransactionsController = class TransactionsController {
         console.log('Creating transaction for user:', userId, 'with data:', dto);
         return this.transactionsService.createTransaction(userId, dto);
     }
-    async findAll(req) {
+    async findAll(req, field, operator, value) {
         const userId = req.user.userId;
-        return this.transactionsService.getTransactionsByUser(userId);
+        return this.transactionsService.getTransactionsByUser(userId, field, operator, value);
     }
     async getTransactionById(req, id) {
         const userId = req.user.userId;
@@ -60,8 +60,11 @@ __decorate([
 __decorate([
     (0, common_1.Get)(),
     __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Query)('field')),
+    __param(2, (0, common_1.Query)('operator')),
+    __param(3, (0, common_1.Query)('value')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, String, String, String]),
     __metadata("design:returntype", Promise)
 ], TransactionsController.prototype, "findAll", null);
 __decorate([

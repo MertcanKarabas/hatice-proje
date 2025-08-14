@@ -1,4 +1,4 @@
-import { IsEnum, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString, ValidateNested, IsDateString } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateTransactionItemDto {
@@ -19,8 +19,8 @@ export class CreateTransactionItemDto {
 }
 
 export class CreateTransactionDto {
-  @IsEnum(['SALE', 'PURCHASE'])
-  type: 'SALE' | 'PURCHASE';
+  @IsEnum(['SALE', 'PURCHASE', 'PAYMENT', 'COLLECTION'])
+  type: 'SALE' | 'PURCHASE' | 'PAYMENT' | 'COLLECTION';
 
   @IsOptional()
   @IsString()
@@ -33,4 +33,20 @@ export class CreateTransactionDto {
   @ValidateNested({ each: true })
   @Type(() => CreateTransactionItemDto)
   items: CreateTransactionItemDto[];
+
+  @IsOptional()
+  @IsDateString()
+  invoiceDate?: string;
+
+  @IsOptional()
+  @IsDateString()
+  dueDate?: string;
+
+  @IsOptional()
+  @IsNumber()
+  vatRate?: number;
+
+  @IsOptional()
+  @IsString()
+  currency?: string;
 }

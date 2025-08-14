@@ -5,13 +5,15 @@ import { StockService } from 'src/stock/stock.service';
 import { Prisma } from 'generated/prisma';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CustomerRepository } from 'src/customers/repositories/customer.repository';
+import { ITransactionFilterService } from './interfaces/transaction-filter.service.interface';
 export declare class TransactionsService {
     private readonly transactionRepository;
     private readonly transactionItemRepository;
     private readonly stockService;
     private readonly prisma;
     private readonly customerRepository;
-    constructor(transactionRepository: ITransactionRepository, transactionItemRepository: ITransactionItemRepository, stockService: StockService, prisma: PrismaService, customerRepository: CustomerRepository);
+    private readonly transactionFilterService;
+    constructor(transactionRepository: ITransactionRepository, transactionItemRepository: ITransactionItemRepository, stockService: StockService, prisma: PrismaService, customerRepository: CustomerRepository, transactionFilterService: ITransactionFilterService);
     createTransaction(userId: string, dto: CreateTransactionDto): Promise<{
         id: string;
         userId: string;
@@ -23,8 +25,12 @@ export declare class TransactionsService {
         type: import("generated/prisma").$Enums.TransactionType;
         status: import("generated/prisma").$Enums.TransactionStatus;
         customerId: string | null;
+        invoiceDate: Date | null;
+        dueDate: Date | null;
+        vatRate: number | null;
+        currency: string | null;
     }>;
-    getTransactionsByUser(userId: string): Promise<{
+    getTransactionsByUser(userId: string, field?: string, operator?: string, value?: string): Promise<{
         id: string;
         userId: string;
         createdAt: Date;
@@ -35,6 +41,10 @@ export declare class TransactionsService {
         type: import("generated/prisma").$Enums.TransactionType;
         status: import("generated/prisma").$Enums.TransactionStatus;
         customerId: string | null;
+        invoiceDate: Date | null;
+        dueDate: Date | null;
+        vatRate: number | null;
+        currency: string | null;
     }[]>;
     getTransactionById(userId: string, transactionId: string): Promise<{
         id: string;
@@ -47,6 +57,10 @@ export declare class TransactionsService {
         type: import("generated/prisma").$Enums.TransactionType;
         status: import("generated/prisma").$Enums.TransactionStatus;
         customerId: string | null;
+        invoiceDate: Date | null;
+        dueDate: Date | null;
+        vatRate: number | null;
+        currency: string | null;
     }>;
     updateTransaction(userId: string, transactionId: string, dto: CreateTransactionDto): Promise<{
         id: string;
@@ -59,6 +73,10 @@ export declare class TransactionsService {
         type: import("generated/prisma").$Enums.TransactionType;
         status: import("generated/prisma").$Enums.TransactionStatus;
         customerId: string | null;
+        invoiceDate: Date | null;
+        dueDate: Date | null;
+        vatRate: number | null;
+        currency: string | null;
     }>;
     deleteTransaction(userId: string, transactionId: string): Promise<void>;
 }

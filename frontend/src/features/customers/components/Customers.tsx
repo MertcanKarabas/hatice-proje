@@ -26,13 +26,28 @@ import type { Customer } from '../../../types';
 import AddCustomerModal from './AddCustomerModal';
 import { useNavigate } from 'react-router-dom';
 import { deleteCustomer } from '../services/customerService';
+import CustomerFilter from './CustomerFilter';
 
 const Customers: React.FC = () => {
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
+    const [filter, setFilter] = useState<{ field: string; operator: string; value: string }>({ 
+        field: 'commercialTitle',
+        operator: 'contains',
+        value: '',
+    });
     const navigate = useNavigate();
+
+    const applyFilter = async () => {
+        const response = await getCustomers(axiosClient, {
+            field: filter.field,
+            operator: filter.operator,
+            value: filter.value,
+        });
+        setCustomers(response);
+    };
 
     const fetchCustomers = async () => {
         try {
@@ -97,6 +112,7 @@ const Customers: React.FC = () => {
             >
                 Yeni Müşteri Ekle
             </Button>
+            <CustomerFilter filter={filter} setFilter={setFilter} onApply={applyFilter} />
             <TableContainer component={Paper}>
                 <Table>
                     <TableHead>
