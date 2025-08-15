@@ -5,7 +5,7 @@ import {
     TextField, Button, Grid,
     MenuItem
 } from '@mui/material';
-import { createCustomer } from '../services/customerService';
+import { createCustomer, updateCustomer } from '../services/customerService'; // Import updateCustomer
 import axiosClient from '../../../services/axiosClient';
 import type { Customer } from '../../../types';
 import FeedbackAlert from '../../alerts/Alert';
@@ -13,28 +13,47 @@ import type { AxiosError } from 'axios';
 
 type CustomerFormValues = Omit<Customer, 'id'>;
 
-
 interface Props {
     open: boolean;
     onClose: () => void;
-    onCustomerAdded: (customer: Customer) => void;
+    onCustomerSaved: (customer: Customer) => void; // Changed prop name
+    initialData: Customer | null; // Added initialData prop
 }
 
-
-const AddCustomerModal: React.FC<Props> = ({ open, onClose, onCustomerAdded }) => {
-    const { register, handleSubmit, reset } = useForm<CustomerFormValues>();
+const CustomerFormModal: React.FC<Props> = ({ open, onClose, onCustomerSaved, initialData }) => {
+    const { register, handleSubmit, reset, setValue } = useForm<CustomerFormValues>(); // Added setValue
     const [error, setError] = useState<unknown>("");
 
     useEffect(() => {
         if (open) {
-            reset();
+            setError(null); // Clear error on open
+            if (initialData) {
+                // Populate form fields with initialData for editing
+                setValue('commercialTitle', initialData.commercialTitle);
+                setValue('phone', initialData.phone);
+                setValue('address', initialData.address);
+                setValue('balance', initialData.balance);
+                setValue('type', initialData.type);
+                setValue('taxOffice', initialData.taxOffice);
+                setValue('taxNumber', initialData.taxNumber);
+                setValue('email', initialData.email);
+            } else {
+                reset(); // Reset form for adding new customer
+            }
         }
-    }, [open, reset]);
+    }, [open, initialData, reset, setValue]);
 
     const onSubmit = async (data: CustomerFormValues) => {
         try {
-            const response = await createCustomer(axiosClient, data);
-            onCustomerAdded(response);
+            let response: Customer;
+            if (initialData) {
+                // Update existing customer
+                response = await updateCustomer(axiosClient, initialData.id, data);
+            } else {
+                // Create new customer
+                response = await createCustomer(axiosClient, data);
+            }
+            onCustomerSaved(response); // Call the new prop
             reset();
             onClose();
         } catch (error: unknown) {
@@ -52,38 +71,38 @@ const AddCustomerModal: React.FC<Props> = ({ open, onClose, onCustomerAdded }) =
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-            <DialogTitle>Yeni Müşteri Ekle</DialogTitle>
+            <DialogTitle>{initialData ? 'Müşteriyi Düzenle' : 'Yeni Müşteri Ekle'}</DialogTitle> {/* Dynamic title */}
             <form onSubmit={(e) => {
                 void handleSubmit(onSubmit)(e);
             }}>
                 <DialogContent>
                     <Grid container spacing={2} sx={{ mt: 1 }}>
                         {error ? <FeedbackAlert severity='error' text={String(error)} /> : <></>}
-                        <Grid size={{ xs: 6, sm: 12 }} component="div">
+                        <Grid item xs={12}> {/* Changed size to item xs={12} for consistency with MUI Grid */}
                             <TextField required label="Ticari Ünvan" {...register('commercialTitle', { required: true })} fullWidth />
                         </Grid>
-                        <Grid size={{ xs: 6, sm: 12 }}>
+                        <Grid item xs={12}>
                             <TextField required label="Telefon No" {...register('phone', { required: true })} fullWidth />
                         </Grid>
-                        <Grid size={{ xs: 6, sm: 12 }}>
+                        <Grid item xs={12}>
                             <TextField required label="Adres" {...register('address', { required: true })} fullWidth />
                         </Grid>
-                        <Grid size={{ xs: 6, sm: 12 }}>
+                        <Grid item xs={12}>
                             <TextField label="Bakiye" type="number" {...register('balance')} fullWidth />
                         </Grid>
-                        <Grid size={{ xs: 6, sm: 12 }}>
+                        <Grid item xs={12}>
                             <TextField select label="Tipi" {...register('type')} fullWidth defaultValue="SALES">
                                 <MenuItem value="SALES">Satış</MenuItem>
                                 <MenuItem value="PURCHASE">Alış</MenuItem>
                             </TextField>
                         </Grid>
-                        <Grid size={{ xs: 6, sm: 12 }}>
+                        <Grid item xs={12}>
                             <TextField label="Vergi Dairesi" {...register('taxOffice')} fullWidth />
                         </Grid>
-                        <Grid size={{ xs: 6, sm: 12 }}>
+                        <Grid item xs={12}>
                             <TextField label="Vergi No" {...register('taxNumber')} fullWidth />
                         </Grid>
-                        <Grid size={{ xs: 6, sm: 12 }}>
+                        <Grid item xs={12}>
                             <TextField label="Email" type="email" {...register('email')} fullWidth />
                         </Grid>
                     </Grid>
@@ -97,4 +116,4 @@ const AddCustomerModal: React.FC<Props> = ({ open, onClose, onCustomerAdded }) =
     );
 };
 
-export default AddCustomerModal;
+export default CustomerFormModal;

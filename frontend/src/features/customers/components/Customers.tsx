@@ -22,8 +22,9 @@ import AddIcon from '@mui/icons-material/Add';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import EditIcon from '@mui/icons-material/Edit'; // Import EditIcon
 import type { Customer } from '../../../types';
-import AddCustomerModal from './AddCustomerModal';
+import CustomerFormModal from './CustomerFormModal'; // Import the renamed modal
 import { useNavigate } from 'react-router-dom';
 import { deleteCustomer } from '../services/customerService';
 import CustomerFilter from './CustomerFilter';
@@ -33,6 +34,7 @@ const Customers: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
+    const [customerToEdit, setCustomerToEdit] = useState<Customer | null>(null); // New state for editing
     const [filter, setFilter] = useState<{ field: string; operator: string; value: string }>({ 
         field: 'commercialTitle',
         operator: 'contains',
@@ -62,8 +64,31 @@ const Customers: React.FC = () => {
         void fetchCustomers();
     }, []);
 
-    const handleCustomerAdded = (newCustomer: Customer) => {
-        setCustomers((prevCustomers) => [...prevCustomers, newCustomer]);
+    const handleCustomerSaved = (savedCustomer: Customer) => { // Changed function name
+        setCustomers((prevCustomers) => {
+            const existingIndex = prevCustomers.findIndex(c => c.id === savedCustomer.id);
+            if (existingIndex > -1) {
+                // Update existing customer
+                const updatedCustomers = [...prevCustomers];
+                updatedCustomers[existingIndex] = savedCustomer;
+                return updatedCustomers;
+            } else {
+                // Add new customer
+                return [...prevCustomers, savedCustomer];
+            }
+        });
+        setIsModalOpen(false); // Close modal after saving
+        setCustomerToEdit(null); // Clear customerToEdit state
+    };
+
+    const handleAddClick = () => {
+        setCustomerToEdit(null); // Ensure no customer is selected for editing
+        setIsModalOpen(true);
+    };
+
+    const handleEditClick = (customer: Customer) => {
+        setCustomerToEdit(customer);
+        setIsModalOpen(true);
     };
 
     const handleDeleteClick = (customer: Customer) => {
@@ -107,7 +132,7 @@ const Customers: React.FC = () => {
             <Button
                 variant="contained"
                 startIcon={<AddIcon />}
-                onClick={() => setIsModalOpen(true)}
+                onClick={handleAddClick} // Changed onClick
                 sx={{ mb: 2 }}
             >
                 Yeni Müşteri Ekle
@@ -143,6 +168,9 @@ const Customers: React.FC = () => {
                                     <IconButton onClick={() => handleViewTransactions(customer.id)}>
                                         <VisibilityIcon />
                                     </IconButton>
+                                    <IconButton onClick={() => handleEditClick(customer)}> {/* Added Edit button */}
+                                        <EditIcon />
+                                    </IconButton>
                                     <IconButton onClick={() => handleDeleteClick(customer)}>
                                         <DeleteIcon />
                                     </IconButton>
@@ -156,10 +184,11 @@ const Customers: React.FC = () => {
                 </Table>
             </TableContainer>
 
-            <AddCustomerModal
+            <CustomerFormModal // Changed component name
                 open={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                onCustomerAdded={handleCustomerAdded}
+                onClose={() => { setIsModalOpen(false); setCustomerToEdit(null); }} // Clear customerToEdit on close
+                onCustomerSaved={handleCustomerSaved} // Changed prop name
+                initialData={customerToEdit} // Pass initialData
             />
 
             <Dialog open={openDeleteDialog} onClose={handleCancelDelete}>

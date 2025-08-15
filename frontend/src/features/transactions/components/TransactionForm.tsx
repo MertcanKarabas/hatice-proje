@@ -4,7 +4,6 @@ import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { tr } from 'date-fns/locale';
 import { useForm, Controller } from 'react-hook-form';
-import AddCustomerModal from '../../customers/components/AddCustomerModal';
 import { getCustomers } from '../../customers/services/customerService';
 import axiosClient from '../../../services/axiosClient';
 import { useEffect, useState } from 'react';
@@ -12,6 +11,7 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { setTransactionInfo } from '../../../store/transactionSlice';
 import type { Customer, Transaction } from '../../../types';
+import CustomerFormModal from '../../customers/components/CustomerFormModal';
 
 type FormValues = Omit<Transaction, 'invoiceDate' | 'dueDate'> & {
     invoiceDate: Date;
@@ -173,7 +173,7 @@ export default function TransactionForm() {
                     İleri
                 </Button>
             </form>
-            <AddCustomerModal
+            <CustomerFormModal
                 open={modalOpen}
                 onClose={() => setModalOpen(false)}
                 onCustomerAdded={handleCustomerAdded}

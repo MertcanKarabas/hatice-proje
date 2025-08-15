@@ -326,6 +326,15 @@ const Dashboard: React.FC = () => {
                                     <Button
                                         variant="contained"
                                         fullWidth
+                                        onClick={() => void navigate('/transactions/new')}
+                                    >
+                                        Yeni İşlem Ekle
+                                    </Button>
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 20 }} component="div">
+                                    <Button
+                                        variant="contained"
+                                        fullWidth
                                         onClick={() => void navigate('/customers')}
                                     >
                                         Müşteriler

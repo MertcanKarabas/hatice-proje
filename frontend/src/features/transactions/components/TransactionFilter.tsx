@@ -1,6 +1,11 @@
 import React from 'react';
 import { Box, TextField, MenuItem, Select, InputLabel, FormControl, Button, type SelectChangeEvent } from '@mui/material';
 import { localizeTransactionType } from '../services/localization.service';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { tr } from 'date-fns/locale';
+import { DatePicker } from '@mui/x-date-pickers';
 
 const fields = [
     { value: 'customer.commercialTitle', label: 'Müşteri Adı', type: 'string' },
@@ -93,12 +98,16 @@ const TransactionFilter: React.FC<Props> = ({ filter, setFilter, onApply }) => {
                 );
             case 'date':
                 return (
-                    <TextField
-                        label="YYYY-MM-DD"
-                        value={filter.value}
-                        onChange={(e) => setFilter({ ...filter, value: e.target.value })}
-                        size='small'
-                    />
+                    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={tr}>
+                        <DatePicker
+                            label="Tarih"
+                            value={filter.value ? new Date(filter.value) : null}
+                            onChange={(date: Date | null) => {
+                                setFilter({ ...filter, value: date ? date.toISOString() : '' });
+                            }}
+                            slotProps={{ textField: { size: 'small' } }}
+                        />
+                    </LocalizationProvider>
                 );
             case 'enum':
                 return (
