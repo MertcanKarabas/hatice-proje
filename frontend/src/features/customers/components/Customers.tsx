@@ -163,7 +163,7 @@ const Customers: React.FC = () => {
                                 <TableCell>{customer.taxNumber}</TableCell>
                                 <TableCell>{customer.email}</TableCell>
                                 <TableCell>{customer.type}</TableCell>
-                                <TableCell>{customer.balance}</TableCell>
+                                <TableCell>{customer.balance < 0 ? `${Math.abs(customer.balance)} A` : `${customer.balance} B`}</TableCell>
                                 <TableCell>
                                     <IconButton onClick={() => handleViewTransactions(customer.id)}>
                                         <VisibilityIcon />

@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { AxiosError } from 'axios';
-import { getCustomers, getProducts, getTransactions } from '../../services/dashboard';
+import { getCustomers, getProducts, getTransactions, getProfitLast30Days } from '../../services/dashboard';
 import { localizeTransactionType } from '../transactions/services/localization.service';
 import type { Customer, Product, Transaction } from '../../../types';
 
@@ -96,6 +96,7 @@ const Dashboard: React.FC = () => {
     const [totalProducts, setTotalProducts] = useState(0);
     const [totalTransactions, setTotalTransactions] = useState(0);
     const [totalRevenue, setTotalRevenue] = useState(0);
+    const [profitLast30Days, setProfitLast30Days] = useState(0);
     const [newCustomersToday, setNewCustomersToday] = useState(0);
     const [recentTransactions, setRecentTransactions] = useState<RecentTransaction[]>([]);
     const [salesOverview, setSalesOverview] = useState({
@@ -172,6 +173,9 @@ const Dashboard: React.FC = () => {
                     date: new Date(customer.createdAt).toLocaleDateString(),
                 })));
 
+                const profitData = await getProfitLast30Days();
+                setProfitLast30Days(profitData.profit);
+
             } catch (error: unknown) {
                 if (error instanceof AxiosError) {
                     console.error('Error fetching dashboard data:', error.message);
@@ -235,6 +239,18 @@ const Dashboard: React.FC = () => {
                             </Typography>
                             <Typography variant="h3" component="div">
                                 {totalRevenue} TL
+                            </Typography>
+                        </CardContent>
+                    </Card>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 20 }} component="div">
+                    <Card>
+                        <CardContent>
+                            <Typography variant="h6" color="textSecondary" gutterBottom>
+                                Kar (Son 30 Gün)
+                            </Typography>
+                            <Typography variant="h3" component="div">
+                                {profitLast30Days} TL
                             </Typography>
                         </CardContent>
                     </Card>

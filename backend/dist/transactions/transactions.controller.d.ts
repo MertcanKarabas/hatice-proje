@@ -18,8 +18,9 @@ export declare class TransactionsController {
         dueDate: Date | null;
         vatRate: number | null;
         currency: string | null;
+        profit: import("generated/prisma/runtime/library").Decimal | null;
     }>;
-    findAll(req: any, field?: string, operator?: string, value?: string): Promise<{
+    findAll(req: any, field?: string, operator?: string, value?: string, endValue?: string): Promise<{
         id: string;
         userId: string;
         createdAt: Date;
@@ -34,6 +35,7 @@ export declare class TransactionsController {
         dueDate: Date | null;
         vatRate: number | null;
         currency: string | null;
+        profit: import("generated/prisma/runtime/library").Decimal | null;
     }[]>;
     getTransactionById(req: any, id: string): Promise<{
         id: string;
@@ -50,8 +52,12 @@ export declare class TransactionsController {
         dueDate: Date | null;
         vatRate: number | null;
         currency: string | null;
+        profit: import("generated/prisma/runtime/library").Decimal | null;
     } | {
         message: string;
+    }>;
+    getProfitLast30Days(req: any): Promise<{
+        profit: import("generated/prisma/runtime/library").Decimal;
     }>;
     update(req: any, id: string, dto: CreateTransactionDto): Promise<{
         id: string;
@@ -68,6 +74,7 @@ export declare class TransactionsController {
         dueDate: Date | null;
         vatRate: number | null;
         currency: string | null;
+        profit: import("generated/prisma/runtime/library").Decimal | null;
     }>;
     remove(req: any, id: string): Promise<{
         message: string;

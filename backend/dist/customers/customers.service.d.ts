@@ -81,6 +81,7 @@ export declare class CustomersService {
         dueDate: Date | null;
         vatRate: number | null;
         currency: string | null;
+        profit: Prisma.Decimal | null;
     }[]>;
     createPaymentCollection(userId: string, dto: CreatePaymentCollectionDto): Promise<{
         id: string;
@@ -97,5 +98,6 @@ export declare class CustomersService {
         dueDate: Date | null;
         vatRate: number | null;
         currency: string | null;
+        profit: Prisma.Decimal | null;
     }>;
 }

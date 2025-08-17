@@ -29,8 +29,9 @@ export declare class TransactionsService {
         dueDate: Date | null;
         vatRate: number | null;
         currency: string | null;
+        profit: Prisma.Decimal | null;
     }>;
-    getTransactionsByUser(userId: string, field?: string, operator?: string, value?: string): Promise<{
+    getTransactionsByUser(userId: string, field?: string, operator?: string, value?: string, endValue?: string): Promise<{
         id: string;
         userId: string;
         createdAt: Date;
@@ -45,6 +46,7 @@ export declare class TransactionsService {
         dueDate: Date | null;
         vatRate: number | null;
         currency: string | null;
+        profit: Prisma.Decimal | null;
     }[]>;
     getTransactionById(userId: string, transactionId: string): Promise<{
         id: string;
@@ -61,7 +63,9 @@ export declare class TransactionsService {
         dueDate: Date | null;
         vatRate: number | null;
         currency: string | null;
+        profit: Prisma.Decimal | null;
     }>;
+    getProfitLast30Days(userId: string): Promise<Prisma.Decimal>;
     updateTransaction(userId: string, transactionId: string, dto: CreateTransactionDto): Promise<{
         id: string;
         userId: string;
@@ -77,6 +81,7 @@ export declare class TransactionsService {
         dueDate: Date | null;
         vatRate: number | null;
         currency: string | null;
+        profit: Prisma.Decimal | null;
     }>;
     deleteTransaction(userId: string, transactionId: string): Promise<void>;
 }

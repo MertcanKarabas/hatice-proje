@@ -38,6 +38,7 @@ export interface Transaction {
     updatedAt: string;
     items: TransactionItem[];
     customer?: Customer;
+    profit?: number;
 }
 
 export interface TransactionItem {

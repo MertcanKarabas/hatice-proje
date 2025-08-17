@@ -21,12 +21,12 @@ export class TransactionsController {
         @Query('field') field?: string,
         @Query('operator') operator?: string,
         @Query('value') value?: string,
+        @Query('endValue') endValue?: string,
     ) {
         const userId = req.user.userId;
-        return this.transactionsService.getTransactionsByUser(userId, field, operator, value);
+        return this.transactionsService.getTransactionsByUser(userId, field, operator, value, endValue);
     }
 
-    @UseGuards(JwtAuthGuard)
     @Get(':id')
     async getTransactionById(@Request() req, @Param('id') id: string) {
         const userId = req.user.userId;
@@ -35,6 +35,13 @@ export class TransactionsController {
             return { message: 'Transaction not found or access denied.' };
         }
         return transaction;
+    }
+
+    @Get('stats/profit-last-30-days')
+    async getProfitLast30Days(@Request() req) {
+        const userId = req.user.userId;
+        const profit = await this.transactionsService.getProfitLast30Days(userId);
+        return { profit };
     }
 
     @Put(':id')

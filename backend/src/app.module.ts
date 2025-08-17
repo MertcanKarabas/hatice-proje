@@ -10,6 +10,8 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { TransactionsModule } from './transactions/transactions.module';
 import { CustomersController } from './customers/customers.controller';
 import { CustomersModule } from './customers/customers.module';
+import { CurrencyModule } from './currency/currency.module';
+import { CurrencyController } from './currency/currency.controller';
 
 @Module({
   imports: [ProductsModule, AuthModule, UserModule, PrismaModule, TransactionsModule, ConfigModule.forRoot({
@@ -19,8 +21,8 @@ import { CustomersModule } from './customers/customers.module';
       ttl: 60,
       limit: 10
     }]
-  }), TransactionsModule, CustomersModule],
-  controllers: [AppController, CustomersController],
+  }), TransactionsModule, CustomersModule, CurrencyModule],
+  controllers: [AppController, CustomersController, CurrencyController],
   providers: [AppService],
 })
 export class AppModule { }

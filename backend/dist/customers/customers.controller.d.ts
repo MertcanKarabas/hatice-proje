@@ -78,6 +78,7 @@ export declare class CustomersController {
         dueDate: Date | null;
         vatRate: number | null;
         currency: string | null;
+        profit: import("generated/prisma/runtime/library").Decimal | null;
     }>;
     getTransactions(req: any, id: string): Promise<{
         id: string;
@@ -94,5 +95,6 @@ export declare class CustomersController {
         dueDate: Date | null;
         vatRate: number | null;
         currency: string | null;
+        profit: import("generated/prisma/runtime/library").Decimal | null;
     }[]>;
 }

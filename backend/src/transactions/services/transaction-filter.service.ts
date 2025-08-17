@@ -4,7 +4,7 @@ import { Prisma, TransactionType } from 'generated/prisma';
 
 @Injectable()
 export class TransactionFilterService implements ITransactionFilterService {
-  async buildWhereClause(userId: string, field?: string, operator?: string, value?: string): Promise<Prisma.TransactionWhereInput> {
+  async buildWhereClause(userId: string, field?: string, operator?: string, value?: string, endValue?: string): Promise<Prisma.TransactionWhereInput> {
     const where: Prisma.TransactionWhereInput = { userId };
 
     console.log('Received field:', field);
@@ -25,7 +25,7 @@ export class TransactionFilterService implements ITransactionFilterService {
     }
 
     const allowedFields = ['customer.commercialTitle', 'type', 'createdAt', 'finalAmount'];
-    const allowedOperators = ['contains', 'equals', 'gt', 'lt'];
+    const allowedOperators = ['contains', 'equals', 'gt', 'lt', 'between'];
 
     if (!allowedFields.includes(field) || !allowedOperators.includes(operator)) {
       throw new BadRequestException('Geçersiz filtre');
@@ -50,22 +50,39 @@ export class TransactionFilterService implements ITransactionFilterService {
         }
         where.type = value as TransactionType;
     } else if (field === 'createdAt') {
-        const dateValue = new Date(value);
-        if (isNaN(dateValue.getTime())) {
+        // value is expected to be in 'YYYY-MM-DD' format from the frontend
+        const startDate = new Date(`${value}T00:00:00.000Z`);
+        if (isNaN(startDate.getTime())) {
             throw new BadRequestException('Geçersiz tarih formatı.');
         }
+
         switch (operator) {
             case 'equals':
+                const endDate = new Date(startDate);
+                endDate.setDate(endDate.getDate() + 1);
                 where.createdAt = {
-                    gte: new Date(dateValue.setHours(0, 0, 0, 0)),
-                    lt: new Date(dateValue.setHours(23, 59, 59, 999))
+                    gte: startDate,
+                    lt: endDate
                 };
                 break;
             case 'gt':
-                where.createdAt = { gt: dateValue };
+                where.createdAt = { gt: startDate };
                 break;
             case 'lt':
-                where.createdAt = { lt: dateValue };
+                where.createdAt = { lt: startDate };
+                break;
+            case 'between':
+                if (!endValue) {
+                    throw new BadRequestException('Bitiş tarihi gerekli.');
+                }
+                const endDateValue = new Date(`${endValue}T23:59:59.999Z`);
+                if (isNaN(endDateValue.getTime())) {
+                    throw new BadRequestException('Geçersiz bitiş tarihi formatı.');
+                }
+                where.createdAt = {
+                    gte: startDate,
+                    lte: endDateValue,
+                };
                 break;
         }
     } else if (field === 'finalAmount') {

@@ -1,0 +1,16 @@
+-- AlterTable
+ALTER TABLE "Discount" ALTER COLUMN "amount" SET DATA TYPE DECIMAL(18,2);
+
+-- AlterTable
+ALTER TABLE "Payment" ALTER COLUMN "amount" SET DATA TYPE DECIMAL(18,2);
+
+-- AlterTable
+ALTER TABLE "Product" ALTER COLUMN "price" SET DATA TYPE DECIMAL(18,2);
+
+-- AlterTable
+ALTER TABLE "Transaction" ALTER COLUMN "totalAmount" SET DATA TYPE DECIMAL(18,2),
+ALTER COLUMN "discountAmount" SET DATA TYPE DECIMAL(18,2),
+ALTER COLUMN "finalAmount" SET DATA TYPE DECIMAL(18,2);
+
+-- AlterTable
+ALTER TABLE "TransactionItem" ALTER COLUMN "price" SET DATA TYPE DECIMAL(18,2);

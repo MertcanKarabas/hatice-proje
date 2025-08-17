@@ -31,7 +31,7 @@ let TransactionsService = class TransactionsService {
         return this.prisma.$transaction(async (prisma) => {
             var _a;
             const { type, discountAmount = 0, items, customerId, invoiceDate, dueDate, vatRate, currency } = dto;
-            if (type === 'SALE' || type === 'PURCHASE') {
+            if (type === 'SALE') {
                 for (const item of items) {
                     const stock = await prisma.stock.findFirst({ where: { productId: item.productId, userId } });
                     if (!stock || stock.quantity < item.quantity) {
@@ -42,6 +42,26 @@ let TransactionsService = class TransactionsService {
             }
             const totalAmount = new prisma_1.Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
             const finalAmount = new prisma_1.Prisma.Decimal(totalAmount.minus(discountAmount));
+            let profit = new prisma_1.Prisma.Decimal(0);
+            if (type === 'SALE') {
+                for (const item of items) {
+                    const product = await prisma.product.findUnique({ where: { id: item.productId } });
+                    if (!product) {
+                        throw new common_1.NotFoundException(`Product with ID ${item.productId} not found.`);
+                    }
+                    const itemProfit = new prisma_1.Prisma.Decimal(item.price).minus(product.price).times(item.quantity);
+                    if (product.currency === 'TRY') {
+                        profit = profit.plus(itemProfit);
+                    }
+                    else {
+                        const exchangeRate = await prisma.exchange.findUnique({ where: { code: product.currency } });
+                        if (!exchangeRate) {
+                            throw new common_1.NotFoundException(`Exchange rate for ${product.currency} not found.`);
+                        }
+                        profit = profit.plus(itemProfit.times(exchangeRate.rate));
+                    }
+                }
+            }
             const transaction = await prisma.transaction.create({
                 data: {
                     userId,
@@ -50,6 +70,7 @@ let TransactionsService = class TransactionsService {
                     totalAmount,
                     discountAmount: new prisma_1.Prisma.Decimal(discountAmount),
                     finalAmount,
+                    profit: type === 'SALE' ? profit : null,
                     invoiceDate: invoiceDate ? new Date(invoiceDate) : null,
                     dueDate: dueDate ? new Date(dueDate) : null,
                     vatRate,
@@ -72,6 +93,14 @@ let TransactionsService = class TransactionsService {
                         await this.stockService.updateStock(userId, item.productId, item.quantity, type);
                     }
                 }
+                if (type === 'PURCHASE') {
+                    for (const item of items) {
+                        await prisma.product.update({
+                            where: { id: item.productId },
+                            data: { price: item.price },
+                        });
+                    }
+                }
             }
             if (customerId) {
                 const customer = await prisma.customer.findUnique({ where: { id: customerId } });
@@ -89,12 +118,30 @@ let TransactionsService = class TransactionsService {
             return transaction;
         });
     }
-    async getTransactionsByUser(userId, field, operator, value) {
-        const whereClause = await this.transactionFilterService.buildWhereClause(userId, field, operator, value);
+    async getTransactionsByUser(userId, field, operator, value, endValue) {
+        const whereClause = await this.transactionFilterService.buildWhereClause(userId, field, operator, value, endValue);
         return this.transactionRepository.getTransactionsByUser(whereClause);
     }
     async getTransactionById(userId, transactionId) {
         return this.transactionRepository.getTransactionById(userId, transactionId);
+    }
+    async getProfitLast30Days(userId) {
+        var _a;
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const result = await this.prisma.transaction.aggregate({
+            _sum: {
+                profit: true,
+            },
+            where: {
+                userId,
+                type: 'SALE',
+                createdAt: {
+                    gte: thirtyDaysAgo,
+                },
+            },
+        });
+        return (_a = result._sum.profit) !== null && _a !== void 0 ? _a : new prisma_1.Prisma.Decimal(0);
     }
     async updateTransaction(userId, transactionId, dto) {
         return this.prisma.$transaction(async (prisma) => {
@@ -125,7 +172,7 @@ let TransactionsService = class TransactionsService {
                 }
             }
             const { type, discountAmount = 0, items, invoiceDate, dueDate, vatRate, currency } = dto;
-            if (type === 'SALE' || type === 'PURCHASE') {
+            if (type === 'SALE') {
                 for (const item of items) {
                     const stock = await prisma.stock.findFirst({ where: { productId: item.productId, userId } });
                     if (!stock || stock.quantity < item.quantity) {
@@ -136,6 +183,26 @@ let TransactionsService = class TransactionsService {
             }
             const totalAmount = new prisma_1.Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
             const finalAmount = new prisma_1.Prisma.Decimal(totalAmount.minus(discountAmount));
+            let profit = new prisma_1.Prisma.Decimal(0);
+            if (type === 'SALE') {
+                for (const item of items) {
+                    const product = await prisma.product.findUnique({ where: { id: item.productId } });
+                    if (!product) {
+                        throw new common_1.NotFoundException(`Product with ID ${item.productId} not found.`);
+                    }
+                    const itemProfit = new prisma_1.Prisma.Decimal(item.price).minus(product.price).times(item.quantity);
+                    if (product.currency === 'TRY') {
+                        profit = profit.plus(itemProfit);
+                    }
+                    else {
+                        const exchangeRate = await prisma.exchange.findUnique({ where: { code: product.currency } });
+                        if (!exchangeRate) {
+                            throw new common_1.NotFoundException(`Exchange rate for ${product.currency} not found.`);
+                        }
+                        profit = profit.plus(itemProfit.times(exchangeRate.rate));
+                    }
+                }
+            }
             await prisma.transactionItem.deleteMany({ where: { transactionId } });
             if (items && items.length > 0) {
                 await prisma.transactionItem.createMany({
@@ -154,6 +221,14 @@ let TransactionsService = class TransactionsService {
                     await this.stockService.updateStock(userId, item.productId, item.quantity, type);
                 }
             }
+            if (type === 'PURCHASE') {
+                for (const item of items) {
+                    await prisma.product.update({
+                        where: { id: item.productId },
+                        data: { price: item.price },
+                    });
+                }
+            }
             const updatedTransaction = await prisma.transaction.update({
                 where: { id: transactionId },
                 data: {
@@ -161,6 +236,7 @@ let TransactionsService = class TransactionsService {
                     totalAmount,
                     discountAmount: new prisma_1.Prisma.Decimal(discountAmount),
                     finalAmount,
+                    profit: type === 'SALE' ? profit : null,
                     invoiceDate: invoiceDate ? new Date(invoiceDate) : null,
                     dueDate: dueDate ? new Date(dueDate) : null,
                     vatRate,

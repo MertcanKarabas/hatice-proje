@@ -18,3 +18,8 @@ export const getTransactions = async () => {
     console.log('getTransactions raw data from axiosClient:', data);
     return data;
 };
+
+export const getProfitLast30Days = async () => {
+    const data = await axiosClient.get<{ profit: number }>('/transactions/stats/profit-last-30-days');
+    return data;
+};

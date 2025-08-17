@@ -68,6 +68,7 @@ const CustomerTransactions: React.FC = () => {
                             <TableCell>Toplam Tutar</TableCell>
                             <TableCell>İndirim Tutarı</TableCell>
                             <TableCell>Son Tutar</TableCell>
+                            <TableCell>Kar</TableCell>
                             <TableCell>Tarih</TableCell>
                             <TableCell>Detaylar</TableCell>
                         </TableRow>
@@ -79,6 +80,7 @@ const CustomerTransactions: React.FC = () => {
                                 <TableCell>{transaction.totalAmount}</TableCell>
                                 <TableCell>{transaction.discountAmount}</TableCell>
                                 <TableCell>{transaction.finalAmount}</TableCell>
+                                <TableCell>{transaction.type === 'SALE' ? Number(transaction.profit ?? 0).toFixed(2) : '-'}</TableCell>
                                 <TableCell>{new Date(transaction.createdAt).toLocaleDateString()}</TableCell>
                                 <TableCell>
                                     <Button variant="outlined" size="small" onClick={() => handleViewDetails(transaction.id)}>

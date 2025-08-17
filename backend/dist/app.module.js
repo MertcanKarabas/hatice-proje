@@ -19,6 +19,8 @@ const throttler_1 = require("@nestjs/throttler");
 const transactions_module_1 = require("./transactions/transactions.module");
 const customers_controller_1 = require("./customers/customers.controller");
 const customers_module_1 = require("./customers/customers.module");
+const currency_module_1 = require("./currency/currency.module");
+const currency_controller_1 = require("./currency/currency.controller");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -31,8 +33,8 @@ exports.AppModule = AppModule = __decorate([
                         ttl: 60,
                         limit: 10
                     }]
-            }), transactions_module_1.TransactionsModule, customers_module_1.CustomersModule],
-        controllers: [app_controller_1.AppController, customers_controller_1.CustomersController],
+            }), transactions_module_1.TransactionsModule, customers_module_1.CustomersModule, currency_module_1.CurrencyModule],
+        controllers: [app_controller_1.AppController, customers_controller_1.CustomersController, currency_controller_1.CurrencyController],
         providers: [app_service_1.AppService],
     })
 ], AppModule);

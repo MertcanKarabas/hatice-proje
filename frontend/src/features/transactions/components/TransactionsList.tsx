@@ -19,9 +19,16 @@ import type { Transaction } from '../../../types';
 import { localizeTransactionType } from '../services/localization.service';
 import TransactionFilter from './TransactionFilter';
 
+interface FilterState {
+    field: string;
+    operator: string;
+    value: string;
+    endValue?: string;
+}
+
 const TransactionsList: React.FC = () => {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
-    const [filter, setFilter] = useState<{ field: string; operator: string; value: string }>({ 
+    const [filter, setFilter] = useState<FilterState>({
         field: 'customer.commercialTitle',
         operator: 'contains',
         value: '',
@@ -30,7 +37,15 @@ const TransactionsList: React.FC = () => {
 
     const applyFilter = async () => {
         console.log('Applying filter with state:', filter);
-        const response = await getTransactions(axiosClient, filter);
+        const params: Record<string, string> = {
+            field: filter.field,
+            operator: filter.operator,
+            value: filter.value,
+        };
+        if (filter.operator === 'between' && filter.endValue) {
+            params.endValue = filter.endValue;
+        }
+        const response = await getTransactions(axiosClient, params);
         setTransactions(response);
     };
 
@@ -66,6 +81,7 @@ const TransactionsList: React.FC = () => {
                             <TableCell>İşlem Tipi</TableCell>
                             <TableCell>Toplam Tutar</TableCell>
                             <TableCell>Son Tutar</TableCell>
+                            <TableCell>Kar</TableCell>
                             <TableCell>Tarih</TableCell>
                             <TableCell>İşlemler</TableCell>
                         </TableRow>
@@ -78,6 +94,7 @@ const TransactionsList: React.FC = () => {
                                 <TableCell>{localizeTransactionType(transaction.type)}</TableCell>
                                 <TableCell>{Number(transaction.totalAmount).toFixed(2)}</TableCell>
                                 <TableCell>{Number(transaction.finalAmount).toFixed(2)}</TableCell>
+                                <TableCell>{transaction.type === 'SALE' ? Number(transaction.profit ?? 0).toFixed(2) : '-'}</TableCell>
                                 <TableCell>{new Date(transaction.createdAt).toLocaleDateString()}</TableCell>
                                 <TableCell>
                                     <Button variant="outlined" size="small" onClick={() => handleViewDetails(transaction.id)}>

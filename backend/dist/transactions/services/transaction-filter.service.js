@@ -10,7 +10,7 @@ exports.TransactionFilterService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_1 = require("../../../generated/prisma/index.js");
 let TransactionFilterService = class TransactionFilterService {
-    async buildWhereClause(userId, field, operator, value) {
+    async buildWhereClause(userId, field, operator, value, endValue) {
         const where = { userId };
         console.log('Received field:', field);
         console.log('Received operator:', operator);
@@ -28,7 +28,7 @@ let TransactionFilterService = class TransactionFilterService {
             return where;
         }
         const allowedFields = ['customer.commercialTitle', 'type', 'createdAt', 'finalAmount'];
-        const allowedOperators = ['contains', 'equals', 'gt', 'lt'];
+        const allowedOperators = ['contains', 'equals', 'gt', 'lt', 'between'];
         if (!allowedFields.includes(field) || !allowedOperators.includes(operator)) {
             throw new common_1.BadRequestException('Geçersiz filtre');
         }
@@ -53,22 +53,37 @@ let TransactionFilterService = class TransactionFilterService {
             where.type = value;
         }
         else if (field === 'createdAt') {
-            const dateValue = new Date(value);
-            if (isNaN(dateValue.getTime())) {
+            const startDate = new Date(`${value}T00:00:00.000Z`);
+            if (isNaN(startDate.getTime())) {
                 throw new common_1.BadRequestException('Geçersiz tarih formatı.');
             }
             switch (operator) {
                 case 'equals':
+                    const endDate = new Date(startDate);
+                    endDate.setDate(endDate.getDate() + 1);
                     where.createdAt = {
-                        gte: new Date(dateValue.setHours(0, 0, 0, 0)),
-                        lt: new Date(dateValue.setHours(23, 59, 59, 999))
+                        gte: startDate,
+                        lt: endDate
                     };
                     break;
                 case 'gt':
-                    where.createdAt = { gt: dateValue };
+                    where.createdAt = { gt: startDate };
                     break;
                 case 'lt':
-                    where.createdAt = { lt: dateValue };
+                    where.createdAt = { lt: startDate };
+                    break;
+                case 'between':
+                    if (!endValue) {
+                        throw new common_1.BadRequestException('Bitiş tarihi gerekli.');
+                    }
+                    const endDateValue = new Date(`${endValue}T23:59:59.999Z`);
+                    if (isNaN(endDateValue.getTime())) {
+                        throw new common_1.BadRequestException('Geçersiz bitiş tarihi formatı.');
+                    }
+                    where.createdAt = {
+                        gte: startDate,
+                        lte: endDateValue,
+                    };
                     break;
             }
         }

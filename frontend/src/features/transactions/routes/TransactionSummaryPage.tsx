@@ -85,14 +85,14 @@ const TransactionSummaryPage: React.FC = () => {
             type,
             invoiceDate,
             dueDate,
-            vatRate,
+            vatRate: Number(vatRate),
             currency,
             items: items?.map(item => ({
                 productId: item.productId,
                 quantity: item.quantity,
                 price: Number(item.price),
                 unit: item.unit,
-                vatRate: item.vatRate,
+                vatRate: Number(item.vatRate),
             })) || [],
             discountAmount: discountAmount ?? 0,
         };

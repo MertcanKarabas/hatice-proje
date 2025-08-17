@@ -7,6 +7,13 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { tr } from 'date-fns/locale';
 import { DatePicker } from '@mui/x-date-pickers';
 
+const formatDateForApi = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
 const fields = [
     { value: 'customer.commercialTitle', label: 'Müşteri Adı', type: 'string' },
     { value: 'type', label: 'İşlem Tipi', type: 'enum' },
@@ -29,6 +36,7 @@ const dateOperators = [
     { value: 'equals', label: 'Eşittir' },
     { value: 'gt', label: 'Sonra' },
     { value: 'lt', label: 'Önce' },
+    { value: 'between', label: 'Arasında' },
 ];
 
 const transactionTypeOptions = [
@@ -42,6 +50,7 @@ interface Filter {
     field: string;
     operator: string;
     value: string;
+    endValue?: string;
 }
 
 interface Props {
@@ -97,13 +106,35 @@ const TransactionFilter: React.FC<Props> = ({ filter, setFilter, onApply }) => {
                     />
                 );
             case 'date':
+                if (filter.operator === 'between') {
+                    return (
+                        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={tr}>
+                            <DatePicker
+                                label="Başlangıç Tarihi"
+                                value={filter.value ? new Date(filter.value) : null}
+                                onChange={(date: Date | null) => {
+                                    setFilter({ ...filter, value: date ? formatDateForApi(date) : '' });
+                                }}
+                                slotProps={{ textField: { size: 'small' } }}
+                            />
+                            <DatePicker
+                                label="Bitiş Tarihi"
+                                value={filter.endValue ? new Date(filter.endValue) : null}
+                                onChange={(date: Date | null) => {
+                                    setFilter({ ...filter, endValue: date ? formatDateForApi(date) : '' });
+                                }}
+                                slotProps={{ textField: { size: 'small' } }}
+                            />
+                        </LocalizationProvider>
+                    );
+                }
                 return (
                     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={tr}>
                         <DatePicker
                             label="Tarih"
                             value={filter.value ? new Date(filter.value) : null}
                             onChange={(date: Date | null) => {
-                                setFilter({ ...filter, value: date ? date.toISOString() : '' });
+                                setFilter({ ...filter, value: date ? formatDateForApi(date) : '' });
                             }}
                             slotProps={{ textField: { size: 'small' } }}
                         />

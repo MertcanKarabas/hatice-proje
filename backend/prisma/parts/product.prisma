@@ -18,7 +18,7 @@ model Product {
   description        String?
   sku                String             @unique
   barcode            String?            @unique
-  price              Decimal            @db.Decimal(10, 2)
+  price               Decimal            @db.Decimal(18, 2)
   transactionItems   TransactionItem[]
   quantity           Float              @default(0)
   unit               ProductUnit        @default(ADET)
