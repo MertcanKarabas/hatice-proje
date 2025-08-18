@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../../store/store';
 import { Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box } from '@mui/material';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { generateTransactionSummaryPdf } from '../../../utils/transactionSummaryPdfGenerator';
 import { getCustomers } from '../../customers/services/customerService';
 import axiosClient from '../../../services/axiosClient';
 import type { Customer } from '../../../types';
@@ -30,55 +29,52 @@ const TransactionSummaryPage: React.FC = () => {
     }, [transactionInfo.customerId]);
 
     const totalVat = transactionInfo.items?.reduce((acc, item) => acc + (Number(item.price) * item.quantity * item.vatRate / 100), 0) ?? 0;
-    const grandTotal = transactionInfo.items?.reduce((acc, item) => acc + item.total, 0) ?? 0;
+    const grandTotal = transactionInfo.items?.reduce((acc, item) => acc + (item.total ?? 0), 0) ?? 0;
 
-    const generatePdf = () => {
-        const doc = new jsPDF();
-        const title = transactionInfo.type === 'SALE' ? 'Satış Özeti' : 'Alış Özeti';
-        doc.text(title, 14, 16);
+    const generatePdf = async() => {
+        if (!customer) return;
 
-        const tableColumn = ["Ürün Adı", "Miktar", "Birim", "Birim Fiyat", "KDV Oranı", "KDV Tutarı", "Toplam"];
-        const tableRows: any[] = [];
-
-        transactionInfo.items?.forEach(item => {
-            const product = transactionInfo.products?.find(p => p.id === item.productId);
-            const vatAmount = Number(item.price) * item.quantity * item.vatRate / 100;
-            const itemData = [
-                product?.name ?? 'N/A',
-                item.quantity,
-                item.unit,
-                Number(item.price).toFixed(2),
-                `%${item.vatRate}`,
-                vatAmount.toFixed(2),
-                item.total.toFixed(2),
-            ];
-            tableRows.push(itemData);
+        const itemsWithCalculatedTotal = transactionInfo.items.map(item => {
+            const productTotalPrice = Number(item.price) * item.quantity;
+            const vatAmount = productTotalPrice * (item.vatRate / 100);
+            return {
+                ...item,
+                total: productTotalPrice + vatAmount,
+            };
         });
 
-        autoTable(doc, {
-            head: [tableColumn],
-            body: tableRows,
-            startY: 20,
-            headStyles: { fillColor: [100, 100, 100] },
-            footStyles: { fillColor: [100, 100, 100] },
-            bodyStyles: { fillColor: [240, 240, 240] },
-            alternateRowStyles: { fillColor: [255, 255, 255] },
+        const totalVat = itemsWithCalculatedTotal.reduce((acc, item) => {
+            const productTotalPrice = Number(item.price) * item.quantity;
+            return acc + (productTotalPrice * (item.vatRate / 100));
+        }, 0);
+        const grandTotal = itemsWithCalculatedTotal.reduce((acc, item) => acc + item.total, 0);
+        const products = transactionInfo.products;
+
+        const customerNewBalance = Number(customer.balance);
+        let customerPreviousBalance = customerNewBalance;
+
+        if (transactionInfo.type === 'SALE' || transactionInfo.type === 'COLLECTION') {
+            customerPreviousBalance = customerNewBalance - Number(grandTotal);
+        } else if (transactionInfo.type === 'PURCHASE' || transactionInfo.type === 'PAYMENT') {
+            customerPreviousBalance = customerNewBalance + Number(grandTotal);
+        }
+
+        await generateTransactionSummaryPdf({
+            type: transactionInfo.type,
+            items: itemsWithCalculatedTotal,
+            products,
+            customerCommercialTitle: customer?.commercialTitle,
+            invoiceDate: transactionInfo.invoiceDate,
+            dueDate: transactionInfo.dueDate,
+            totalVat,
+            grandTotal,
+            customerPreviousBalance,
+            customerNewBalance,
         });
-
-        const finalY = (doc as any).lastAutoTable.finalY;
-        doc.text(`Müşteri: ${customer?.commercialTitle || 'N/A'}`, 14, finalY + 10);
-        doc.text(`Fatura Tarihi: ${new Date(transactionInfo.invoiceDate).toLocaleDateString()}`, 14, finalY + 20);
-        doc.text(`Vade Tarihi: ${transactionInfo.dueDate ? new Date(transactionInfo.dueDate).toLocaleDateString() : 'N/A'}`, 14, finalY + 30);
-        doc.text(`Toplam KDV: ${totalVat.toFixed(2)}`, 14, finalY + 40);
-        doc.text(`Genel Toplam: ${grandTotal.toFixed(2)}`, 14, finalY + 50);
-
-        doc.save('siparis_ozeti.pdf');
     };
 
     const handleSaveTransaction = async () => {
         const { customerId, type, items, invoiceDate, dueDate, vatRate, currency, discountAmount } = transactionInfo;
-        const totalAmount = items?.reduce((sum, item) => sum + (Number(item.price) * item.quantity), 0) ?? 0;
-        const finalAmount = grandTotal;
 
         const transactionData = {
             customerId,
@@ -99,7 +95,7 @@ const TransactionSummaryPage: React.FC = () => {
 
         try {
             await createTransaction(axiosClient, transactionData);
-            generatePdf();
+            await generatePdf();
             dispatch(resetTransaction());
             void navigate('/');
         } catch (error) {
@@ -126,7 +122,9 @@ const TransactionSummaryPage: React.FC = () => {
                     <TableBody>
                         {transactionInfo.items?.map((item, index) => {
                             const product = transactionInfo.products?.find(p => p.id === item.productId);
-                            const vatAmount = Number(item.price) * item.quantity * item.vatRate / 100;
+                            const productTotalPrice = Number(item.price) * item.quantity;
+                            const vatAmount = productTotalPrice * (item.vatRate / 100);
+                            const total = productTotalPrice + vatAmount;
                             return (
                                 <TableRow key={index}>
                                     <TableCell>{product?.name ?? 'N/A'}</TableCell>
@@ -135,7 +133,7 @@ const TransactionSummaryPage: React.FC = () => {
                                     <TableCell>{Number(item.price).toFixed(2)}</TableCell>
                                     <TableCell>{item.vatRate}%</TableCell>
                                     <TableCell>{vatAmount.toFixed(2)}</TableCell>
-                                    <TableCell>{item.total.toFixed(2)}</TableCell>
+                                    <TableCell>{total.toFixed(2)}</TableCell>
                                 </TableRow>
                             );
                         })}

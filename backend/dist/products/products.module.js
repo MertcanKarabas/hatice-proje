@@ -15,6 +15,7 @@ const prisma_service_1 = require("../prisma/prisma.service");
 const product_filter_service_1 = require("./services/product-filter.service");
 const product_repository_interface_1 = require("../common/interfaces/product.repository.interface");
 const product_filter_service_interface_1 = require("./interfaces/product-filter.service.interface");
+const product_stock_service_1 = require("./services/product-stock.service");
 let ProductsModule = class ProductsModule {
 };
 exports.ProductsModule = ProductsModule;
@@ -24,6 +25,7 @@ exports.ProductsModule = ProductsModule = __decorate([
         providers: [
             products_service_1.ProductsService,
             prisma_service_1.PrismaService,
+            product_stock_service_1.ProductStockService,
             {
                 provide: product_repository_interface_1.IProductRepository,
                 useClass: product_repository_1.ProductRepository,

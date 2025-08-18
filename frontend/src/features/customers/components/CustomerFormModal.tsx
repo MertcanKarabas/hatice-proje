@@ -78,7 +78,7 @@ const CustomerFormModal: React.FC<Props> = ({ open, onClose, onCustomerSaved, in
                 <DialogContent>
                     <Grid container spacing={2} sx={{ mt: 1 }}>
                         {error ? <FeedbackAlert severity='error' text={String(error)} /> : <></>}
-                        <Grid item xs={12}> {/* Changed size to item xs={12} for consistency with MUI Grid */}
+                        <Grid item xs={12}>
                             <TextField required label="Ticari Ünvan" {...register('commercialTitle', { required: true })} fullWidth />
                         </Grid>
                         <Grid item xs={12}>

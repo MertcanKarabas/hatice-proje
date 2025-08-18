@@ -1,42 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
     Button, Container, Typography
 } from '@mui/material';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
-import { getProducts, deleteProduct } from '../services/productService';
-import axiosClient from '../../../services/axiosClient';
 import ProductFormDialog from './ProductFormDialog';
 import ProductFilter from './FilterOperators';
 import type { Product } from '../../../types';
+import { useProducts } from '../hooks/useProducts';
 
 const Products: React.FC = () => {
-    const [products, setProducts] = useState<Product[]>([]);
     const [open, setOpen] = useState(false);
     const [selected, setSelected] = useState<Product | null>(null);
-    const [filter, setFilter] = useState<{ field: string; operator: string; value: string | number }>({ 
+
+    const {
+        products,
+        filter,
+        setFilter,
+        fetchProducts,
+        handleDelete,
+    } = useProducts({
         field: 'name',
         operator: 'contains',
         value: '',
     });
-
-    const applyFilter = async () => {
-        const res = await getProducts(axiosClient, {
-            field: filter.field,
-            operator: filter.operator,
-            value: filter.value,
-        });
-
-        setProducts(res.data);
-    };
-
-    const fetchProducts = async () => {
-        const res = await getProducts(axiosClient);
-        setProducts(res.data);
-    };
-
-    useEffect(() => {
-        void fetchProducts();
-    }, []);
 
     const columns: GridColDef<Product>[] = [
         { field: 'name', headerName: 'Adı', flex: 1 },
@@ -65,20 +51,13 @@ const Products: React.FC = () => {
         setOpen(true);
     };
 
-    const handleDelete = async (id: string) => {
-        await deleteProduct(axiosClient, id);
-        void fetchProducts();
-    };
-
     return (
         <Container maxWidth="xl">
             <Typography variant="h4" gutterBottom>Ürünler</Typography>
             <Button variant="contained" onClick={() => { setSelected(null); setOpen(true); }}>
                 Ürün Ekle
             </Button>
-            <ProductFilter filter={filter} setFilter={setFilter} onApply={() => {
-                void applyFilter();
-            }} />
+            <ProductFilter filter={filter} setFilter={setFilter} onApply={fetchProducts} />
 
             <div style={{ height: 400, marginTop: 20 }}>
                 <DataGrid

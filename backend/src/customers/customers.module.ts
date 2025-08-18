@@ -8,6 +8,7 @@ import { ITransactionRepository } from 'src/common/interfaces/transaction.reposi
 import { TransactionRepository } from 'src/transactions/repositories/transaction.repository';
 import { ICustomerFilterService } from './interfaces/customer-filter.service.interface';
 import { CustomerFilterService } from './services/customer-filter.service';
+import { PaymentCollectionService } from './services/payment-collection.service';
 
 @Module({
     providers: [
@@ -17,14 +18,15 @@ import { CustomerFilterService } from './services/customer-filter.service';
             provide: ICustomerRepository,
             useClass: CustomerRepository,
         },
-        {
+        { // This is needed because PaymentCollectionService depends on it
             provide: ITransactionRepository,
             useClass: TransactionRepository,
         },
-        {
+        { // This is needed because PaymentCollectionService depends on it
             provide: ICustomerFilterService,
             useClass: CustomerFilterService,
         },
+        PaymentCollectionService,
     ],
     controllers: [CustomersController],
     exports: [CustomersService],

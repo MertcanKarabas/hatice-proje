@@ -6,6 +6,7 @@ import { ProductFilterService } from './services/product-filter.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { IProductRepository } from 'src/common/interfaces/product.repository.interface';
 import { IProductFilterService } from './interfaces/product-filter.service.interface';
+import { ProductStockService } from './services/product-stock.service';
 
 describe('ProductsController', () => {
   let controller: ProductsController;
@@ -17,6 +18,7 @@ describe('ProductsController', () => {
       providers: [
         ProductsService,
         PrismaService,
+        ProductStockService,
         {
           provide: IProductRepository,
           useClass: ProductRepository,

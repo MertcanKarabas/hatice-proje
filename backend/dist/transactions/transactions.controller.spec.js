@@ -12,6 +12,11 @@ const stock_repository_1 = require("../stock/repositories/stock.repository");
 const transaction_repository_interface_1 = require("../common/interfaces/transaction.repository.interface");
 const transaction_item_repository_interface_1 = require("../common/interfaces/transaction-item.repository.interface");
 const stock_repository_interface_1 = require("../common/interfaces/stock.repository.interface");
+const transaction_filter_service_interface_1 = require("./interfaces/transaction-filter.service.interface");
+const transaction_filter_service_1 = require("./services/transaction-filter.service");
+const transaction_stock_service_1 = require("./services/transaction-stock.service");
+const customer_balance_service_1 = require("./services/customer-balance.service");
+const profit_calculation_service_1 = require("./services/profit-calculation.service");
 describe('TransactionsController', () => {
     let controller;
     let service;
@@ -35,6 +40,13 @@ describe('TransactionsController', () => {
                     provide: stock_repository_interface_1.IStockRepository,
                     useClass: stock_repository_1.StockRepository,
                 },
+                {
+                    provide: transaction_filter_service_interface_1.ITransactionFilterService,
+                    useClass: transaction_filter_service_1.TransactionFilterService,
+                },
+                transaction_stock_service_1.TransactionStockService,
+                customer_balance_service_1.CustomerBalanceService,
+                profit_calculation_service_1.ProfitCalculationService,
             ],
         }).compile();
         controller = module.get(transactions_controller_1.TransactionsController);

@@ -17,6 +17,7 @@ const transaction_repository_interface_1 = require("../common/interfaces/transac
 const transaction_repository_1 = require("../transactions/repositories/transaction.repository");
 const customer_filter_service_interface_1 = require("./interfaces/customer-filter.service.interface");
 const customer_filter_service_1 = require("./services/customer-filter.service");
+const payment_collection_service_1 = require("./services/payment-collection.service");
 let CustomersModule = class CustomersModule {
 };
 exports.CustomersModule = CustomersModule;
@@ -37,6 +38,7 @@ exports.CustomersModule = CustomersModule = __decorate([
                 provide: customer_filter_service_interface_1.ICustomerFilterService,
                 useClass: customer_filter_service_1.CustomerFilterService,
             },
+            payment_collection_service_1.PaymentCollectionService,
         ],
         controllers: [customers_controller_1.CustomersController],
         exports: [customers_service_1.CustomersService],

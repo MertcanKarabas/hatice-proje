@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { Controller, useForm } from 'react-hook-form';
 import {
     Container,
@@ -10,50 +10,34 @@ import {
     Grid,
     Box
 } from '@mui/material';
-import { getCustomers } from '../services/customerService';
-import axiosClient from '../../../services/axiosClient';
-import type { Customer, CreatePaymentCollectionDtoFrontend } from '../../../types';
-import { createPaymentCollection } from '../services/customerService';
+import type { CreatePaymentCollectionDtoFrontend } from '../../../types';
 import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { tr } from 'date-fns/locale';
+import { useCustomerPaymentCollection } from '../hooks/useCustomerPaymentCollection';
 
 const CustomerPaymentCollection: React.FC = () => {
     const { customerId } = useParams<{ customerId: string }>();
-    const navigate = useNavigate();
     const { control, register, handleSubmit, setValue, formState: { errors } } = useForm<CreatePaymentCollectionDtoFrontend>();
-    const [customer, setCustomer] = useState<Customer | null>(null);
+    const { customer, loading, error, handleSubmit: handleHookSubmit } = useCustomerPaymentCollection(customerId);
 
     useEffect(() => {
-        const fetchCustomer = async () => {
-            if (customerId) {
-                try {
-                    const customers = await getCustomers(axiosClient);
-                    const foundCustomer = customers.find(c => c.id === customerId);
-                    setCustomer(foundCustomer ?? null);
-                    if (foundCustomer) {
-                        setValue('customerId', foundCustomer.id);
-                        setValue('date', new Date().toISOString());
-                    }
-                } catch (error) {
-                    console.error('Müşteri bilgileri getirilirken hata oluştu:', error);
-                }
-            }
-        };
-        void fetchCustomer();
-    }, [customerId, setValue]);
-
-    const onSubmit = async (data: CreatePaymentCollectionDtoFrontend) => {
-        try {
-            await createPaymentCollection(axiosClient, data);
-            await navigate(`/customers/${customerId}/transactions`); // Navigate back to customer transactions or customers list
-        } catch (error) {
-            console.error('İşlem kaydedilirken hata oluştu:', error);
+        if (customer) {
+            setValue('customerId', customer.id);
+            setValue('date', new Date().toISOString());
         }
-    };
+    }, [customer, setValue]);
+
+    if (loading) {
+        return <Typography>Yükleniyor...</Typography>;
+    }
+
+    if (error) {
+        return <Typography color="error">{error}</Typography>;
+    }
 
     if (!customer) {
-        return <Typography>Müşteri bulunamadı veya yükleniyor...</Typography>;
+        return <Typography>Müşteri bulunamadı.</Typography>;
     }
 
     return (
@@ -61,7 +45,7 @@ const CustomerPaymentCollection: React.FC = () => {
             <Typography variant="h4" component="h2" gutterBottom>
                 {customer.commercialTitle} için Tediye/Tahsilat İşlemi
             </Typography>
-            <Box component="form" onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} sx={{ mt: 3 }}>
+            <Box component="form" onSubmit={(e) => { void handleSubmit(handleHookSubmit)(e); }} sx={{ mt: 3 }}>
                 <Grid container spacing={3}>
                     <Grid size={{ xs: 12, sm: 20 }} component="div">
                         <TextField

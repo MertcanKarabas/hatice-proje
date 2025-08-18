@@ -6,12 +6,14 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ProductFilterService } from './services/product-filter.service';
 import { IProductRepository } from 'src/common/interfaces/product.repository.interface';
 import { IProductFilterService } from './interfaces/product-filter.service.interface';
+import { ProductStockService } from './services/product-stock.service';
 
 @Module({
   controllers: [ProductsController],
   providers: [
     ProductsService,
     PrismaService,
+    ProductStockService,
     {
       provide: IProductRepository,
       useClass: ProductRepository,
@@ -23,4 +25,3 @@ import { IProductFilterService } from './interfaces/product-filter.service.inter
   ]
 })
 export class ProductsModule {}
-

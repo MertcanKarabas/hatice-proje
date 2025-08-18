@@ -6,65 +6,65 @@ export declare class ProductsController {
     getMyProducts(field: string, operator: string, value: string, req: any): Promise<{
         message: string;
         data: {
+            quantity: number;
             name: string;
-            id: string;
-            userId: string;
-            currency: import("generated/prisma").$Enums.Currency;
             description: string | null;
+            currency: import("generated/prisma").$Enums.Currency;
+            unit: import("generated/prisma").$Enums.ProductUnit;
             sku: string;
             barcode: string | null;
             price: import("generated/prisma/runtime/library").Decimal;
-            quantity: number;
-            unit: import("generated/prisma").$Enums.ProductUnit;
             isPackage: boolean;
+            id: string;
+            userId: string;
         }[];
     }>;
     findOne(req: any, id: string): Promise<{
         message: string;
         data: {
+            quantity: number;
             name: string;
-            id: string;
-            userId: string;
-            currency: import("generated/prisma").$Enums.Currency;
             description: string | null;
+            currency: import("generated/prisma").$Enums.Currency;
+            unit: import("generated/prisma").$Enums.ProductUnit;
             sku: string;
             barcode: string | null;
             price: import("generated/prisma/runtime/library").Decimal;
-            quantity: number;
-            unit: import("generated/prisma").$Enums.ProductUnit;
             isPackage: boolean;
+            id: string;
+            userId: string;
         };
     }>;
     create(req: any, createProductDto: CreateProductDto): Promise<{
         message: string;
         data: {
+            quantity: number;
             name: string;
-            id: string;
-            userId: string;
-            currency: import("generated/prisma").$Enums.Currency;
             description: string | null;
+            currency: import("generated/prisma").$Enums.Currency;
+            unit: import("generated/prisma").$Enums.ProductUnit;
             sku: string;
             barcode: string | null;
             price: import("generated/prisma/runtime/library").Decimal;
-            quantity: number;
-            unit: import("generated/prisma").$Enums.ProductUnit;
             isPackage: boolean;
+            id: string;
+            userId: string;
         };
     }>;
     update(req: any, id: string, updateProductDto: CreateProductDto): Promise<{
         message: string;
         data: {
+            quantity: number;
             name: string;
-            id: string;
-            userId: string;
-            currency: import("generated/prisma").$Enums.Currency;
             description: string | null;
+            currency: import("generated/prisma").$Enums.Currency;
+            unit: import("generated/prisma").$Enums.ProductUnit;
             sku: string;
             barcode: string | null;
             price: import("generated/prisma/runtime/library").Decimal;
-            quantity: number;
-            unit: import("generated/prisma").$Enums.ProductUnit;
             isPackage: boolean;
+            id: string;
+            userId: string;
         };
     }>;
     remove(req: any, id: string): Promise<{

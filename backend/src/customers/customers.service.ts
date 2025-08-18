@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCustomerDto } from './dto/create-customer.dto';
-import { CreatePaymentCollectionDto, PaymentCollectionType } from './dto/create-payment-collection.dto';
+import { CreatePaymentCollectionDto } from './dto/create-payment-collection.dto';
 import { ICustomerRepository } from 'src/common/interfaces/customer.repository.interface';
 import { ITransactionRepository } from 'src/common/interfaces/transaction.repository.interface';
 import { ICustomerFilterService } from './interfaces/customer-filter.service.interface';
-import { Prisma, TransactionType } from 'generated/prisma';
+import { PaymentCollectionService } from './services/payment-collection.service';
 
 @Injectable()
 export class CustomersService {
@@ -12,6 +12,7 @@ export class CustomersService {
         private readonly customerRepository: ICustomerRepository,
         private readonly transactionRepository: ITransactionRepository,
         private readonly customerFilterService: ICustomerFilterService,
+        private readonly paymentCollectionService: PaymentCollectionService,
     ) { }
 
     async createCustomer(userId: string, dto: CreateCustomerDto) {
@@ -51,30 +52,6 @@ export class CustomersService {
     }
 
     async createPaymentCollection(userId: string, dto: CreatePaymentCollectionDto) {
-        const customer = await this.findOne(userId, dto.customerId);
-        const amount = new Prisma.Decimal(dto.amount);
-
-        const transactionType = dto.type === PaymentCollectionType.COLLECTION
-            ? TransactionType.COLLECTION
-            : TransactionType.PAYMENT;
-
-        // Update customer balance
-        const newBalance = dto.type === PaymentCollectionType.COLLECTION
-            ? customer.balance.minus(amount)
-            : customer.balance.plus(amount);
-        
-        await this.customerRepository.update(customer.id, { balance: newBalance });
-
-        // Create a transaction record
-        const transaction = await this.transactionRepository.create({
-            userId,
-            customerId: dto.customerId,
-            type: transactionType,
-            totalAmount: amount,
-            finalAmount: amount,
-            discountAmount: new Prisma.Decimal(0),
-        });
-
-        return transaction;
+        return this.paymentCollectionService.createPaymentCollection(userId, dto);
     }
 }

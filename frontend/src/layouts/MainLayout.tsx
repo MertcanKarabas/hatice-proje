@@ -7,7 +7,7 @@ const MainLayout: React.FC = () => {
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             <AppHeader /> {/* Add the header here */}
-            <Container component="main" sx={{ flexGrow: 1, p: 3 }}>
+            <Container component="main" sx={{ minWidth: '100%',  flexGrow: 1, p: 3 }}>
                 <Outlet />
             </Container>
         </Box>

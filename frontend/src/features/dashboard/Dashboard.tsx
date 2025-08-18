@@ -14,8 +14,9 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { AxiosError } from 'axios';
 import { getCustomers, getProducts, getTransactions, getProfitLast30Days } from '../../services/dashboard';
+import axiosClient from '../../services/axiosClient';
 import { localizeTransactionType } from '../transactions/services/localization.service';
-import type { Customer, Product, Transaction } from '../../../types';
+import type { Customer, Product, Transaction } from '../../types';
 
 interface RecentTransaction {
     id: string;
@@ -109,16 +110,16 @@ const Dashboard: React.FC = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const rawCustomersData = (await getCustomers()) ?? [];
+                const rawCustomersData = (await getCustomers(axiosClient)) ?? [];
                 const customersData = rawCustomersData.map(validateCustomer).filter(Boolean) as Customer[];
                 console.log('customersData received in Dashboard:', customersData);
                 setTotalCustomers(customersData.length);
 
-                const productsResponse = (await getProducts()) ?? { data: [] };
+                const productsResponse = (await getProducts(axiosClient)) ?? { data: [] };
                 const productsData = productsResponse.data ?? [];
                 setTotalProducts(productsData.length);
 
-                const rawTransactionsData = (await getTransactions()) ?? [];
+                const rawTransactionsData = (await getTransactions(axiosClient)) ?? [];
                 const transactionsData = rawTransactionsData.map(validateTransaction).filter(Boolean) as Transaction[];
                 console.log('transactionsData received in Dashboard:', transactionsData);
                 setTotalTransactions(transactionsData.length);
@@ -170,10 +171,10 @@ const Dashboard: React.FC = () => {
                 setNewCustomers(sortedNewCustomers.slice(0, 3).map((customer: Customer) => ({
                     id: customer.id,
                     name: customer.commercialTitle,
-                    date: new Date(customer.createdAt).toLocaleDateString(),
+                    date: customer.createdAt ? new Date(customer.createdAt).toLocaleDateString() : '',
                 })));
 
-                const profitData = await getProfitLast30Days();
+                const profitData = await getProfitLast30Days(axiosClient);
                 setProfitLast30Days(profitData.profit);
 
             } catch (error: unknown) {

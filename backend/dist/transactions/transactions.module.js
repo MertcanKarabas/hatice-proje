@@ -19,6 +19,9 @@ const transaction_item_repository_interface_1 = require("../common/interfaces/tr
 const customer_repository_1 = require("../customers/repositories/customer.repository");
 const transaction_filter_service_interface_1 = require("./interfaces/transaction-filter.service.interface");
 const transaction_filter_service_1 = require("./services/transaction-filter.service");
+const transaction_stock_service_1 = require("./services/transaction-stock.service");
+const customer_balance_service_1 = require("./services/customer-balance.service");
+const profit_calculation_service_1 = require("./services/profit-calculation.service");
 let TransactionsModule = class TransactionsModule {
 };
 exports.TransactionsModule = TransactionsModule;
@@ -41,6 +44,9 @@ exports.TransactionsModule = TransactionsModule = __decorate([
                 provide: transaction_filter_service_interface_1.ITransactionFilterService,
                 useClass: transaction_filter_service_1.TransactionFilterService,
             },
+            transaction_stock_service_1.TransactionStockService,
+            customer_balance_service_1.CustomerBalanceService,
+            profit_calculation_service_1.ProfitCalculationService,
         ],
         controllers: [transactions_controller_1.TransactionsController]
     })

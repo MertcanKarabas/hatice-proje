@@ -8,6 +8,9 @@ export interface Customer {
     email: string;
     type: 'SALES' | 'PURCHASE';
     balance: number;
+    createdAt?: string;
+    updatedAt?: string;
+    userId?: string;
 }
 
 export interface Product {
@@ -49,6 +52,19 @@ export interface TransactionItem {
     price: number;
     vatRate: number;
     total: number;
+}
+
+export interface TransactionSummaryData {
+    type: 'SALE' | 'PURCHASE' | 'PAYMENT' | 'COLLECTION';
+    items?: TransactionItem[];
+    products?: Product[];
+    customerCommercialTitle?: string;
+    invoiceDate: string;
+    dueDate?: string;
+    totalVat: number;
+    grandTotal: number;
+    customerPreviousBalance?: number;
+    customerNewBalance?: number;
 }
 
 export interface CreateTransactionDtoFrontend {

@@ -26,11 +26,13 @@ const prisma_1 = require("../../generated/prisma/index.js");
 const product_repository_interface_1 = require("../common/interfaces/product.repository.interface");
 const product_filter_service_interface_1 = require("./interfaces/product-filter.service.interface");
 const prisma_service_1 = require("../prisma/prisma.service");
+const product_stock_service_1 = require("./services/product-stock.service");
 let ProductsService = class ProductsService {
-    constructor(productRepository, productFilterService, prisma) {
+    constructor(productRepository, productFilterService, prisma, productStockService) {
         this.productRepository = productRepository;
         this.productFilterService = productFilterService;
         this.prisma = prisma;
+        this.productStockService = productStockService;
     }
     async findAllByUser(userId, field, operator, value) {
         const whereClause = await this.productFilterService.buildWhereClause(userId, field, operator, value);
@@ -52,17 +54,7 @@ let ProductsService = class ProductsService {
                     throw new common_1.ConflictException('Paket ürünler için bileşenler gereklidir.');
                 }
                 return this.prisma.$transaction(async (prisma) => {
-                    for (const component of components) {
-                        const componentStock = await prisma.stock.findUnique({
-                            where: { productId_userId: { productId: component.componentId, userId } },
-                            include: { product: { select: { name: true } } }
-                        });
-                        const requiredQuantity = component.quantity * dto.quantity;
-                        if (!componentStock || componentStock.quantity < requiredQuantity) {
-                            const productName = (componentStock === null || componentStock === void 0 ? void 0 : componentStock.product.name) || `ID: ${component.componentId}`;
-                            throw new common_1.ConflictException(`Bileşen için yetersiz stok: ${productName}`);
-                        }
-                    }
+                    await this.productStockService.checkAndDecrementStockForPackageCreation(userId, components, dto.quantity);
                     const newPackage = await prisma.product.create({
                         data: Object.assign(Object.assign({}, productData), { userId, price: new prisma_1.Prisma.Decimal(dto.price), quantity: dto.quantity, packageComponents: {
                                 create: components.map(c => ({
@@ -71,21 +63,7 @@ let ProductsService = class ProductsService {
                                 })),
                             } }),
                     });
-                    await prisma.stock.create({
-                        data: {
-                            userId,
-                            productId: newPackage.id,
-                            quantity: dto.quantity,
-                        },
-                    });
-                    for (const component of components) {
-                        await prisma.stock.update({
-                            where: { productId_userId: { productId: component.componentId, userId } },
-                            data: {
-                                quantity: { decrement: component.quantity * dto.quantity },
-                            },
-                        });
-                    }
+                    await this.productStockService.createStockForNewProduct(userId, newPackage.id, dto.quantity);
                     return newPackage;
                 });
             }
@@ -93,13 +71,7 @@ let ProductsService = class ProductsService {
                 const newProduct = await prisma.product.create({
                     data: Object.assign(Object.assign({ userId }, productData), { price: new prisma_1.Prisma.Decimal(dto.price), quantity: dto.quantity }),
                 });
-                await prisma.stock.create({
-                    data: {
-                        userId: userId,
-                        productId: newProduct.id,
-                        quantity: dto.quantity,
-                    },
-                });
+                await this.productStockService.createStockForNewProduct(userId, newProduct.id, dto.quantity);
                 return newProduct;
             });
         }
@@ -127,25 +99,9 @@ let ProductsService = class ProductsService {
             if (!existingProduct || existingProduct.userId !== userId) {
                 throw new common_1.NotFoundException(`Product with ID ${productId} not found or access denied.`);
             }
-            if (existingProduct.isPackage) {
-                for (const component of existingProduct.packageComponents) {
-                    await prisma.product.update({
-                        where: { id: component.componentId },
-                        data: { quantity: { increment: component.quantity * existingProduct.quantity } },
-                    });
-                }
-            }
+            await this.productStockService.restoreStockForOldPackageComponents(existingProduct, prisma);
             if (dto.isPackage) {
-                for (const component of components) {
-                    const product = await prisma.product.findUnique({ where: { id: component.componentId } });
-                    if (!product || product.quantity < component.quantity * dto.quantity) {
-                        throw new common_1.ConflictException(`Yetersiz stok: ${product.name}`);
-                    }
-                    await prisma.product.update({
-                        where: { id: component.componentId },
-                        data: { quantity: { decrement: component.quantity * dto.quantity } },
-                    });
-                }
+                await this.productStockService.deductStockForNewPackageComponents(userId, components, dto.quantity, prisma);
             }
             const updatedProduct = await prisma.product.update({
                 where: { id: productId },
@@ -181,6 +137,7 @@ exports.ProductsService = ProductsService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [product_repository_interface_1.IProductRepository,
         product_filter_service_interface_1.IProductFilterService,
-        prisma_service_1.PrismaService])
+        prisma_service_1.PrismaService,
+        product_stock_service_1.ProductStockService])
 ], ProductsService);
 //# sourceMappingURL=products.service.js.map

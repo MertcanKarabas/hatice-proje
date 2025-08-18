@@ -4,14 +4,13 @@ import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { tr } from 'date-fns/locale';
 import { useForm, Controller } from 'react-hook-form';
-import { getCustomers } from '../../customers/services/customerService';
-import axiosClient from '../../../services/axiosClient';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { setTransactionInfo } from '../../../store/transactionSlice';
-import type { Customer, Transaction } from '../../../types';
+import type { Transaction } from '../../../types';
 import CustomerFormModal from '../../customers/components/CustomerFormModal';
+import { useTransactionForm } from '../hooks/useTransactionForm';
 
 type FormValues = Omit<Transaction, 'invoiceDate' | 'dueDate'> & {
     invoiceDate: Date;
@@ -31,26 +30,10 @@ export default function TransactionForm() {
         },
     });
 
-    const [customers, setCustomers] = useState<Customer[]>([]);
     const [modalOpen, setModalOpen] = useState(false);
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    useEffect(() => {
-        const fetchCustomers = async () => {
-            try {
-                const response = await getCustomers(axiosClient);
-                setCustomers(response);
-            } catch (error) {
-                console.error('Müşteriler getirilirken hata oluştu:', error);
-            }
-        };
-        void fetchCustomers();
-    }, []);
-
-    const handleCustomerAdded = (newCustomer: Customer) => {
-        setCustomers(prev => [...prev, newCustomer].sort((a, b) => a.commercialTitle.localeCompare(b.commercialTitle)));
-        setValue('customerId', newCustomer.id);
-    };
+    const { customers, handleCustomerAdded } = useTransactionForm();
 
     const onSubmit = (data: FormValues) => {
         dispatch(setTransactionInfo({ ...data, invoiceDate: data.invoiceDate.toISOString(), dueDate: data.dueDate.toISOString() }));
@@ -176,7 +159,10 @@ export default function TransactionForm() {
             <CustomerFormModal
                 open={modalOpen}
                 onClose={() => setModalOpen(false)}
-                onCustomerAdded={handleCustomerAdded}
+                onCustomerSaved={(newCustomer) => {
+                    handleCustomerAdded(newCustomer);
+                    setValue('customerId', newCustomer.id);
+                }}
             />
         </Box>
     );

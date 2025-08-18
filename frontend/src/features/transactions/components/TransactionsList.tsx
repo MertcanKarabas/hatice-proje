@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
     Container,
     Typography,
@@ -13,11 +13,10 @@ import {
     Box
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { getTransactions } from '../services/transactionService';
-import axiosClient from '../../../services/axiosClient';
 import type { Transaction } from '../../../types';
 import { localizeTransactionType } from '../services/localization.service';
 import TransactionFilter from './TransactionFilter';
+import { useTransactions } from '../hooks/useTransactions';
 
 interface FilterState {
     field: string;
@@ -27,31 +26,13 @@ interface FilterState {
 }
 
 const TransactionsList: React.FC = () => {
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [filter, setFilter] = useState<FilterState>({
         field: 'customer.commercialTitle',
         operator: 'contains',
         value: '',
     });
+    const { transactions, fetchTransactions } = useTransactions(filter);
     const navigate = useNavigate();
-
-    const applyFilter = async () => {
-        console.log('Applying filter with state:', filter);
-        const params: Record<string, string> = {
-            field: filter.field,
-            operator: filter.operator,
-            value: filter.value,
-        };
-        if (filter.operator === 'between' && filter.endValue) {
-            params.endValue = filter.endValue;
-        }
-        const response = await getTransactions(axiosClient, params);
-        setTransactions(response);
-    };
-
-    useEffect(() => {
-        void applyFilter();
-    }, []);
 
     const handleViewDetails = (id: string) => {
         void navigate(`/transactions/${id}`);
@@ -71,7 +52,7 @@ const TransactionsList: React.FC = () => {
                     Yeni İşlem
                 </Button>
             </Box>
-            <TransactionFilter filter={filter} setFilter={setFilter} onApply={applyFilter} />
+            <TransactionFilter filter={filter} setFilter={setFilter} onApply={fetchTransactions} />
             <TableContainer component={Paper}>
                 <Table>
                     <TableHead>

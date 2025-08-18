@@ -4,6 +4,7 @@ import { Prisma } from 'generated/prisma';
 import { IProductRepository } from 'src/common/interfaces/product.repository.interface';
 import { IProductFilterService } from './interfaces/product-filter.service.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ProductStockService } from './services/product-stock.service';
 
 @Injectable()
 export class ProductsService {
@@ -11,6 +12,7 @@ export class ProductsService {
     private productRepository: IProductRepository,
     private productFilterService: IProductFilterService,
     private prisma: PrismaService,
+    private productStockService: ProductStockService,
   ) { }
 
   async findAllByUser(userId: string, field: string, operator: string, value: string) {
@@ -37,19 +39,12 @@ export class ProductsService {
         }
 
         return this.prisma.$transaction(async (prisma) => {
-          // 1. Bileşenlerin stoklarını transaction içinde kontrol et
-          for (const component of components) {
-            const componentStock = await prisma.stock.findUnique({
-              where: { productId_userId: { productId: component.componentId, userId } },
-              include: { product: { select: { name: true } } }
-            });
-
-            const requiredQuantity = component.quantity * dto.quantity;
-            if (!componentStock || componentStock.quantity < requiredQuantity) {
-              const productName = componentStock?.product.name || `ID: ${component.componentId}`;
-              throw new ConflictException(`Bileşen için yetersiz stok: ${productName}`);
-            }
-          }
+          // 1. Bileşenlerin stoklarını transaction içinde kontrol et ve düş
+          await this.productStockService.checkAndDecrementStockForPackageCreation(
+            userId,
+            components,
+            dto.quantity,
+          );
 
           // 2. Paket ürünü oluştur
           const newPackage = await prisma.product.create({
@@ -68,23 +63,11 @@ export class ProductsService {
           });
 
           // 3. Yeni paket ürün için bir stok kaydı oluştur
-          await prisma.stock.create({
-            data: {
-              userId,
-              productId: newPackage.id,
-              quantity: dto.quantity,
-            },
-          });
-
-          // 4. Bileşenlerin stoklarını doğru miktarda düş
-          for (const component of components) {
-            await prisma.stock.update({
-              where: { productId_userId: { productId: component.componentId, userId } },
-              data: {
-                quantity: { decrement: component.quantity * dto.quantity },
-              },
-            });
-          }
+          await this.productStockService.createStockForNewProduct(
+            userId,
+            newPackage.id,
+            dto.quantity,
+          );
 
           return newPackage;
         });
@@ -102,13 +85,11 @@ export class ProductsService {
         });
 
         // Yeni ürün için stok kaydı oluştur
-        await prisma.stock.create({
-          data: {
-            userId: userId,
-            productId: newProduct.id,
-            quantity: dto.quantity,
-          },
-        });
+        await this.productStockService.createStockForNewProduct(
+          userId,
+          newProduct.id,
+          dto.quantity,
+        );
 
         return newProduct;
       });
@@ -150,27 +131,19 @@ export class ProductsService {
       }
 
       // Restore stock from old components
-      if (existingProduct.isPackage) {
-        for (const component of existingProduct.packageComponents) {
-          await prisma.product.update({
-            where: { id: component.componentId },
-            data: { quantity: { increment: component.quantity * existingProduct.quantity } },
-          });
-        }
-      }
+      await this.productStockService.restoreStockForOldPackageComponents(
+        existingProduct,
+        prisma,
+      );
 
       // Deduct stock for new components
       if (dto.isPackage) {
-        for (const component of components) {
-          const product = await prisma.product.findUnique({ where: { id: component.componentId } });
-          if (!product || product.quantity < component.quantity * dto.quantity) {
-            throw new ConflictException(`Yetersiz stok: ${product.name}`);
-          }
-          await prisma.product.update({
-            where: { id: component.componentId },
-            data: { quantity: { decrement: component.quantity * dto.quantity } },
-          });
-        }
+        await this.productStockService.deductStockForNewPackageComponents(
+          userId,
+          components,
+          dto.quantity,
+          prisma,
+        );
       }
 
       // Update the product and its components

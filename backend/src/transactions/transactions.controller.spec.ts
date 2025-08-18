@@ -10,6 +10,11 @@ import { StockRepository } from 'src/stock/repositories/stock.repository';
 import { ITransactionRepository } from 'src/common/interfaces/transaction.repository.interface';
 import { ITransactionItemRepository } from 'src/common/interfaces/transaction-item.repository.interface';
 import { IStockRepository } from 'src/common/interfaces/stock.repository.interface';
+import { ITransactionFilterService } from './interfaces/transaction-filter.service.interface';
+import { TransactionFilterService } from './services/transaction-filter.service';
+import { TransactionStockService } from './services/transaction-stock.service';
+import { CustomerBalanceService } from './services/customer-balance.service';
+import { ProfitCalculationService } from './services/profit-calculation.service';
 
 describe('TransactionsController', () => {
   let controller: TransactionsController;
@@ -35,6 +40,13 @@ describe('TransactionsController', () => {
           provide: IStockRepository,
           useClass: StockRepository,
         },
+        {
+          provide: ITransactionFilterService,
+          useClass: TransactionFilterService,
+        },
+        TransactionStockService,
+        CustomerBalanceService,
+        ProfitCalculationService,
       ],
     }).compile();
 

@@ -9,6 +9,11 @@ import { TransactionRepository } from './repositories/transaction.repository';
 import { TransactionItemRepository } from './repositories/transaction-item.repository';
 import { StockRepository } from 'src/stock/repositories/stock.repository';
 import { IStockRepository } from 'src/common/interfaces/stock.repository.interface';
+import { ITransactionFilterService } from './interfaces/transaction-filter.service.interface';
+import { TransactionFilterService } from './services/transaction-filter.service';
+import { TransactionStockService } from './services/transaction-stock.service';
+import { CustomerBalanceService } from './services/customer-balance.service';
+import { ProfitCalculationService } from './services/profit-calculation.service';
 
 describe('TransactionsService', () => {
   let service: TransactionsService;
@@ -32,6 +37,13 @@ describe('TransactionsService', () => {
           provide: IStockRepository,
           useClass: StockRepository,
         },
+        {
+          provide: ITransactionFilterService,
+          useClass: TransactionFilterService,
+        },
+        TransactionStockService,
+        CustomerBalanceService,
+        ProfitCalculationService,
       ],
     }).compile();
 

@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getCustomerTransactions } from '../services/customerService';
-import axiosClient from '../../../services/axiosClient';
 import {
     Container,
     Typography,
@@ -16,41 +14,21 @@ import {
 } from '@mui/material';
 import type { Transaction } from '../../../types';
 import { localizeTransactionType } from '../../transactions/services/localization.service';
-import { getTransactions } from "../../transactions/services/transactionService"
 import TransactionFilter from "../../transactions/components/TransactionFilter"
+import { useCustomerTransactions } from '../hooks/useCustomerTransactions';
 
 const CustomerTransactions: React.FC = () => {
     const { customerId } = useParams<{ customerId: string }>();
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
-    const [filter, setFilter] = useState<{ field: string; operator: string; value: string }>({
-        field: 'customer.commercialTitle',
-        operator: 'contains',
-        value: '',
-    });
+    const [filter, setFilter] = useState<{ field: string; operator: string; value: string }>(
+        {
+            field: 'customer.commercialTitle',
+            operator: 'contains',
+            value: '',
+        }
+    );
+    const { transactions, fetchTransactions } = useCustomerTransactions(customerId, filter);
     const navigate = useNavigate();
 
-    const applyFilter = async () => {
-        console.log('Applying filter with state:', filter);
-        const response = await getTransactions(axiosClient, filter);
-        setTransactions(response);
-    };
-
-    useEffect(() => {
-        void applyFilter();
-    }, []);
-    useEffect(() => {
-        if (customerId) {
-            const fetchTransactions = async () => {
-                try {
-                    const response = await getCustomerTransactions(axiosClient, customerId);
-                    setTransactions(response);
-                } catch (error) {
-                    console.error('Müşteri işlemleri getirilirken hata oluştu:', error);
-                }
-            };
-            void fetchTransactions();
-        }
-    }, [customerId]);
     const handleViewDetails = (id: string) => {
         void navigate(`/transactions/${id}`);
     };
@@ -59,7 +37,7 @@ const CustomerTransactions: React.FC = () => {
             <Typography variant="h4" component="h2" gutterBottom>
                 Müşteri İşlemleri: {customerId}
             </Typography>
-            <TransactionFilter filter={filter} setFilter={setFilter} onApply={applyFilter} />
+            <TransactionFilter filter={filter} setFilter={setFilter} onApply={fetchTransactions} />
             <TableContainer component={Paper}>
                 <Table>
                     <TableHead>

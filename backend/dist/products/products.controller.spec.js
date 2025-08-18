@@ -8,6 +8,7 @@ const product_filter_service_1 = require("./services/product-filter.service");
 const prisma_service_1 = require("../prisma/prisma.service");
 const product_repository_interface_1 = require("../common/interfaces/product.repository.interface");
 const product_filter_service_interface_1 = require("./interfaces/product-filter.service.interface");
+const product_stock_service_1 = require("./services/product-stock.service");
 describe('ProductsController', () => {
     let controller;
     let service;
@@ -17,6 +18,7 @@ describe('ProductsController', () => {
             providers: [
                 products_service_1.ProductsService,
                 prisma_service_1.PrismaService,
+                product_stock_service_1.ProductStockService,
                 {
                     provide: product_repository_interface_1.IProductRepository,
                     useClass: product_repository_1.ProductRepository,

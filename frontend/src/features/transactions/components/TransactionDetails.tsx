@@ -17,9 +17,8 @@ import { useParams } from 'react-router-dom';
 import { getTransactionById } from '../services/transactionService';
 import axiosClient from '../../../services/axiosClient';
 import type { Transaction } from '../../../types';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { localizeTransactionType } from '../services/localization.service';
+import { generateTransactionSummaryPdf } from '../../../utils/transactionSummaryPdfGenerator';
 
 const TransactionDetails: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -47,50 +46,47 @@ const TransactionDetails: React.FC = () => {
         void fetchTransactionDetails();
     }, [id]);
 
-    const generatePdf = () => {
-        if (!transaction) return;
+    const generatePdf = async () => {
+        if (!transaction || !transaction.customer) return;
 
-        const doc = new jsPDF();
-        doc.text("Sipariş Özeti", 14, 16);
-
-        const tableColumn = ["Ürün Adı", "Miktar", "Birim", "Birim Fiyat", "KDV Oranı", "KDV Tutarı", "Toplam"];
-        const tableRows: any[] = [];
-
-        const totalVat = transaction.items?.reduce((acc, item) => acc + (Number(item.price) * item.quantity * item.vatRate / 100), 0) ?? 0;
-
-        transaction.items?.forEach(item => {
-            const vatAmount = Number(item.price) * item.quantity * item.vatRate / 100;
-            const total = (Number(item.price) * item.quantity) + vatAmount;
-            const itemData = [
-                item.product.name ?? 'N/A',
-                item.quantity,
-                item.unit,
-                Number(item.price).toFixed(2),
-                `%${item.vatRate}`,
-                vatAmount.toFixed(2),
-                total.toFixed(2),
-            ];
-            tableRows.push(itemData);
+        const itemsWithCalculatedTotal = transaction.items.map(item => {
+            const productTotalPrice = Number(item.price) * item.quantity;
+            const vatAmount = productTotalPrice * (item.vatRate / 100);
+            return {
+                ...item,
+                total: productTotalPrice + vatAmount,
+            };
         });
 
-        autoTable(doc, {
-            head: [tableColumn],
-            body: tableRows,
-            startY: 20,
-            headStyles: { fillColor: [100, 100, 100] },
-            footStyles: { fillColor: [100, 100, 100] },
-            bodyStyles: { fillColor: [240, 240, 240] },
-            alternateRowStyles: { fillColor: [255, 255, 255] },
+        const totalVat = itemsWithCalculatedTotal.reduce((acc, item) => {
+            const productTotalPrice = Number(item.price) * item.quantity;
+            return acc + (productTotalPrice * (item.vatRate / 100));
+        }, 0);
+        const grandTotal = itemsWithCalculatedTotal.reduce((acc, item) => acc + item.total, 0);
+        const products = transaction.items.map(p => p.product);
+
+        const customerNewBalance = Number(transaction.customer.balance);
+        let customerPreviousBalance = customerNewBalance;
+
+        if (transaction.type === 'SALE' || transaction.type === 'COLLECTION') {
+            customerPreviousBalance = customerNewBalance - Number(transaction.finalAmount);
+        } else if (transaction.type === 'PURCHASE' || transaction.type === 'PAYMENT') {
+            customerPreviousBalance = customerNewBalance + Number(transaction.finalAmount);
+        }
+
+
+        await generateTransactionSummaryPdf({
+            type: transaction.type,
+            items: itemsWithCalculatedTotal,
+            products,
+            customerCommercialTitle: transaction.customer?.commercialTitle,
+            invoiceDate: transaction.invoiceDate,
+            dueDate: transaction.dueDate,
+            totalVat,
+            grandTotal,
+            customerPreviousBalance,
+            customerNewBalance,
         });
-
-        const finalY = (doc as any).lastAutoTable.finalY;
-        doc.text(`Müşteri: ${transaction.customer?.commercialTitle || 'N/A'}`, 14, finalY + 10);
-        doc.text(`Fatura Tarihi: ${new Date(transaction.createdAt).toLocaleDateString()}`, 14, finalY + 20);
-        doc.text(`Vade Tarihi: ${transaction.dueDate ? new Date(transaction.dueDate).toLocaleDateString() : 'N/A'}`, 14, finalY + 30);
-        doc.text(`Toplam KDV: ${totalVat.toFixed(2)}`, 14, finalY + 40);
-        doc.text(`Genel Toplam: ${Number(transaction.finalAmount).toFixed(2)}`, 14, finalY + 50);
-
-        doc.save('siparis_ozeti.pdf');
     };
 
     if (loading) {
