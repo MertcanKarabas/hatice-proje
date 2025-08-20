@@ -3,7 +3,7 @@ import { Box, TextField, MenuItem, Select, InputLabel, FormControl, Button, type
 import { localizeTransactionType } from '../services/localization.service';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+
 import { tr } from 'date-fns/locale';
 import { DatePicker } from '@mui/x-date-pickers';
 

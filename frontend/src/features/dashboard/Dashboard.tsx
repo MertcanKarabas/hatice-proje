@@ -33,12 +33,12 @@ interface NewCustomer {
 }
 
 // Helper function to validate and transform Customer data
-const validateCustomer = (data: unknown): Customer | null => {
-    if (typeof data !== 'object' || data === null) return null;
+const validateCustomer = (data: unknown): Customer | undefined => {
+    if (typeof data !== 'object' || data === null) return undefined;
     const customer = data as Record<string, unknown>;
 
-    if (typeof customer.id !== 'string') return null;
-    if (typeof customer.commercialTitle !== 'string') return null;
+    if (typeof customer.id !== 'string') return undefined;
+    if (typeof customer.commercialTitle !== 'string') return undefined;
     // Add more validation for other required fields if necessary
     return {
         id: customer.id as string,

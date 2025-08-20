@@ -19,6 +19,8 @@ export declare class TransactionsController {
         vatRate: number | null;
         currency: string | null;
         profit: import("generated/prisma/runtime/library").Decimal | null;
+        customerPreviousBalance: import("generated/prisma/runtime/library").Decimal | null;
+        customerNewBalance: import("generated/prisma/runtime/library").Decimal | null;
     }>;
     findAll(req: any, field?: string, operator?: string, value?: string, endValue?: string): Promise<{
         id: string;
@@ -36,6 +38,8 @@ export declare class TransactionsController {
         vatRate: number | null;
         currency: string | null;
         profit: import("generated/prisma/runtime/library").Decimal | null;
+        customerPreviousBalance: import("generated/prisma/runtime/library").Decimal | null;
+        customerNewBalance: import("generated/prisma/runtime/library").Decimal | null;
     }[]>;
     getTransactionById(req: any, id: string): Promise<{
         id: string;
@@ -53,6 +57,8 @@ export declare class TransactionsController {
         vatRate: number | null;
         currency: string | null;
         profit: import("generated/prisma/runtime/library").Decimal | null;
+        customerPreviousBalance: import("generated/prisma/runtime/library").Decimal | null;
+        customerNewBalance: import("generated/prisma/runtime/library").Decimal | null;
     } | {
         message: string;
     }>;
@@ -75,6 +81,8 @@ export declare class TransactionsController {
         vatRate: number | null;
         currency: string | null;
         profit: import("generated/prisma/runtime/library").Decimal | null;
+        customerPreviousBalance: import("generated/prisma/runtime/library").Decimal | null;
+        customerNewBalance: import("generated/prisma/runtime/library").Decimal | null;
     }>;
     remove(req: any, id: string): Promise<{
         message: string;

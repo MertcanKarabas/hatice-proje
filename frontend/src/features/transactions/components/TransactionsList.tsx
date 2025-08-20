@@ -13,7 +13,7 @@ import {
     Box
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import type { Transaction } from '../../../types';
+
 import { localizeTransactionType } from '../services/localization.service';
 import TransactionFilter from './TransactionFilter';
 import { useTransactions } from '../hooks/useTransactions';

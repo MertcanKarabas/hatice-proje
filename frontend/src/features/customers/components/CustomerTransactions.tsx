@@ -12,7 +12,7 @@ import {
     Paper,
     Button,
 } from '@mui/material';
-import type { Transaction } from '../../../types';
+
 import { localizeTransactionType } from '../../transactions/services/localization.service';
 import TransactionFilter from "../../transactions/components/TransactionFilter"
 import { useCustomerTransactions } from '../hooks/useCustomerTransactions';

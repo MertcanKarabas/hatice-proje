@@ -16,12 +16,12 @@ export declare class CustomersService {
         createdAt: Date;
         updatedAt: Date;
         type: import("generated/prisma").$Enums.CustomerType;
-        email: string | null;
         commercialTitle: string;
-        phone: string | null;
-        taxNumber: string | null;
         address: string;
         taxOffice: string | null;
+        taxNumber: string | null;
+        email: string | null;
+        phone: string | null;
         balance: import("generated/prisma/runtime/library").Decimal;
     }>;
     findAllByUser(userId: string, field?: string, operator?: string, value?: string): Promise<{
@@ -30,12 +30,12 @@ export declare class CustomersService {
         createdAt: Date;
         updatedAt: Date;
         type: import("generated/prisma").$Enums.CustomerType;
-        email: string | null;
         commercialTitle: string;
-        phone: string | null;
-        taxNumber: string | null;
         address: string;
         taxOffice: string | null;
+        taxNumber: string | null;
+        email: string | null;
+        phone: string | null;
         balance: import("generated/prisma/runtime/library").Decimal;
     }[]>;
     findOne(userId: string, customerId: string): Promise<{
@@ -44,12 +44,12 @@ export declare class CustomersService {
         createdAt: Date;
         updatedAt: Date;
         type: import("generated/prisma").$Enums.CustomerType;
-        email: string | null;
         commercialTitle: string;
-        phone: string | null;
-        taxNumber: string | null;
         address: string;
         taxOffice: string | null;
+        taxNumber: string | null;
+        email: string | null;
+        phone: string | null;
         balance: import("generated/prisma/runtime/library").Decimal;
     }>;
     updateCustomer(userId: string, customerId: string, dto: CreateCustomerDto): Promise<{
@@ -58,12 +58,12 @@ export declare class CustomersService {
         createdAt: Date;
         updatedAt: Date;
         type: import("generated/prisma").$Enums.CustomerType;
-        email: string | null;
         commercialTitle: string;
-        phone: string | null;
-        taxNumber: string | null;
         address: string;
         taxOffice: string | null;
+        taxNumber: string | null;
+        email: string | null;
+        phone: string | null;
         balance: import("generated/prisma/runtime/library").Decimal;
     }>;
     deleteCustomer(userId: string, customerId: string): Promise<void>;
@@ -83,6 +83,8 @@ export declare class CustomersService {
         vatRate: number | null;
         currency: string | null;
         profit: import("generated/prisma/runtime/library").Decimal | null;
+        customerPreviousBalance: import("generated/prisma/runtime/library").Decimal | null;
+        customerNewBalance: import("generated/prisma/runtime/library").Decimal | null;
     }[]>;
     createPaymentCollection(userId: string, dto: CreatePaymentCollectionDto): Promise<{
         id: string;
@@ -100,5 +102,7 @@ export declare class CustomersService {
         vatRate: number | null;
         currency: string | null;
         profit: import("generated/prisma/runtime/library").Decimal | null;
+        customerPreviousBalance: import("generated/prisma/runtime/library").Decimal | null;
+        customerNewBalance: import("generated/prisma/runtime/library").Decimal | null;
     }>;
 }

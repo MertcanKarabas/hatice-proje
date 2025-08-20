@@ -42,6 +42,8 @@ export interface Transaction {
     items: TransactionItem[];
     customer?: Customer;
     profit?: number;
+    customerPreviousBalance?: number;
+    customerNewBalance?: number;
 }
 
 export interface TransactionItem {

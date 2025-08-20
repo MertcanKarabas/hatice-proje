@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../../store/store';
 import { Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box } from '@mui/material';
-import { generateTransactionSummaryPdf } from '../../../utils/transactionSummaryPdfGenerator';
 import { getCustomers } from '../../customers/services/customerService';
 import axiosClient from '../../../services/axiosClient';
 import type { Customer } from '../../../types';
@@ -35,7 +34,7 @@ const TransactionSummaryPage: React.FC = () => {
         if (!customer) return;
         const { customerId, type, items, invoiceDate, dueDate, vatRate, currency, discountAmount } = transactionInfo;
         
-        const grandTotal = items.reduce((acc, item) => acc + (item.total ?? 0), 0);
+        const grandTotal = items?.reduce((acc, item) => acc + (item.total ?? 0), 0) ?? 0;
 
         const customerPreviousBalance = Number(customer.balance);
         let customerNewBalance = customerPreviousBalance;

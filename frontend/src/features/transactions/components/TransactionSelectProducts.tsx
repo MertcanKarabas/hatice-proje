@@ -36,6 +36,7 @@ const TransactionSelectProducts: React.FC = () => { // Minor change to force re-
         searchTerm,
         setSearchTerm,
         warning,
+        setWarning,
         handleInputChange,
     } = useProductSelection(transactionInfo.vatRate || 0, transactionInfo.type);
 

@@ -76,33 +76,33 @@ const CustomerFormModal: React.FC<Props> = ({ open, onClose, onCustomerSaved, in
                 void handleSubmit(onSubmit)(e);
             }}>
                 <DialogContent>
-                    <Grid container spacing={2} sx={{ mt: 1 }}>
+                    <Grid container spacing={2} sx={{ display: 'flex', flexDirection: 'column' }}>
                         {error ? <FeedbackAlert severity='error' text={String(error)} /> : <></>}
-                        <Grid item xs={12}>
+                        <Grid component="div">
                             <TextField required label="Ticari Ünvan" {...register('commercialTitle', { required: true })} fullWidth />
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid  component="div">
                             <TextField required label="Telefon No" {...register('phone', { required: true })} fullWidth />
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid  component="div">
                             <TextField required label="Adres" {...register('address', { required: true })} fullWidth />
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid  component="div">
                             <TextField label="Bakiye" type="number" {...register('balance')} fullWidth />
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid  component="div">
                             <TextField select label="Tipi" {...register('type')} fullWidth defaultValue="SALES">
                                 <MenuItem value="SALES">Satış</MenuItem>
                                 <MenuItem value="PURCHASE">Alış</MenuItem>
                             </TextField>
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid  component="div">
                             <TextField label="Vergi Dairesi" {...register('taxOffice')} fullWidth />
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid  component="div">
                             <TextField label="Vergi No" {...register('taxNumber')} fullWidth />
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid  component="div">
                             <TextField label="Email" type="email" {...register('email')} fullWidth />
                         </Grid>
                     </Grid>

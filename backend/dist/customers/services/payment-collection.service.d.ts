@@ -22,5 +22,7 @@ export declare class PaymentCollectionService {
         vatRate: number | null;
         currency: string | null;
         profit: Prisma.Decimal | null;
+        customerPreviousBalance: Prisma.Decimal | null;
+        customerNewBalance: Prisma.Decimal | null;
     }>;
 }

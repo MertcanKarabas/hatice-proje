@@ -4,7 +4,7 @@ import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { tr } from 'date-fns/locale';
 import { useForm, Controller } from 'react-hook-form';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { setTransactionInfo } from '../../../store/transactionSlice';
@@ -163,6 +163,7 @@ export default function TransactionForm() {
                     handleCustomerAdded(newCustomer);
                     setValue('customerId', newCustomer.id);
                 }}
+                initialData={null}
             />
         </Box>
     );

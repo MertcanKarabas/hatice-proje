@@ -111,6 +111,7 @@ export const useProductSelection = (initialVatRate: number, transactionType: 'SA
         searchTerm,
         setSearchTerm,
         warning,
+        setWarning,
         handleInputChange,
     };
 };
