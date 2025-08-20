@@ -1,0 +1,32 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'backend/**' # Sadece backend klasörü değişince çalışacak
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'backend/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend # Çalışma dizini backend olarak ayarlandı
+    steps:
+    - uses: actions/checkout@v3
+    - uses: pnpm/action-setup@v2
+      with:
+        version: 8
+    - uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'pnpm'
+        cache-dependency-path: backend/pnpm-lock.yaml
+    - run: pnpm install
+    - run: pnpm lint
+    - run: pnpm test
+    - run: pnpm build

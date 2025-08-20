@@ -1,30 +1,50 @@
-# --- 1. Aşama: Build ---
-# Projeyi build etmek için Node.js'in LTS (Long Term Support) sürümünü kullanıyoruz.
-FROM node:20-alpine as builder
+# backend/Dockerfile
 
-# Uygulama dosyalarının bulunacağı dizini ayarlıyoruz.
-WORKDIR /usr/src/app
+# --- 1. AŞAMA: BUILDER ---
+# Bu aşamada projenin bağımlılıkları kurulur ve kod derlenir (build).
+FROM node:18-alpine AS builder
 
-# Bağımlılıkları yüklemek için package.json ve package-lock.json dosyalarını kopyalıyoruz.
-COPY package*.json ./
+# Uygulama için çalışma dizini oluştur
+WORKDIR /app
+
+# ÖNCE: Sadece bağımlılık dosyalarını kopyala.
+# Docker bu adımı cache'leyerek her seferinde 'npm install' yapılmasını engeller.
+COPY backend/package.json backend/package-lock.json* ./
+
+# Bağımlılıkları yükle
 RUN npm install
 
-# Proje kaynak kodunun tamamını kopyalıyoruz.
-COPY . .
+# SONRA: Geri kalan tüm backend kodunu kopyala
+COPY backend/ ./
 
-# Vite ile production build'i alıyoruz.
+# Prisma Client'ı oluştur
+RUN npx prisma generate
+
+# Uygulamayı production için derle
 RUN npm run build
 
-# --- 2. Aşama: Production ---
-# Web sunucusu olarak hafif bir Nginx imajı kullanıyoruz.
-FROM nginx:stable-alpine
 
-# Build aşamasında oluşturulan statik dosyaları Nginx'in sunum yapacağı dizine kopyalıyoruz.
-# Vite build çıktısını 'dist' klasörüne yazar, bu dosyaları Nginx'in html dizinine taşıyoruz.
-COPY --from=builder /usr/src/app/dist /usr/share/nginx/html
+# --- 2. AŞAMA: PRODUCTION ---
+# Bu aşamada sadece uygulamanın çalışması için gerekli dosyalar alınır.
+# Bu sayede son image boyutu çok daha küçük olur.
+FROM node:18-alpine
 
-# İmaj dışarıya 80 portunu açacak şekilde ayarlanıyor.
-EXPOSE 80
+# Çalışma dizinini ayarla
+WORKDIR /app
 
-# Nginx'i başlatmak için varsayılan komut.
-CMD ["nginx", "-g", "daemon off;"]
+# SADECE production bağımlılıklarını kurmak için ilgili dosyaları kopyala
+COPY backend/package.json backend/package-lock.json* ./
+RUN npm install --omit=dev
+
+# Derlenmiş dosyaları 'builder' aşamasından bu aşamaya kopyala
+COPY --from=builder /app/dist ./dist
+
+# Prisma şemasını kopyala (çalışma anında gerekli)
+COPY backend/prisma ./prisma
+
+# Uygulamanın çalışacağı port'u belirt
+EXPOSE 3000
+
+# Uygulamayı production modunda başlat
+# package.json dosyanızda "start:prod": "node dist/main" script'inin olduğundan emin olun.
+CMD [ "npm", "run", "start:prod" ]
