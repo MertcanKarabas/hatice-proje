@@ -1,20 +1,18 @@
 module.exports = {
   moduleFileExtensions: ['js', 'json', 'ts'],
-  rootDir: '.',
+  rootDir: 'src',
   testRegex: '.*\\.spec\\.ts$',
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest',
   },
-  collectCoverageFrom: ['src/**/*.(t|j)s'],
-  coverageDirectory: './coverage',
+  collectCoverageFrom: ['**/*.(t|j)s'],
+  coverageDirectory: '../coverage',
   testEnvironment: 'node',
+
+  // --- ADD THIS SECTION ---
   moduleNameMapper: {
-    '^src/(.*)$': '<rootDir>/src/$1',
-    '^generated/prisma/(.*)$': '<rootDir>/generated/prisma/$1',
+    '^generated/prisma$': '<rootDir>/../generated/prisma',
+    '^src/(.*)$': '<rootDir>/$1',
   },
-  globals: {
-    'ts-jest': {
-      tsconfig: 'tsconfig.json',
-    },
-  },
+  // -------------------------
 };
