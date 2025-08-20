@@ -2,9 +2,6 @@
   "name": "backend",
   "private": true,
   "version": "0.0.0",
-  "prisma": {
-    "seed": "ts-node prisma/seed.ts"
-  },
   "scripts": {
     "prisma:generate": "npm run prisma:combine && prisma generate",
     "prisma:migrate": "npm run prisma:combine && prisma migrate dev",
