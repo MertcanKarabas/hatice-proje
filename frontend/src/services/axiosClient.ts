@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import type { IHttpClient } from './httpClient';
 const axiosInstance = axios.create({
-    baseURL: 'http://localhost:3000', // Backend adresi
+    baseURL: import.meta.env.VITE_API_URL, // Backend adresi
 });
 
 // Her request öncesi token varsa header'a ekle
