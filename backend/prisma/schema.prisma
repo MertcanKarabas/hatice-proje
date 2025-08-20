@@ -1,0 +1,19 @@
+// backend/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Import all of your model parts below
+// Make sure the paths are correct relative to this file
+import { user } from "./parts/user.prisma"
+import { customer } from "./parts/customer.prisma"
+import { product } from "./parts/product.prisma"
+import { transaction } from "./parts/transaction.prisma"
+// Add any other .prisma files from your 'parts' folder here
+import { _base } from "./parts/_base.prisma"
