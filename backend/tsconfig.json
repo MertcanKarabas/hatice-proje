@@ -11,7 +11,9 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
-      "generated/prisma": ["./generated/prisma"]
+      "generated/prisma": [
+        "./generated/prisma"
+      ]
     },
     "incremental": true,
     "skipLibCheck": true,
@@ -21,10 +23,18 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
-    "types": ["jest", "node"]
+    "types": [
+      "jest",
+      "node"
+    ]
   },
   "include": [
     "src/**/*",
     "**/*.test.ts"
   ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.spec.ts"
+  ]
 }

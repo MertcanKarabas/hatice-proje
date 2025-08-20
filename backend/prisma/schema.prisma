@@ -1,6 +1,4 @@
-// ==========================================
-// THIS IS YOUR ONE AND ONLY SCHEMA FILE
-// ==========================================
+// prisma/parts/_base.prisma
 
 datasource db {
   provider     = "postgresql"
@@ -12,59 +10,7 @@ generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
   output   = "../generated/prisma"
-}
-
-// ==========================================
-// THIS IS USER PRISMA
-// ==========================================
-
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model User {
-  id            String     @id @default(cuid())
-  name          String?
-  email         String     @unique
-  emailVerified DateTime?
-  password      String
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  transactions  Transaction[]
-  products      Product[]
-  stocks        Stock[]
-  customers     Customer[]
-}
-
-// ==========================================
-// THIS IS CUSTOMER PRISMA
-// ==========================================
-
-enum CustomerType {
+}enum CustomerType {
   SALES
   PURCHASE
 }
@@ -84,13 +30,7 @@ model Customer {
   user            User     @relation(fields: [userId], references: [id])
   transactions Transaction[]
   type            CustomerType @default(SALES)
-}
-
-// ==========================================
-// THIS IS PRODUCT PRISMA
-// ==========================================
-
-enum Currency {
+}enum Currency {
   TRY
   USD
   EUR
@@ -140,13 +80,7 @@ model Stock {
   quantity  Int
 
   @@unique([productId, userId])
-}
-
-// ==========================================
-// THIS IS TRANSACTION PRISMA
-// ==========================================
-
-model Transaction {
+}model Transaction {
   id                String            @id @default(cuid())
   userId            String
   user              User              @relation(fields: [userId], references: [id])
@@ -238,4 +172,44 @@ enum PaymentMethod {
   CREDIT_CARD
   BANK_TRANSFER
   OTHER
+}model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String     @id @default(cuid())
+  name          String?
+  email         String     @unique
+  emailVerified DateTime?
+  password      String
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  transactions  Transaction[]
+  products      Product[]
+  stocks        Stock[]
+  customers     Customer[]
 }
