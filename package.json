@@ -1,0 +1,11 @@
+{
+    "name": "hatice-proje-monorepo",
+    "version": "1.0.0",
+    "scripts": {
+        "build:backend": "cd backend && npm install --omit=dev && npx prisma generate && npm run build",
+        "postinstall": "npm run build:backend"
+    },
+    "engines": {
+        "node": "18"
+    }
+}
