@@ -1,25 +1,49 @@
-# Base image
-FROM node:18-alpine
+# backend/Dockerfile
 
-# Create app directory
-WORKDIR /usr/src/app
+# --- 1. AŞAMA: BUILDER ---
+# Bu aşamada projenin bağımlılıkları kurulur ve kod derlenir.
+FROM node:18-alpine AS builder
 
-# ÖNCE SADECE package.json dosyalarını kopyala
-# Bu sayede her kod değişikliğinde npm install tekrar çalışmaz
-COPY backend/package*.json ./
-ENV NODE_ENV=development
-# Install app dependencies
+WORKDIR /app
+
+# ÖNCE: Sadece bağımlılık dosyalarını kopyala (daha hızlı build için).
+COPY backend/package.json backend/package-lock.json* ./
 RUN npm install
-RUN npm install -g @nestjs/cli
-# Bundle app source
-# Ardından projenin geri kalanını kopyala
+
+# SONRA: Geri kalan tüm backend kodunu kopyala.
 COPY backend/ ./
 
-# Generate Prisma Client
+# Prisma Client'ı oluştur. Bu adımın çalışması için Render'da DATABASE_URL'in tanımlı olması gerekir.
 RUN npx prisma generate
 
-# Expose port
+# Uygulamayı production için derle.
+RUN npm run build
+
+
+# --- 2. AŞAMA: PRODUCTION ---
+# Bu aşamada sadece uygulamanın çalışması için gerekli minimum dosyalar alınır.
+FROM node:18-alpine
+
+WORKDIR /app
+
+# SADECE production bağımlılıklarını kurmak için ilgili dosyaları kopyala.
+COPY backend/package.json backend/package-lock.json* ./
+RUN npm install --omit=dev
+
+# Derlenmiş dosyaları 'builder' aşamasından bu aşamaya kopyala.
+COPY --from=builder /app/dist ./dist
+
+# Üretilen Prisma Client'ı 'builder' aşamasından kopyala. BU ÖNEMLİ!
+# Bu sayede runtime'da 'prisma generate' çalıştırmaya gerek kalmaz.
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+
+# Prisma şemasını kopyala (çalışma anında bazı durumlar için gerekli olabilir).
+COPY backend/prisma ./prisma
+
+# Uygulamanın çalışacağı port'u belirt.
 EXPOSE 3000
 
-# Start command
-CMD [ "npm", "run", "start:dev" ]
+# Uygulamayı production modunda başlat.
+# package.json dosyanızda "start:prod": "node dist/main" script'inin olduğundan emin olun.
+CMD [ "npm", "run", "start:prod" ]
