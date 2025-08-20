@@ -97,26 +97,25 @@ export const generateTransactionSummaryPdf = (data: TransactionSummaryData) => {
     yOffset = finalY + 10;
     const rightAlign = doc.internal.pageSize.width - 14;
 
-    doc.text(`Musteri Eski Bakiye:`, 14, yOffset);
-    doc.text(`${(data.customerPreviousBalance ?? 0).toFixed(2)}`, rightAlign, yOffset, { align: 'right' });
+    doc.text(`${Number(data.customerPreviousBalance ?? 0).toFixed(2)}`, rightAlign, yOffset, { align: 'right' });
     yOffset += 7;
 
-    doc.text(`Musteri Yeni Bakiye:`, 14, yOffset);
-    doc.text(`${(data.customerNewBalance ?? 0).toFixed(2)}`, rightAlign, yOffset, { align: 'right' });
+    doc.text(`Müşteri Yeni Bakiye:`, 14, yOffset);
+    doc.text(`${Number(data.customerNewBalance ?? 0).toFixed(2)}`, rightAlign, yOffset, { align: 'right' });
     yOffset += 7;
 
     doc.text(`Toplam KDV:`, 14, yOffset);
-    doc.text(`${(data.totalVat ?? 0).toFixed(2)}`, rightAlign, yOffset, { align: 'right' });
+    doc.text(`${Number(data.totalVat ?? 0).toFixed(2)}`, rightAlign, yOffset, { align: 'right' });
     yOffset += 7;
 
-    doc.text(`Urunler Toplami:`, 14, yOffset);
+    doc.text(`Ürünler Toplamı:`, 14, yOffset);
     doc.text(`${totalProductsPrice.toFixed(2)}`, rightAlign, yOffset, { align: 'right' });
     yOffset += 10;
 
     doc.setFontSize(11);
     doc.setFont(undefined, 'bold');
     doc.text(`Genel Toplam:`, 14, yOffset);
-    doc.text(`${(data.grandTotal ?? 0).toFixed(2)}`, rightAlign, yOffset, { align: 'right' });
+    doc.text(`${Number(data.grandTotal ?? 0).toFixed(2)}`, rightAlign, yOffset, { align: 'right' });
 
     // Save the PDF
     doc.save('siparis_teklifi.pdf');

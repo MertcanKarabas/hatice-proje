@@ -14,4 +14,6 @@ export declare class CreateTransactionDto {
     dueDate?: string;
     vatRate?: number;
     currency?: string;
+    customerPreviousBalance?: number;
+    customerNewBalance?: number;
 }

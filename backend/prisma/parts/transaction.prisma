@@ -19,6 +19,8 @@ model Transaction {
   vatRate          Int?
   currency         String?
   profit            Decimal?          @db.Decimal(18, 2)
+  customerPreviousBalance Decimal?           @default(0) @db.Decimal(18, 2)
+  customerNewBalance      Decimal?           @default(0) @db.Decimal(18, 2)
 }
 
 model TransactionItem {

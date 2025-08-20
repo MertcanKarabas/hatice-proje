@@ -49,4 +49,12 @@ export class CreateTransactionDto {
   @IsOptional()
   @IsString()
   currency?: string;
+
+  @IsOptional()
+  @IsNumber()
+  customerPreviousBalance?: number;
+
+  @IsOptional()
+  @IsNumber()
+  customerNewBalance?: number;
 }

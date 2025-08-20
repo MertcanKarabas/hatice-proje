@@ -65,16 +65,6 @@ const TransactionDetails: React.FC = () => {
         const grandTotal = itemsWithCalculatedTotal.reduce((acc, item) => acc + item.total, 0);
         const products = transaction.items.map(p => p.product);
 
-        const customerNewBalance = Number(transaction.customer.balance);
-        let customerPreviousBalance = customerNewBalance;
-
-        if (transaction.type === 'SALE' || transaction.type === 'COLLECTION') {
-            customerPreviousBalance = customerNewBalance - Number(transaction.finalAmount);
-        } else if (transaction.type === 'PURCHASE' || transaction.type === 'PAYMENT') {
-            customerPreviousBalance = customerNewBalance + Number(transaction.finalAmount);
-        }
-
-
         await generateTransactionSummaryPdf({
             type: transaction.type,
             items: itemsWithCalculatedTotal,
@@ -84,8 +74,8 @@ const TransactionDetails: React.FC = () => {
             dueDate: transaction.dueDate,
             totalVat,
             grandTotal,
-            customerPreviousBalance,
-            customerNewBalance,
+            customerPreviousBalance: transaction.customerPreviousBalance,
+            customerNewBalance: transaction.customerNewBalance,
         });
     };
 

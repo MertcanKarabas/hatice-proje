@@ -40,6 +40,13 @@ export class TransactionsService {
                 profit = await this.profitCalculationService.calculateProfit(items, prisma);
             }
 
+            const { previousBalance, newBalance } = await this.customerBalanceService.updateCustomerBalance(
+                customerId,
+                finalAmount,
+                type,
+                prisma,
+            );
+
             const transaction = await prisma.transaction.create({
                 data: {
                     userId,
@@ -53,6 +60,8 @@ export class TransactionsService {
                     dueDate: dueDate ? new Date(dueDate) : null,
                     vatRate,
                     currency,
+                    customerPreviousBalance: previousBalance,
+                    customerNewBalance: newBalance,
                 },
             });
 
@@ -81,13 +90,6 @@ export class TransactionsService {
                     }
                 }
             }
-
-            await this.customerBalanceService.updateCustomerBalance(
-                customerId,
-                finalAmount,
-                type,
-                prisma,
-            );
 
             return transaction;
         });
@@ -192,6 +194,13 @@ export class TransactionsService {
                 }
             }
 
+            const { previousBalance, newBalance } = await this.customerBalanceService.updateCustomerBalance(
+                existingTransaction.customerId,
+                finalAmount,
+                type,
+                prisma,
+            );
+
             const updatedTransaction = await prisma.transaction.update({
                 where: { id: transactionId },
                 data: {
@@ -204,15 +213,10 @@ export class TransactionsService {
                     dueDate: dueDate ? new Date(dueDate) : null,
                     vatRate,
                     currency,
+                    customerPreviousBalance: previousBalance,
+                    customerNewBalance: newBalance,
                 },
             });
-
-            await this.customerBalanceService.updateCustomerBalance(
-                updatedTransaction.customerId,
-                finalAmount,
-                type,
-                prisma,
-            );
 
             return updatedTransaction;
         });

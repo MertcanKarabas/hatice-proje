@@ -31,50 +31,20 @@ const TransactionSummaryPage: React.FC = () => {
     const totalVat = transactionInfo.items?.reduce((acc, item) => acc + (Number(item.price) * item.quantity * item.vatRate / 100), 0) ?? 0;
     const grandTotal = transactionInfo.items?.reduce((acc, item) => acc + (item.total ?? 0), 0) ?? 0;
 
-    const generatePdf = async() => {
-        if (!customer) return;
-
-        const itemsWithCalculatedTotal = transactionInfo.items.map(item => {
-            const productTotalPrice = Number(item.price) * item.quantity;
-            const vatAmount = productTotalPrice * (item.vatRate / 100);
-            return {
-                ...item,
-                total: productTotalPrice + vatAmount,
-            };
-        });
-
-        const totalVat = itemsWithCalculatedTotal.reduce((acc, item) => {
-            const productTotalPrice = Number(item.price) * item.quantity;
-            return acc + (productTotalPrice * (item.vatRate / 100));
-        }, 0);
-        const grandTotal = itemsWithCalculatedTotal.reduce((acc, item) => acc + item.total, 0);
-        const products = transactionInfo.products;
-
-        const customerNewBalance = Number(customer.balance);
-        let customerPreviousBalance = customerNewBalance;
-
-        if (transactionInfo.type === 'SALE' || transactionInfo.type === 'COLLECTION') {
-            customerPreviousBalance = customerNewBalance - Number(grandTotal);
-        } else if (transactionInfo.type === 'PURCHASE' || transactionInfo.type === 'PAYMENT') {
-            customerPreviousBalance = customerNewBalance + Number(grandTotal);
-        }
-
-        await generateTransactionSummaryPdf({
-            type: transactionInfo.type,
-            items: itemsWithCalculatedTotal,
-            products,
-            customerCommercialTitle: customer?.commercialTitle,
-            invoiceDate: transactionInfo.invoiceDate,
-            dueDate: transactionInfo.dueDate,
-            totalVat,
-            grandTotal,
-            customerPreviousBalance,
-            customerNewBalance,
-        });
-    };
-
     const handleSaveTransaction = async () => {
+        if (!customer) return;
         const { customerId, type, items, invoiceDate, dueDate, vatRate, currency, discountAmount } = transactionInfo;
+        
+        const grandTotal = items.reduce((acc, item) => acc + (item.total ?? 0), 0);
+
+        const customerPreviousBalance = Number(customer.balance);
+        let customerNewBalance = customerPreviousBalance;
+
+        if (type === 'SALE' || type === 'COLLECTION') {
+            customerNewBalance = customerPreviousBalance + Number(grandTotal);
+        } else if (type === 'PURCHASE' || type === 'PAYMENT') {
+            customerNewBalance = customerPreviousBalance - Number(grandTotal);
+        }
 
         const transactionData = {
             customerId,
@@ -91,11 +61,12 @@ const TransactionSummaryPage: React.FC = () => {
                 vatRate: Number(item.vatRate),
             })) || [],
             discountAmount: discountAmount ?? 0,
+            customerPreviousBalance,
+            customerNewBalance,
         };
 
         try {
             await createTransaction(axiosClient, transactionData);
-            await generatePdf();
             dispatch(resetTransaction());
             void navigate('/');
         } catch (error) {

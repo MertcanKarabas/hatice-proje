@@ -30,6 +30,7 @@ export class PaymentCollectionService {
     
     await this.customerRepository.update(customer.id, { balance: newBalance });
 
+    
     // Create a transaction record
     const transaction = await this.transactionRepository.create({
       userId,

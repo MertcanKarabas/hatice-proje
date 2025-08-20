@@ -76,6 +76,8 @@ export interface CreateTransactionDtoFrontend {
     type: 'SALE' | 'PURCHASE' | 'PAYMENT' | 'COLLECTION';
     items: { productId: string; quantity: number; price: number; unit: string; vatRate: number; }[];
     discountAmount: number;
+    customerPreviousBalance: number;
+    customerNewBalance: number;
 }
 
 export interface PaymentCollection {

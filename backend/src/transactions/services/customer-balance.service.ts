@@ -11,11 +11,12 @@ export class CustomerBalanceService {
     finalAmount: Prisma.Decimal,
     transactionType: TransactionType,
     prismaTransaction: any,
-  ): Promise<void> {
-    if (!customerId) return;
+  ): Promise<{ previousBalance: Prisma.Decimal; newBalance: Prisma.Decimal }> {
+    if (!customerId) return { previousBalance: new Prisma.Decimal(0), newBalance: new Prisma.Decimal(0) };
 
     const customer = await prismaTransaction.customer.findUnique({ where: { id: customerId } });
     if (customer) {
+      const previousBalance = new Prisma.Decimal(customer.balance);
       let newBalance = new Prisma.Decimal(customer.balance);
       if (transactionType === TransactionType.SALE) {
         newBalance = newBalance.plus(finalAmount);
@@ -23,7 +24,9 @@ export class CustomerBalanceService {
         newBalance = newBalance.minus(finalAmount);
       }
       await prismaTransaction.customer.update({ where: { id: customerId }, data: { balance: newBalance } });
+      return { previousBalance, newBalance };
     }
+    return { previousBalance: new Prisma.Decimal(0), newBalance: new Prisma.Decimal(0) };
   }
 
   async revertCustomerBalance(
