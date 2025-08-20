@@ -7,11 +7,10 @@ const core_1 = require("@nestjs/core");
 const app_module_1 = require("./app.module");
 const helmet_1 = __importDefault(require("helmet"));
 const common_1 = require("@nestjs/common");
-const process_1 = require("process");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.enableCors({
-        origin: process_1.env.VITE_API_URL || 'localhost:5173',
+        origin: 'https://hatice-proje.vercel.app',
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
         credentials: true,
     });

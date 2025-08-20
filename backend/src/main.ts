@@ -2,12 +2,11 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import helmet from 'helmet';
 import { ValidationPipe } from '@nestjs/common';
-import { env } from 'process';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
-    origin: env.VITE_API_URL || 'localhost:5173',
+    origin: 'https://hatice-proje.vercel.app',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
