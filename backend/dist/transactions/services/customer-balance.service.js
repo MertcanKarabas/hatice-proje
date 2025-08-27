@@ -30,6 +30,12 @@ let CustomerBalanceService = class CustomerBalanceService {
             else if (transactionType === client_1.TransactionType.PURCHASE) {
                 newBalance = newBalance.minus(finalAmount);
             }
+            else if (transactionType === client_1.TransactionType.COLLECTION) {
+                newBalance = newBalance.minus(finalAmount);
+            }
+            else if (transactionType === client_1.TransactionType.PAYMENT) {
+                newBalance = newBalance.plus(finalAmount);
+            }
             await prismaTransaction.customer.update({ where: { id: customerId }, data: { balance: newBalance } });
             return { previousBalance, newBalance };
         }
@@ -46,6 +52,12 @@ let CustomerBalanceService = class CustomerBalanceService {
             }
             else if (transactionType === client_1.TransactionType.PURCHASE) {
                 oldBalance = oldBalance.plus(finalAmount);
+            }
+            else if (transactionType === client_1.TransactionType.COLLECTION) {
+                oldBalance = oldBalance.plus(finalAmount);
+            }
+            else if (transactionType === client_1.TransactionType.PAYMENT) {
+                oldBalance = oldBalance.minus(finalAmount);
             }
             await prismaTransaction.customer.update({ where: { id: customerId }, data: { balance: oldBalance } });
         }

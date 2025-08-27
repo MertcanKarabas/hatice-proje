@@ -31,25 +31,26 @@ let TransactionsService = class TransactionsService {
     }
     async createTransaction(userId, dto) {
         return this.prisma.$transaction(async (prisma) => {
-            const { type, discountAmount = 0, items, customerId, invoiceDate, dueDate, vatRate, currency } = dto;
+            const { type, discountAmount = 0, items, customerId, invoiceDate, dueDate, vatRate, currency, totalAmount: dtoTotalAmount, finalAmount: dtoFinalAmount } = dto;
             if (type === 'SALE') {
                 await this.transactionStockService.checkStockAvailability(userId, items, prisma);
             }
-            const totalAmount = new client_1.Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
-            const finalAmount = new client_1.Prisma.Decimal(totalAmount.minus(discountAmount));
+            const calculatedTotalAmount = dtoTotalAmount !== undefined ? new client_1.Prisma.Decimal(dtoTotalAmount) : new client_1.Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
+            const calculatedFinalAmount = dtoFinalAmount !== undefined ? new client_1.Prisma.Decimal(dtoFinalAmount) : new client_1.Prisma.Decimal(calculatedTotalAmount.minus(discountAmount));
             let profit = null;
             if (type === 'SALE') {
                 profit = await this.profitCalculationService.calculateProfit(items, prisma);
             }
-            const { previousBalance, newBalance } = await this.customerBalanceService.updateCustomerBalance(customerId, finalAmount, type, prisma);
+            const { previousBalance, newBalance } = await this.customerBalanceService.updateCustomerBalance(customerId, calculatedFinalAmount, type, prisma);
+            console.log(`TransactionsService - createTransaction: customerPreviousBalance: ${previousBalance.toString()}, customerNewBalance: ${newBalance.toString()}`);
             const transaction = await prisma.transaction.create({
                 data: {
                     userId,
                     type,
                     customerId,
-                    totalAmount,
+                    totalAmount: calculatedTotalAmount,
                     discountAmount: new client_1.Prisma.Decimal(discountAmount),
-                    finalAmount,
+                    finalAmount: calculatedFinalAmount,
                     profit,
                     invoiceDate: invoiceDate ? new Date(invoiceDate) : null,
                     dueDate: dueDate ? new Date(dueDate) : null,
@@ -123,12 +124,9 @@ let TransactionsService = class TransactionsService {
                 await this.transactionStockService.revertStockForTransaction(userId, existingTransaction.items, existingTransaction.type, prisma);
             }
             await this.customerBalanceService.revertCustomerBalance(existingTransaction.customerId, existingTransaction.finalAmount, existingTransaction.type, prisma);
-            const { type, discountAmount = 0, items, invoiceDate, dueDate, vatRate, currency } = dto;
-            if (type === 'SALE') {
-                await this.transactionStockService.checkStockAvailability(userId, items, prisma);
-            }
-            const totalAmount = new client_1.Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
-            const finalAmount = new client_1.Prisma.Decimal(totalAmount.minus(discountAmount));
+            const { type, discountAmount = 0, items, invoiceDate, dueDate, vatRate, currency, totalAmount: dtoTotalAmount, finalAmount: dtoFinalAmount } = dto;
+            const calculatedTotalAmount = dtoTotalAmount !== undefined ? new client_1.Prisma.Decimal(dtoTotalAmount) : new client_1.Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
+            const calculatedFinalAmount = dtoFinalAmount !== undefined ? new client_1.Prisma.Decimal(dtoFinalAmount) : new client_1.Prisma.Decimal(calculatedTotalAmount.minus(discountAmount));
             let profit = null;
             if (type === 'SALE') {
                 profit = await this.profitCalculationService.calculateProfit(items, prisma);
@@ -157,14 +155,14 @@ let TransactionsService = class TransactionsService {
                     });
                 }
             }
-            const { previousBalance, newBalance } = await this.customerBalanceService.updateCustomerBalance(existingTransaction.customerId, finalAmount, type, prisma);
+            const { previousBalance, newBalance } = await this.customerBalanceService.updateCustomerBalance(existingTransaction.customerId, calculatedFinalAmount, type, prisma);
             const updatedTransaction = await prisma.transaction.update({
                 where: { id: transactionId },
                 data: {
                     type,
-                    totalAmount,
+                    totalAmount: calculatedTotalAmount,
                     discountAmount: new client_1.Prisma.Decimal(discountAmount),
-                    finalAmount,
+                    finalAmount: calculatedFinalAmount,
                     profit,
                     invoiceDate: invoiceDate ? new Date(invoiceDate) : null,
                     dueDate: dueDate ? new Date(dueDate) : null,

@@ -36,6 +36,7 @@ const TransactionDetails: React.FC = () => {
             try {
                 const response = await getTransactionById(axiosClient, id);
                 setTransaction(response);
+                console.log('TransactionDetails - Fetched transaction:', response);
             } catch (err) {
                 console.error('İşlem detayları getirilirken hata oluştu:', err);
                 setError('İşlem detayları yüklenirken bir hata oluştu.');
@@ -65,12 +66,16 @@ const TransactionDetails: React.FC = () => {
         const grandTotal = itemsWithCalculatedTotal.reduce((acc, item) => acc + item.total, 0);
         const products = transaction.items.map(p => p.product);
 
+        const dateToUse = (transaction.type === 'COLLECTION' || transaction.type === 'PAYMENT')
+            ? transaction.createdAt
+            : transaction.invoiceDate;
+
         await generateTransactionSummaryPdf({
             type: transaction.type,
             items: itemsWithCalculatedTotal,
             products,
             customerCommercialTitle: transaction.customer?.commercialTitle,
-            invoiceDate: transaction.invoiceDate,
+            invoiceDate: dateToUse,
             dueDate: transaction.dueDate,
             totalVat,
             grandTotal,

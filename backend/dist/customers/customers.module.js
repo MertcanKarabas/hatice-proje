@@ -18,11 +18,13 @@ const transaction_repository_1 = require("../transactions/repositories/transacti
 const customer_filter_service_interface_1 = require("./interfaces/customer-filter.service.interface");
 const customer_filter_service_1 = require("./services/customer-filter.service");
 const payment_collection_service_1 = require("./services/payment-collection.service");
+const transactions_module_1 = require("../transactions/transactions.module");
 let CustomersModule = class CustomersModule {
 };
 exports.CustomersModule = CustomersModule;
 exports.CustomersModule = CustomersModule = __decorate([
     (0, common_1.Module)({
+        imports: [transactions_module_1.TransactionsModule],
         providers: [
             customers_service_1.CustomersService,
             prisma_service_1.PrismaService,

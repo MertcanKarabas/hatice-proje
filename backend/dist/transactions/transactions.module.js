@@ -48,7 +48,8 @@ exports.TransactionsModule = TransactionsModule = __decorate([
             customer_balance_service_1.CustomerBalanceService,
             profit_calculation_service_1.ProfitCalculationService,
         ],
-        controllers: [transactions_controller_1.TransactionsController]
+        controllers: [transactions_controller_1.TransactionsController],
+        exports: [transactions_service_1.TransactionsService]
     })
 ], TransactionsModule);
 //# sourceMappingURL=transactions.module.js.map

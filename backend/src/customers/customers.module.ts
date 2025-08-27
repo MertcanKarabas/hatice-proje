@@ -9,8 +9,10 @@ import { TransactionRepository } from 'src/transactions/repositories/transaction
 import { ICustomerFilterService } from './interfaces/customer-filter.service.interface';
 import { CustomerFilterService } from './services/customer-filter.service';
 import { PaymentCollectionService } from './services/payment-collection.service';
+import { TransactionsModule } from 'src/transactions/transactions.module';
 
 @Module({
+    imports: [TransactionsModule],
     providers: [
         CustomersService,
         PrismaService,
@@ -22,7 +24,7 @@ import { PaymentCollectionService } from './services/payment-collection.service'
             provide: ITransactionRepository,
             useClass: TransactionRepository,
         },
-        { // This is needed because PaymentCollectionService depends on it
+        {
             provide: ICustomerFilterService,
             useClass: CustomerFilterService,
         },

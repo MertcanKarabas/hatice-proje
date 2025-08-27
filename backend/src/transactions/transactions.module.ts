@@ -36,6 +36,7 @@ import { ProfitCalculationService } from './services/profit-calculation.service'
     CustomerBalanceService,
     ProfitCalculationService,
   ],
-  controllers: [TransactionsController]
+  controllers: [TransactionsController],
+  exports: [TransactionsService] // Export TransactionsService
 })
 export class TransactionsModule {}

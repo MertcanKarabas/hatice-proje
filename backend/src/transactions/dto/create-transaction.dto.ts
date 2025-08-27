@@ -52,6 +52,14 @@ export class CreateTransactionDto {
 
   @IsOptional()
   @IsNumber()
+  totalAmount?: number;
+
+  @IsOptional()
+  @IsNumber()
+  finalAmount?: number;
+
+  @IsOptional()
+  @IsNumber()
   customerPreviousBalance?: number;
 
   @IsOptional()

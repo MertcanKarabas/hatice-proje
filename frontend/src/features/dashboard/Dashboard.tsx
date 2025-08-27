@@ -125,7 +125,9 @@ const Dashboard: React.FC = () => {
                 setTotalTransactions(transactionsData.length);
 
                 // Calculate total revenue
-                const revenue = transactionsData.reduce((sum: number, transaction: Transaction) => sum + (Number(transaction.finalAmount ?? 0)), 0);
+                const revenue = transactionsData
+                    .filter((transaction: Transaction) => transaction.type === 'SALE')
+                    .reduce((sum: number, transaction: Transaction) => sum + (Number(transaction.finalAmount ?? 0)), 0);
                 setTotalRevenue(revenue);
 
                 // Calculate new customers today

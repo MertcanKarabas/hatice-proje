@@ -26,14 +26,14 @@ export class TransactionsService {
         dto: CreateTransactionDto,
     ) {
         return this.prisma.$transaction(async (prisma) => {
-            const { type, discountAmount = 0, items, customerId, invoiceDate, dueDate, vatRate, currency } = dto;
+            const { type, discountAmount = 0, items, customerId, invoiceDate, dueDate, vatRate, currency, totalAmount: dtoTotalAmount, finalAmount: dtoFinalAmount } = dto;
 
             if (type === 'SALE') {
                 await this.transactionStockService.checkStockAvailability(userId, items, prisma);
             }
 
-            const totalAmount = new Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
-            const finalAmount = new Prisma.Decimal(totalAmount.minus(discountAmount));
+            const calculatedTotalAmount = dtoTotalAmount !== undefined ? new Prisma.Decimal(dtoTotalAmount) : new Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
+            const calculatedFinalAmount = dtoFinalAmount !== undefined ? new Prisma.Decimal(dtoFinalAmount) : new Prisma.Decimal(calculatedTotalAmount.minus(discountAmount));
 
             let profit: Prisma.Decimal | null = null;
             if (type === 'SALE') {
@@ -42,19 +42,20 @@ export class TransactionsService {
 
             const { previousBalance, newBalance } = await this.customerBalanceService.updateCustomerBalance(
                 customerId,
-                finalAmount,
+                calculatedFinalAmount,
                 type,
                 prisma,
             );
 
+            console.log(`TransactionsService - createTransaction: customerPreviousBalance: ${previousBalance.toString()}, customerNewBalance: ${newBalance.toString()}`);
             const transaction = await prisma.transaction.create({
                 data: {
                     userId,
                     type,
                     customerId,
-                    totalAmount,
+                    totalAmount: calculatedTotalAmount,
                     discountAmount: new Prisma.Decimal(discountAmount),
-                    finalAmount,
+                    finalAmount: calculatedFinalAmount,
                     profit,
                     invoiceDate: invoiceDate ? new Date(invoiceDate) : null,
                     dueDate: dueDate ? new Date(dueDate) : null,
@@ -150,15 +151,10 @@ export class TransactionsService {
                 prisma,
             );
 
-            const { type, discountAmount = 0, items, invoiceDate, dueDate, vatRate, currency } = dto;
+            const { type, discountAmount = 0, items, invoiceDate, dueDate, vatRate, currency, totalAmount: dtoTotalAmount, finalAmount: dtoFinalAmount } = dto;
 
-            // Check new stock quantities
-            if (type === 'SALE') {
-                await this.transactionStockService.checkStockAvailability(userId, items, prisma);
-            }
-
-            const totalAmount = new Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
-            const finalAmount = new Prisma.Decimal(totalAmount.minus(discountAmount));
+            const calculatedTotalAmount = dtoTotalAmount !== undefined ? new Prisma.Decimal(dtoTotalAmount) : new Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
+            const calculatedFinalAmount = dtoFinalAmount !== undefined ? new Prisma.Decimal(dtoFinalAmount) : new Prisma.Decimal(calculatedTotalAmount.minus(discountAmount));
 
             let profit: Prisma.Decimal | null = null;
             if (type === 'SALE') {
@@ -196,7 +192,7 @@ export class TransactionsService {
 
             const { previousBalance, newBalance } = await this.customerBalanceService.updateCustomerBalance(
                 existingTransaction.customerId,
-                finalAmount,
+                calculatedFinalAmount,
                 type,
                 prisma,
             );
@@ -205,9 +201,9 @@ export class TransactionsService {
                 where: { id: transactionId },
                 data: {
                     type,
-                    totalAmount,
+                    totalAmount: calculatedTotalAmount,
                     discountAmount: new Prisma.Decimal(discountAmount),
-                    finalAmount,
+                    finalAmount: calculatedFinalAmount,
                     profit,
                     invoiceDate: invoiceDate ? new Date(invoiceDate) : null,
                     dueDate: dueDate ? new Date(dueDate) : null,
