@@ -13,7 +13,7 @@ exports.TransactionsService = void 0;
 const common_1 = require("@nestjs/common");
 const transaction_repository_interface_1 = require("../common/interfaces/transaction.repository.interface");
 const transaction_item_repository_interface_1 = require("../common/interfaces/transaction-item.repository.interface");
-const prisma_1 = require("../../generated/prisma/index.js");
+const client_1 = require("@prisma/client");
 const prisma_service_1 = require("../prisma/prisma.service");
 const transaction_filter_service_interface_1 = require("./interfaces/transaction-filter.service.interface");
 const transaction_stock_service_1 = require("./services/transaction-stock.service");
@@ -35,8 +35,8 @@ let TransactionsService = class TransactionsService {
             if (type === 'SALE') {
                 await this.transactionStockService.checkStockAvailability(userId, items, prisma);
             }
-            const totalAmount = new prisma_1.Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
-            const finalAmount = new prisma_1.Prisma.Decimal(totalAmount.minus(discountAmount));
+            const totalAmount = new client_1.Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
+            const finalAmount = new client_1.Prisma.Decimal(totalAmount.minus(discountAmount));
             let profit = null;
             if (type === 'SALE') {
                 profit = await this.profitCalculationService.calculateProfit(items, prisma);
@@ -48,7 +48,7 @@ let TransactionsService = class TransactionsService {
                     type,
                     customerId,
                     totalAmount,
-                    discountAmount: new prisma_1.Prisma.Decimal(discountAmount),
+                    discountAmount: new client_1.Prisma.Decimal(discountAmount),
                     finalAmount,
                     profit,
                     invoiceDate: invoiceDate ? new Date(invoiceDate) : null,
@@ -108,7 +108,7 @@ let TransactionsService = class TransactionsService {
                 },
             },
         });
-        return (_a = result._sum.profit) !== null && _a !== void 0 ? _a : new prisma_1.Prisma.Decimal(0);
+        return (_a = result._sum.profit) !== null && _a !== void 0 ? _a : new client_1.Prisma.Decimal(0);
     }
     async updateTransaction(userId, transactionId, dto) {
         return this.prisma.$transaction(async (prisma) => {
@@ -127,8 +127,8 @@ let TransactionsService = class TransactionsService {
             if (type === 'SALE') {
                 await this.transactionStockService.checkStockAvailability(userId, items, prisma);
             }
-            const totalAmount = new prisma_1.Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
-            const finalAmount = new prisma_1.Prisma.Decimal(totalAmount.minus(discountAmount));
+            const totalAmount = new client_1.Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
+            const finalAmount = new client_1.Prisma.Decimal(totalAmount.minus(discountAmount));
             let profit = null;
             if (type === 'SALE') {
                 profit = await this.profitCalculationService.calculateProfit(items, prisma);
@@ -163,7 +163,7 @@ let TransactionsService = class TransactionsService {
                 data: {
                     type,
                     totalAmount,
-                    discountAmount: new prisma_1.Prisma.Decimal(discountAmount),
+                    discountAmount: new client_1.Prisma.Decimal(discountAmount),
                     finalAmount,
                     profit,
                     invoiceDate: invoiceDate ? new Date(invoiceDate) : null,

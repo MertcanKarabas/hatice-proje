@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, TransactionType } from 'generated/prisma';
+import { Prisma, TransactionType } from '@prisma/client';
 import { ICustomerRepository } from 'src/common/interfaces/customer.repository.interface';
 import { ITransactionRepository } from 'src/common/interfaces/transaction.repository.interface';
 import { CreatePaymentCollectionDto, PaymentCollectionType } from '../dto/create-payment-collection.dto';

@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProductDto } from '../dto/create-product.dto';
-import { Prisma } from 'generated/prisma';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ProductStockService {
@@ -24,6 +24,7 @@ export class ProductStockService {
         throw new ConflictException(`Insufficient stock for component: ${productName}`);
       }
     }
+
 
     for (const component of components) {
       await this.prisma.stock.update({

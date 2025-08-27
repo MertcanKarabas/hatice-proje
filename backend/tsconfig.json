@@ -9,9 +9,9 @@
     "target": "es2017",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
+    "baseUrl": ".",
     "paths": {
-      "generated/prisma": ["./generated/prisma"]
+      "generated/*": ["src/generated/*"]
     },
     "incremental": true,
     "skipLibCheck": true,

@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
-import { Prisma } from 'generated/prisma';
+import { Prisma } from '@prisma/client';
 import { IProductRepository } from 'src/common/interfaces/product.repository.interface';
 import { IProductFilterService } from './interfaces/product-filter.service.interface';
 import { PrismaService } from 'src/prisma/prisma.service';

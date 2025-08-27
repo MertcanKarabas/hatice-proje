@@ -1,6 +1,6 @@
 import { IsString, IsOptional, IsEmail, IsPhoneNumber, IsEnum } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { CustomerType, Prisma } from 'generated/prisma';
+import { CustomerType, Prisma } from '@prisma/client';
 
 export class CreateCustomerDto {
     @IsString()

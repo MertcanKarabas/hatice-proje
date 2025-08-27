@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { Stock } from 'generated/prisma';
+import { Stock } from '@prisma/client';
 import { IStockRepository } from 'src/common/interfaces/stock.repository.interface';
 
 @Injectable()

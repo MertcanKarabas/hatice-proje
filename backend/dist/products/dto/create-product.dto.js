@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateProductDto = void 0;
 const class_transformer_1 = require("class-transformer");
 const class_validator_1 = require("class-validator");
-const prisma_1 = require("../../../generated/prisma/index.js");
+const client_1 = require("@prisma/client");
 class ProductComponentDto {
 }
 __decorate([
@@ -44,12 +44,12 @@ __decorate([
     __metadata("design:type", Number)
 ], CreateProductDto.prototype, "quantity", void 0);
 __decorate([
-    (0, class_validator_1.IsEnum)(prisma_1.Currency, { message: 'Geçersiz para birimi seçtiniz.' }),
+    (0, class_validator_1.IsEnum)(client_1.Currency, { message: 'Geçersiz para birimi seçtiniz.' }),
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], CreateProductDto.prototype, "currency", void 0);
 __decorate([
-    (0, class_validator_1.IsEnum)(prisma_1.ProductUnit, { message: 'Geçersiz birim tipi seçtiniz.' }),
+    (0, class_validator_1.IsEnum)(client_1.ProductUnit, { message: 'Geçersiz birim tipi seçtiniz.' }),
     (0, class_validator_1.IsNotEmpty)({ message: 'Birim alanı boş bırakılamaz.' }),
     __metadata("design:type", String)
 ], CreateProductDto.prototype, "unit", void 0);

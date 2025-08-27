@@ -1,4 +1,4 @@
-import { User } from 'generated/prisma';
+import { User } from '@prisma/client';
 import { IBaseRepository } from './base.repository.interface';
 export declare abstract class IUserRepository implements IBaseRepository<User> {
     abstract findByEmail(email: string): Promise<User | null>;

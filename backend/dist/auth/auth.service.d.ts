@@ -1,5 +1,5 @@
 import { JwtService } from '@nestjs/jwt';
-import { User } from 'generated/prisma';
+import { User } from '@prisma/client';
 import { UserService } from '../user/user.service';
 import { RegisterDto } from './dto/register.dto';
 export declare class AuthService {

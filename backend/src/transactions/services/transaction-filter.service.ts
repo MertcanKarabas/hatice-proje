@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { ITransactionFilterService } from '../interfaces/transaction-filter.service.interface';
-import { Prisma, TransactionType } from 'generated/prisma';
+import { Prisma, TransactionType } from '@prisma/client';
 
 @Injectable()
 export class TransactionFilterService implements ITransactionFilterService {

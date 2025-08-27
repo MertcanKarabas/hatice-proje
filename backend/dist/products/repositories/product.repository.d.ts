@@ -1,4 +1,4 @@
-import { Product, Prisma } from 'generated/prisma';
+import { Product, Prisma } from '@prisma/client';
 import { BaseRepository } from '../../common/database/repositories/base.repository';
 import { IProductRepository } from '../../common/interfaces/product.repository.interface';
 import { PrismaService } from 'src/prisma/prisma.service';

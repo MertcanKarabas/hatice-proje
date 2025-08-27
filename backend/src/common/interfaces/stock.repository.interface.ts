@@ -1,4 +1,4 @@
-import { Stock } from 'generated/prisma';
+import { Stock } from '@prisma/client';
 import { IBaseRepository } from './base.repository.interface';
 
 export abstract class IStockRepository implements IBaseRepository<Stock> {

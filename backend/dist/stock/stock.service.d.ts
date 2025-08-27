@@ -1,4 +1,4 @@
-import { Stock } from 'generated/prisma';
+import { Stock } from '@prisma/client';
 import { IStockRepository } from 'src/common/interfaces/stock.repository.interface';
 export declare class StockService {
     private readonly stockRepository;

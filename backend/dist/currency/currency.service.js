@@ -14,7 +14,7 @@ const common_1 = require("@nestjs/common");
 const axios_1 = require("@nestjs/axios");
 const prisma_service_1 = require("../prisma/prisma.service");
 const rxjs_1 = require("rxjs");
-const prisma_1 = require("../../generated/prisma/index.js");
+const client_1 = require("@prisma/client");
 let CurrencyService = class CurrencyService {
     constructor(httpService, prisma) {
         this.httpService = httpService;
@@ -33,8 +33,8 @@ let CurrencyService = class CurrencyService {
         const url = 'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json';
         const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(url));
         const data = response.data;
-        const usdToTryRate = new prisma_1.Prisma.Decimal(data.usd.try);
-        const usdToEurRate = new prisma_1.Prisma.Decimal(data.usd.eur);
+        const usdToTryRate = new client_1.Prisma.Decimal(data.usd.try);
+        const usdToEurRate = new client_1.Prisma.Decimal(data.usd.eur);
         const eurToTryRate = usdToTryRate.div(usdToEurRate);
         await this.prisma.exchange.upsert({
             where: { code: 'TRY' },

@@ -12,39 +12,39 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CustomerBalanceService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
-const prisma_1 = require("../../../generated/prisma/index.js");
+const client_1 = require("@prisma/client");
 let CustomerBalanceService = class CustomerBalanceService {
     constructor(prisma) {
         this.prisma = prisma;
     }
     async updateCustomerBalance(customerId, finalAmount, transactionType, prismaTransaction) {
         if (!customerId)
-            return { previousBalance: new prisma_1.Prisma.Decimal(0), newBalance: new prisma_1.Prisma.Decimal(0) };
+            return { previousBalance: new client_1.Prisma.Decimal(0), newBalance: new client_1.Prisma.Decimal(0) };
         const customer = await prismaTransaction.customer.findUnique({ where: { id: customerId } });
         if (customer) {
-            const previousBalance = new prisma_1.Prisma.Decimal(customer.balance);
-            let newBalance = new prisma_1.Prisma.Decimal(customer.balance);
-            if (transactionType === prisma_1.TransactionType.SALE) {
+            const previousBalance = new client_1.Prisma.Decimal(customer.balance);
+            let newBalance = new client_1.Prisma.Decimal(customer.balance);
+            if (transactionType === client_1.TransactionType.SALE) {
                 newBalance = newBalance.plus(finalAmount);
             }
-            else if (transactionType === prisma_1.TransactionType.PURCHASE) {
+            else if (transactionType === client_1.TransactionType.PURCHASE) {
                 newBalance = newBalance.minus(finalAmount);
             }
             await prismaTransaction.customer.update({ where: { id: customerId }, data: { balance: newBalance } });
             return { previousBalance, newBalance };
         }
-        return { previousBalance: new prisma_1.Prisma.Decimal(0), newBalance: new prisma_1.Prisma.Decimal(0) };
+        return { previousBalance: new client_1.Prisma.Decimal(0), newBalance: new client_1.Prisma.Decimal(0) };
     }
     async revertCustomerBalance(customerId, finalAmount, transactionType, prismaTransaction) {
         if (!customerId)
             return;
         const customer = await prismaTransaction.customer.findUnique({ where: { id: customerId } });
         if (customer) {
-            let oldBalance = new prisma_1.Prisma.Decimal(customer.balance);
-            if (transactionType === prisma_1.TransactionType.SALE) {
+            let oldBalance = new client_1.Prisma.Decimal(customer.balance);
+            if (transactionType === client_1.TransactionType.SALE) {
                 oldBalance = oldBalance.minus(finalAmount);
             }
-            else if (transactionType === prisma_1.TransactionType.PURCHASE) {
+            else if (transactionType === client_1.TransactionType.PURCHASE) {
                 oldBalance = oldBalance.plus(finalAmount);
             }
             await prismaTransaction.customer.update({ where: { id: customerId }, data: { balance: oldBalance } });

@@ -11,7 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PaymentCollectionService = void 0;
 const common_1 = require("@nestjs/common");
-const prisma_1 = require("../../../generated/prisma/index.js");
+const client_1 = require("@prisma/client");
 const customer_repository_interface_1 = require("../../common/interfaces/customer.repository.interface");
 const transaction_repository_interface_1 = require("../../common/interfaces/transaction.repository.interface");
 const create_payment_collection_dto_1 = require("../dto/create-payment-collection.dto");
@@ -25,10 +25,10 @@ let PaymentCollectionService = class PaymentCollectionService {
         if (!customer || customer.userId !== userId) {
             throw new common_1.NotFoundException(`Customer with ID ${dto.customerId} not found or access denied.`);
         }
-        const amount = new prisma_1.Prisma.Decimal(dto.amount);
+        const amount = new client_1.Prisma.Decimal(dto.amount);
         const transactionType = dto.type === create_payment_collection_dto_1.PaymentCollectionType.COLLECTION
-            ? prisma_1.TransactionType.COLLECTION
-            : prisma_1.TransactionType.PAYMENT;
+            ? client_1.TransactionType.COLLECTION
+            : client_1.TransactionType.PAYMENT;
         const newBalance = dto.type === create_payment_collection_dto_1.PaymentCollectionType.COLLECTION
             ? customer.balance.minus(amount)
             : customer.balance.plus(amount);
@@ -39,7 +39,7 @@ let PaymentCollectionService = class PaymentCollectionService {
             type: transactionType,
             totalAmount: amount,
             finalAmount: amount,
-            discountAmount: new prisma_1.Prisma.Decimal(0),
+            discountAmount: new client_1.Prisma.Decimal(0),
         });
         return transaction;
     }

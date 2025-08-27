@@ -1,4 +1,4 @@
-import { ProductUnit, Currency } from 'generated/prisma';
+import { ProductUnit, Currency } from '@prisma/client';
 declare class ProductComponentDto {
     componentId: string;
     quantity: number;

@@ -1,4 +1,4 @@
-import { CustomerType, Prisma } from 'generated/prisma';
+import { CustomerType, Prisma } from '@prisma/client';
 export declare class CreateCustomerDto {
     commercialTitle: string;
     address: string;

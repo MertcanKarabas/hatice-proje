@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Stock } from 'generated/prisma';
+import { Stock } from '@prisma/client';
 import { BaseRepository } from '../../common/database/repositories/base.repository';
 import { IStockRepository } from '../../common/interfaces/stock.repository.interface';
 import { PrismaService } from 'src/prisma/prisma.service';

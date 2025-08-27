@@ -1,4 +1,4 @@
-import { Customer, Prisma } from 'generated/prisma';
+import { Customer, Prisma } from '@prisma/client';
 import { IBaseRepository } from './base.repository.interface';
 
 export abstract class ICustomerRepository implements IBaseRepository<Customer> {

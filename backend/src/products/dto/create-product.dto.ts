@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsString, IsOptional, IsNumber, Min, IsNotEmpty, IsEnum, IsBoolean, ValidateNested, IsArray } from 'class-validator';
-import { ProductUnit, Currency } from 'generated/prisma';
+import { ProductUnit, Currency } from '@prisma/client';
 
 class ProductComponentDto {
     @IsString()

@@ -22,7 +22,7 @@ var __rest = (this && this.__rest) || function (s, e) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductsService = void 0;
 const common_1 = require("@nestjs/common");
-const prisma_1 = require("../../generated/prisma/index.js");
+const client_1 = require("@prisma/client");
 const product_repository_interface_1 = require("../common/interfaces/product.repository.interface");
 const product_filter_service_interface_1 = require("./interfaces/product-filter.service.interface");
 const prisma_service_1 = require("../prisma/prisma.service");
@@ -56,7 +56,7 @@ let ProductsService = class ProductsService {
                 return this.prisma.$transaction(async (prisma) => {
                     await this.productStockService.checkAndDecrementStockForPackageCreation(userId, components, dto.quantity);
                     const newPackage = await prisma.product.create({
-                        data: Object.assign(Object.assign({}, productData), { userId, price: new prisma_1.Prisma.Decimal(dto.price), quantity: dto.quantity, packageComponents: {
+                        data: Object.assign(Object.assign({}, productData), { userId, price: new client_1.Prisma.Decimal(dto.price), quantity: dto.quantity, packageComponents: {
                                 create: components.map(c => ({
                                     componentId: c.componentId,
                                     quantity: c.quantity,
@@ -69,14 +69,14 @@ let ProductsService = class ProductsService {
             }
             return this.prisma.$transaction(async (prisma) => {
                 const newProduct = await prisma.product.create({
-                    data: Object.assign(Object.assign({ userId }, productData), { price: new prisma_1.Prisma.Decimal(dto.price), quantity: dto.quantity }),
+                    data: Object.assign(Object.assign({ userId }, productData), { price: new client_1.Prisma.Decimal(dto.price), quantity: dto.quantity }),
                 });
                 await this.productStockService.createStockForNewProduct(userId, newProduct.id, dto.quantity);
                 return newProduct;
             });
         }
         catch (error) {
-            if (error instanceof prisma_1.Prisma.PrismaClientKnownRequestError) {
+            if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
                 if (error.code === 'P2002' &&
                     Array.isArray((_a = error.meta) === null || _a === void 0 ? void 0 : _a.target) &&
                     ((_b = error.meta) === null || _b === void 0 ? void 0 : _b.target).includes('sku')) {
@@ -105,7 +105,7 @@ let ProductsService = class ProductsService {
             }
             const updatedProduct = await prisma.product.update({
                 where: { id: productId },
-                data: Object.assign(Object.assign({}, productData), { price: new prisma_1.Prisma.Decimal(dto.price), packageComponents: {
+                data: Object.assign(Object.assign({}, productData), { price: new client_1.Prisma.Decimal(dto.price), packageComponents: {
                         deleteMany: {},
                         create: dto.isPackage ? components.map(c => (Object.assign(Object.assign({}, c), { componentId: c.componentId }))) : [],
                     } }),

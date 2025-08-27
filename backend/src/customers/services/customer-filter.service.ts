@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { ICustomerFilterService } from '../interfaces/customer-filter.service.interface';
-import { Prisma } from 'generated/prisma';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CustomerFilterService implements ICustomerFilterService {
@@ -11,20 +11,34 @@ export class CustomerFilterService implements ICustomerFilterService {
       return where;
     }
 
-    const allowedFields = ['commercialTitle', 'email', 'phone', 'taxNumber'];
-    const allowedOperators = ['contains', 'equals'];
+    const allowedFields = ['commercialTitle', 'email', 'phone', 'taxNumber', 'type'];
+    const enumFields = ['type'];
 
-    if (!allowedFields.includes(field) || !allowedOperators.includes(operator)) {
-      throw new BadRequestException('Geçersiz filtre');
+    if (!allowedFields.includes(field)) {
+      throw new BadRequestException('Geçersiz filtre alanı');
     }
 
-    switch (operator) {
-        case 'contains':
-          where[field] = { contains: value, mode: 'insensitive' };
-          break;
-        case 'equals':
-          where[field] = value;
-          break;
+    if (enumFields.includes(field)) {
+      if (operator !== 'equals') {
+        throw new BadRequestException(`Operatör '${operator}' enum alanı '${field}' için geçersizdir. Sadece 'equals' desteklenir.`);
+      }
+      if (value === '') { // If value is empty for an enum, don't apply the filter
+        return where;
+      }
+      where[field] = value;
+    } else {
+      const allowedStringOperators = ['contains', 'equals'];
+      if (!allowedStringOperators.includes(operator)) {
+        throw new BadRequestException(`Operatör '${operator}' string alanı '${field}' için geçersizdir.`);
+      }
+      switch (operator) {
+          case 'contains':
+            where[field] = { contains: value, mode: 'insensitive' };
+            break;
+          case 'equals':
+            where[field] = value;
+            break;
+      }
     }
 
     return where;

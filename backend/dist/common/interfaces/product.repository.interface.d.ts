@@ -1,4 +1,4 @@
-import { Product, Prisma } from 'generated/prisma';
+import { Product, Prisma } from '@prisma/client';
 import { IBaseRepository } from './base.repository.interface';
 export declare abstract class IProductRepository implements IBaseRepository<Product> {
     abstract findAllByUser(whereClause: Prisma.ProductWhereInput): Promise<Product[]>;

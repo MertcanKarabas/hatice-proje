@@ -14,18 +14,33 @@ let CustomerFilterService = class CustomerFilterService {
         if (!field || !operator || value === undefined) {
             return where;
         }
-        const allowedFields = ['commercialTitle', 'email', 'phone', 'taxNumber'];
-        const allowedOperators = ['contains', 'equals'];
-        if (!allowedFields.includes(field) || !allowedOperators.includes(operator)) {
-            throw new common_1.BadRequestException('Geçersiz filtre');
+        const allowedFields = ['commercialTitle', 'email', 'phone', 'taxNumber', 'type'];
+        const enumFields = ['type'];
+        if (!allowedFields.includes(field)) {
+            throw new common_1.BadRequestException('Geçersiz filtre alanı');
         }
-        switch (operator) {
-            case 'contains':
-                where[field] = { contains: value, mode: 'insensitive' };
-                break;
-            case 'equals':
-                where[field] = value;
-                break;
+        if (enumFields.includes(field)) {
+            if (operator !== 'equals') {
+                throw new common_1.BadRequestException(`Operatör '${operator}' enum alanı '${field}' için geçersizdir. Sadece 'equals' desteklenir.`);
+            }
+            if (value === '') {
+                return where;
+            }
+            where[field] = value;
+        }
+        else {
+            const allowedStringOperators = ['contains', 'equals'];
+            if (!allowedStringOperators.includes(operator)) {
+                throw new common_1.BadRequestException(`Operatör '${operator}' string alanı '${field}' için geçersizdir.`);
+            }
+            switch (operator) {
+                case 'contains':
+                    where[field] = { contains: value, mode: 'insensitive' };
+                    break;
+                case 'equals':
+                    where[field] = value;
+                    break;
+            }
         }
         return where;
     }

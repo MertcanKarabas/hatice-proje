@@ -1,4 +1,4 @@
-import { TransactionItem, Prisma } from 'generated/prisma';
+import { TransactionItem, Prisma } from '@prisma/client';
 import { BaseRepository } from '../../common/database/repositories/base.repository';
 import { ITransactionItemRepository } from '../../common/interfaces/transaction-item.repository.interface';
 import { PrismaService } from 'src/prisma/prisma.service';

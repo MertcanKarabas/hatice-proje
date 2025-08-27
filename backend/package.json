@@ -3,19 +3,20 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "prisma:generate": "npm run prisma:combine && prisma generate",
     "prisma:migrate": "npm run prisma:combine && prisma migrate dev",
     "prisma:studio": "npm run prisma:combine && prisma studio",
-    "prisma:combine": "cat prisma/parts/*.prisma > prisma/schema.prisma",
-    "build": "npm run prisma:generate && nest build",
+    "build": "npm run prisma:generate && nest build && tsc-alias",
     "format": "prettier --write 'src/**/*.ts' 'test/**/*.ts'",
     "start": "nest start",
-    "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint '{src,apps,libs,test}/**/*.ts'",
     "lint:fix": "eslint '{src,apps,libs,test}/**/*.ts' --fix",
-    "test": "jest"
+    "test": "jest",
+    "prisma:generate": "npm run prisma:combine && prisma generate",
+    "prisma:combine": "mkdir -p prisma && cat prisma/parts/*.prisma > prisma/schema.prisma",
+    "start:dev": "npm run prisma:generate && nest start --watch",
+    "postinstall": "npm run prisma:generate"
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.1",
@@ -37,7 +38,6 @@
     "helmet": "^8.1.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
-    "prisma": "^6.14.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
   },
@@ -53,6 +53,7 @@
     "@typescript-eslint/eslint-plugin": "^8.38.0",
     "eslint-config-prettier": "^10.1.8",
     "jest": "^30.0.4",
+    "prisma": "^6.14.0",
     "ts-jest": "^29.4.0",
     "typescript": "^5.8.3"
   }

@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { IProductFilterService } from '../interfaces/product-filter.service.interface';
-import { Prisma } from 'generated/prisma';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ProductFilterService implements IProductFilterService {
@@ -55,3 +55,4 @@ export class ProductFilterService implements IProductFilterService {
     return where;
   }
 }
+

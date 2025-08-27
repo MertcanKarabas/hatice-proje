@@ -1,4 +1,4 @@
-import { User } from 'generated/prisma';
+import { User } from '@prisma/client';
 import { IBaseRepository } from './base.repository.interface';
 
 export abstract class IUserRepository implements IBaseRepository<User> {

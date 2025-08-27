@@ -1,5 +1,5 @@
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from 'generated/prisma';
+import { Prisma } from '@prisma/client';
 export declare class ProfitCalculationService {
     private readonly prisma;
     constructor(prisma: PrismaService);

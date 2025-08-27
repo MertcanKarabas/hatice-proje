@@ -1,5 +1,5 @@
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma, TransactionType } from 'generated/prisma';
+import { Prisma, TransactionType } from '@prisma/client';
 export declare class CustomerBalanceService {
     private readonly prisma;
     constructor(prisma: PrismaService);

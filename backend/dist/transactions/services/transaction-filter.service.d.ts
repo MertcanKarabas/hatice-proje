@@ -1,5 +1,5 @@
 import { ITransactionFilterService } from '../interfaces/transaction-filter.service.interface';
-import { Prisma } from 'generated/prisma';
+import { Prisma } from '@prisma/client';
 export declare class TransactionFilterService implements ITransactionFilterService {
     buildWhereClause(userId: string, field?: string, operator?: string, value?: string, endValue?: string): Promise<Prisma.TransactionWhereInput>;
 }

@@ -8,7 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TransactionFilterService = void 0;
 const common_1 = require("@nestjs/common");
-const prisma_1 = require("../../../generated/prisma/index.js");
+const client_1 = require("@prisma/client");
 let TransactionFilterService = class TransactionFilterService {
     async buildWhereClause(userId, field, operator, value, endValue) {
         const where = { userId };
@@ -46,7 +46,7 @@ let TransactionFilterService = class TransactionFilterService {
             if (operator !== 'equals') {
                 throw new common_1.BadRequestException("İşlem tipi için sadece 'Eşittir' operatörü kullanılabilir.");
             }
-            const validTransactionTypes = Object.values(prisma_1.TransactionType);
+            const validTransactionTypes = Object.values(client_1.TransactionType);
             if (!validTransactionTypes.includes(value)) {
                 throw new common_1.BadRequestException('Geçersiz işlem tipi değeri.');
             }
@@ -88,7 +88,7 @@ let TransactionFilterService = class TransactionFilterService {
             }
         }
         else if (field === 'finalAmount') {
-            const decimalValue = new prisma_1.Prisma.Decimal(value);
+            const decimalValue = new client_1.Prisma.Decimal(value);
             if (decimalValue.isNaN()) {
                 throw new common_1.BadRequestException('Miktar sayısal bir değer olmalıdır.');
             }

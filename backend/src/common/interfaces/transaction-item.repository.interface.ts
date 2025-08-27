@@ -1,4 +1,4 @@
-import { TransactionItem, Prisma } from 'generated/prisma';
+import { TransactionItem, Prisma } from '@prisma/client';
 import { IBaseRepository } from './base.repository.interface';
 
 export abstract class ITransactionItemRepository implements IBaseRepository<TransactionItem> {

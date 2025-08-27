@@ -12,19 +12,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProfitCalculationService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
-const prisma_1 = require("../../../generated/prisma/index.js");
+const client_1 = require("@prisma/client");
 let ProfitCalculationService = class ProfitCalculationService {
     constructor(prisma) {
         this.prisma = prisma;
     }
     async calculateProfit(items, prismaTransaction) {
-        let profit = new prisma_1.Prisma.Decimal(0);
+        let profit = new client_1.Prisma.Decimal(0);
         for (const item of items) {
             const product = await prismaTransaction.product.findUnique({ where: { id: item.productId } });
             if (!product) {
                 throw new common_1.NotFoundException(`Product with ID ${item.productId} not found.`);
             }
-            const itemProfit = new prisma_1.Prisma.Decimal(item.price).minus(product.price).times(item.quantity);
+            const itemProfit = new client_1.Prisma.Decimal(item.price).minus(product.price).times(item.quantity);
             if (product.currency === 'TRY') {
                 profit = profit.plus(itemProfit);
             }

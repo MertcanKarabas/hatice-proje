@@ -1,25 +1,20 @@
-# Base image
-FROM node:18-alpine
+FROM node:20-alpine
 
-# Create app directory
 WORKDIR /usr/src/app
 
-# ÖNCE SADECE package.json dosyalarını kopyala
-# Bu sayede her kod değişikliğinde npm install tekrar çalışmaz
-COPY backend/package*.json ./
+# copy package files
+COPY package*.json ./
 ENV NODE_ENV=development
-# Install app dependencies
+
+# copy prisma BEFORE npm install (postinstall uses it)
+COPY prisma ./prisma
+
+# install deps (runs postinstall -> prisma:generate)
 RUN npm install
 RUN npm install -g @nestjs/cli
-# Bundle app source
-# Ardından projenin geri kalanını kopyala
-COPY backend/ ./
 
-# Generate Prisma Client
-RUN npx prisma generate
+# copy the rest
+COPY . .
 
-# Expose port
 EXPOSE 3000
-
-# Start command
-CMD [ "npm", "run", "start:dev" ]
+CMD ["npm", "run", "start:dev"]

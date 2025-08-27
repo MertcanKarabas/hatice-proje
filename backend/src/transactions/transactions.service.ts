@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { ITransactionRepository } from 'src/common/interfaces/transaction.repository.interface';
 import { ITransactionItemRepository } from 'src/common/interfaces/transaction-item.repository.interface';
-import { Prisma, TransactionType } from 'generated/prisma';
+import { Prisma, TransactionType } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ITransactionFilterService } from './interfaces/transaction-filter.service.interface';
 import { TransactionStockService } from './services/transaction-stock.service';

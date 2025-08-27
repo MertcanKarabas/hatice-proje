@@ -1,4 +1,4 @@
-import { Stock } from 'generated/prisma';
+import { Stock } from '@prisma/client';
 import { IBaseRepository } from './base.repository.interface';
 export declare abstract class IStockRepository implements IBaseRepository<Stock> {
     abstract findStockByProductAndUser(userId: string, productId: string): Promise<Stock | null>;

@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateCustomerDto = void 0;
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
-const prisma_1 = require("../../../generated/prisma/index.js");
+const client_1 = require("@prisma/client");
 class CreateCustomerDto {
 }
 exports.CreateCustomerDto = CreateCustomerDto;
@@ -26,7 +26,7 @@ __decorate([
 ], CreateCustomerDto.prototype, "address", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEnum)(prisma_1.CustomerType),
+    (0, class_validator_1.IsEnum)(client_1.CustomerType),
     __metadata("design:type", String)
 ], CreateCustomerDto.prototype, "type", void 0);
 __decorate([
@@ -53,7 +53,7 @@ __decorate([
 ], CreateCustomerDto.prototype, "email", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_transformer_1.Transform)(({ value }) => value ? new prisma_1.Prisma.Decimal(value) : undefined),
-    __metadata("design:type", prisma_1.Prisma.Decimal)
+    (0, class_transformer_1.Transform)(({ value }) => value ? new client_1.Prisma.Decimal(value) : undefined),
+    __metadata("design:type", client_1.Prisma.Decimal)
 ], CreateCustomerDto.prototype, "balance", void 0);
 //# sourceMappingURL=create-customer.dto.js.map
