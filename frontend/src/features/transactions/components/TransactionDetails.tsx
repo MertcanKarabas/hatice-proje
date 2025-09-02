@@ -81,6 +81,7 @@ const TransactionDetails: React.FC = () => {
             grandTotal,
             customerPreviousBalance: transaction.customerPreviousBalance,
             customerNewBalance: transaction.customerNewBalance,
+            transactionCurrencyCode: transaction.exchange?.code, // Pass transaction currency code
         });
     };
 
@@ -126,7 +127,7 @@ const TransactionDetails: React.FC = () => {
                 <Table size="small">
                     <TableBody>
                         <TableRow>
-                            <TableCell component="th" scope="row">Müşteri ID:</TableCell>
+                            <TableCell component="th" scope="row">Müşteri Ünvanı:</TableCell>
                             <TableCell>{transaction.customer?.commercialTitle ?? transaction.customerId}</TableCell>
                         </TableRow>
                         <TableRow>
@@ -153,6 +154,24 @@ const TransactionDetails: React.FC = () => {
                             <TableCell component="th" scope="row">Güncelleme Tarihi:</TableCell>
                             <TableCell>{new Date(transaction.updatedAt).toLocaleString()}</TableCell>
                         </TableRow>
+                        {transaction.customerPreviousBalance !== undefined && transaction.customerNewBalance !== undefined && (
+                            <>
+                                <TableRow>
+                                    <TableCell component="th" scope="row">Müşteri Önceki Bakiye:</TableCell>
+                                    <TableCell>{Number(transaction.customerPreviousBalance).toFixed(2)} {transaction.customer?.exchange?.code || 'TL'}</TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell component="th" scope="row">Müşteri Yeni Bakiye:</TableCell>
+                                    <TableCell>{Number(transaction.customerNewBalance).toFixed(2)} {transaction.customer?.exchange?.code || 'TL'}</TableCell>
+                                </TableRow>
+                            </>
+                        )}
+                        {transaction.exchange && (
+                            <TableRow>
+                                <TableCell component="th" scope="row">İşlem Para Birimi:</TableCell>
+                                <TableCell>{transaction.exchange.code}</TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </Paper>

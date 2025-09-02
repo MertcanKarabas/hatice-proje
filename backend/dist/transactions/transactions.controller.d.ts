@@ -17,7 +17,7 @@ export declare class TransactionsController {
         invoiceDate: Date | null;
         dueDate: Date | null;
         vatRate: number | null;
-        currency: string | null;
+        exchangeId: string | null;
         profit: import("@prisma/client/runtime/library").Decimal | null;
         customerPreviousBalance: import("@prisma/client/runtime/library").Decimal | null;
         customerNewBalance: import("@prisma/client/runtime/library").Decimal | null;
@@ -36,7 +36,7 @@ export declare class TransactionsController {
         invoiceDate: Date | null;
         dueDate: Date | null;
         vatRate: number | null;
-        currency: string | null;
+        exchangeId: string | null;
         profit: import("@prisma/client/runtime/library").Decimal | null;
         customerPreviousBalance: import("@prisma/client/runtime/library").Decimal | null;
         customerNewBalance: import("@prisma/client/runtime/library").Decimal | null;
@@ -55,7 +55,7 @@ export declare class TransactionsController {
         invoiceDate: Date | null;
         dueDate: Date | null;
         vatRate: number | null;
-        currency: string | null;
+        exchangeId: string | null;
         profit: import("@prisma/client/runtime/library").Decimal | null;
         customerPreviousBalance: import("@prisma/client/runtime/library").Decimal | null;
         customerNewBalance: import("@prisma/client/runtime/library").Decimal | null;
@@ -79,7 +79,7 @@ export declare class TransactionsController {
         invoiceDate: Date | null;
         dueDate: Date | null;
         vatRate: number | null;
-        currency: string | null;
+        exchangeId: string | null;
         profit: import("@prisma/client/runtime/library").Decimal | null;
         customerPreviousBalance: import("@prisma/client/runtime/library").Decimal | null;
         customerNewBalance: import("@prisma/client/runtime/library").Decimal | null;

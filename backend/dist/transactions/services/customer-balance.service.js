@@ -13,51 +13,73 @@ exports.CustomerBalanceService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
 const client_1 = require("@prisma/client");
+const currency_service_1 = require("../../currency/currency.service");
 let CustomerBalanceService = class CustomerBalanceService {
-    constructor(prisma) {
+    constructor(prisma, currencyService) {
         this.prisma = prisma;
+        this.currencyService = currencyService;
     }
-    async updateCustomerBalance(customerId, finalAmount, transactionType, prismaTransaction) {
+    async updateCustomerBalance(customerId, finalAmount, transactionType, prismaTransaction, transactionExchangeId) {
+        var _a;
         if (!customerId)
             return { previousBalance: new client_1.Prisma.Decimal(0), newBalance: new client_1.Prisma.Decimal(0) };
-        const customer = await prismaTransaction.customer.findUnique({ where: { id: customerId } });
+        const customer = await prismaTransaction.customer.findUnique({
+            where: { id: customerId },
+            include: { exchange: true },
+        });
         if (customer) {
+            const customerBalanceCurrencyCode = ((_a = customer.exchange) === null || _a === void 0 ? void 0 : _a.code) || 'TRY';
+            const transactionCurrencyCode = transactionExchangeId || 'TRY';
+            let convertedAmount = finalAmount;
+            if (transactionCurrencyCode !== customerBalanceCurrencyCode) {
+                convertedAmount = await this.currencyService.convertAmount(finalAmount, transactionCurrencyCode, customerBalanceCurrencyCode);
+            }
             const previousBalance = new client_1.Prisma.Decimal(customer.balance);
             let newBalance = new client_1.Prisma.Decimal(customer.balance);
             if (transactionType === client_1.TransactionType.SALE) {
-                newBalance = newBalance.plus(finalAmount);
+                newBalance = newBalance.plus(convertedAmount);
             }
             else if (transactionType === client_1.TransactionType.PURCHASE) {
-                newBalance = newBalance.minus(finalAmount);
+                newBalance = newBalance.minus(convertedAmount);
             }
             else if (transactionType === client_1.TransactionType.COLLECTION) {
-                newBalance = newBalance.minus(finalAmount);
+                newBalance = newBalance.minus(convertedAmount);
             }
             else if (transactionType === client_1.TransactionType.PAYMENT) {
-                newBalance = newBalance.plus(finalAmount);
+                newBalance = newBalance.plus(convertedAmount);
             }
             await prismaTransaction.customer.update({ where: { id: customerId }, data: { balance: newBalance } });
             return { previousBalance, newBalance };
         }
         return { previousBalance: new client_1.Prisma.Decimal(0), newBalance: new client_1.Prisma.Decimal(0) };
     }
-    async revertCustomerBalance(customerId, finalAmount, transactionType, prismaTransaction) {
+    async revertCustomerBalance(customerId, finalAmount, transactionType, prismaTransaction, transactionExchangeId) {
+        var _a;
         if (!customerId)
             return;
-        const customer = await prismaTransaction.customer.findUnique({ where: { id: customerId } });
+        const customer = await prismaTransaction.customer.findUnique({
+            where: { id: customerId },
+            include: { exchange: true },
+        });
         if (customer) {
+            const customerBalanceCurrencyCode = ((_a = customer.exchange) === null || _a === void 0 ? void 0 : _a.code) || 'TRY';
+            const transactionCurrencyCode = transactionExchangeId || 'TRY';
+            let convertedAmount = finalAmount;
+            if (transactionCurrencyCode !== customerBalanceCurrencyCode) {
+                convertedAmount = await this.currencyService.convertAmount(finalAmount, transactionCurrencyCode, customerBalanceCurrencyCode);
+            }
             let oldBalance = new client_1.Prisma.Decimal(customer.balance);
             if (transactionType === client_1.TransactionType.SALE) {
-                oldBalance = oldBalance.minus(finalAmount);
+                oldBalance = oldBalance.minus(convertedAmount);
             }
             else if (transactionType === client_1.TransactionType.PURCHASE) {
-                oldBalance = oldBalance.plus(finalAmount);
+                oldBalance = oldBalance.plus(convertedAmount);
             }
             else if (transactionType === client_1.TransactionType.COLLECTION) {
-                oldBalance = oldBalance.plus(finalAmount);
+                oldBalance = oldBalance.plus(convertedAmount);
             }
             else if (transactionType === client_1.TransactionType.PAYMENT) {
-                oldBalance = oldBalance.minus(finalAmount);
+                oldBalance = oldBalance.minus(convertedAmount);
             }
             await prismaTransaction.customer.update({ where: { id: customerId }, data: { balance: oldBalance } });
         }
@@ -66,6 +88,7 @@ let CustomerBalanceService = class CustomerBalanceService {
 exports.CustomerBalanceService = CustomerBalanceService;
 exports.CustomerBalanceService = CustomerBalanceService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        currency_service_1.CurrencyService])
 ], CustomerBalanceService);
 //# sourceMappingURL=customer-balance.service.js.map

@@ -4,13 +4,15 @@ import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { tr } from 'date-fns/locale';
 import { useForm, Controller } from 'react-hook-form';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { setTransactionInfo } from '../../../store/transactionSlice';
-import type { Transaction } from '../../../types';
+import type { Transaction, Exchange } from '../../../types';
 import CustomerFormModal from '../../customers/components/CustomerFormModal';
 import { useTransactionForm } from '../hooks/useTransactionForm';
+import { getCurrencies } from '../../currencies/services/currencyService';
+import axiosClient from '../../../services/axiosClient';
 
 type FormValues = Omit<Transaction, 'invoiceDate' | 'dueDate'> & {
     invoiceDate: Date;
@@ -24,7 +26,7 @@ export default function TransactionForm() {
             invoiceDate: new Date(),
             dueDate: new Date(),
             vatRate: 0,
-            currency: 'TRY',
+            exchangeId: '', // Initialize exchangeId
             type: 'SALE',
             items: [],
         },
@@ -34,6 +36,16 @@ export default function TransactionForm() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { customers, handleCustomerAdded } = useTransactionForm();
+    const [currencies, setCurrencies] = useState<Exchange[]>([]);
+
+    useEffect(() => {
+        getCurrencies(axiosClient).then((data) => {
+            setCurrencies(data);
+            if (data.length > 0) {
+                setValue('exchangeId', data[0].code); // Set default transaction currency to code
+            }
+        }).catch(console.error);
+    }, []);
 
     const onSubmit = (data: FormValues) => {
         dispatch(setTransactionInfo({ ...data, invoiceDate: data.invoiceDate.toISOString(), dueDate: data.dueDate.toISOString() }));
@@ -123,13 +135,15 @@ export default function TransactionForm() {
 
                     <Grid size={{ xs: 12, sm: 20 }} component="div">
                         <Controller
-                            name="currency"
+                            name="exchangeId"
                             control={control}
                             render={({ field }) => (
-                                <TextField select fullWidth size="small" label="Döviz Birimi" {...field}>
-                                    <MenuItem value="TRY">₺ Türk Lirası</MenuItem>
-                                    <MenuItem value="USD">$ Amerikan Doları</MenuItem>
-                                    <MenuItem value="EUR">€ Euro</MenuItem>
+                                <TextField select fullWidth size="small" label="İşlem Para Birimi" {...field}>
+                                    {currencies.map((currency) => (
+                                        <MenuItem key={currency.id} value={currency.code}>
+                                            {currency.code}
+                                        </MenuItem>
+                                    ))}
                                 </TextField>
                             )}
                         />

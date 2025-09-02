@@ -5,4 +5,10 @@ export declare class CurrencyController {
     updateRates(): Promise<{
         message: string;
     }>;
+    findAll(): Promise<{
+        id: string;
+        name: string;
+        code: string;
+        rate: import("@prisma/client/runtime/library").Decimal;
+    }[]>;
 }

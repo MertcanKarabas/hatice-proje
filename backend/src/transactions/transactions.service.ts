@@ -8,6 +8,7 @@ import { ITransactionFilterService } from './interfaces/transaction-filter.servi
 import { TransactionStockService } from './services/transaction-stock.service';
 import { CustomerBalanceService } from './services/customer-balance.service';
 import { ProfitCalculationService } from './services/profit-calculation.service';
+import { CurrencyService } from 'src/currency/currency.service';
 
 @Injectable()
 export class TransactionsService {
@@ -19,6 +20,7 @@ export class TransactionsService {
         private readonly transactionStockService: TransactionStockService,
         private readonly customerBalanceService: CustomerBalanceService,
         private readonly profitCalculationService: ProfitCalculationService,
+        private readonly currencyService: CurrencyService, // Inject CurrencyService
     ) { }
 
     async createTransaction(
@@ -26,7 +28,16 @@ export class TransactionsService {
         dto: CreateTransactionDto,
     ) {
         return this.prisma.$transaction(async (prisma) => {
-            const { type, discountAmount = 0, items, customerId, invoiceDate, dueDate, vatRate, currency, totalAmount: dtoTotalAmount, finalAmount: dtoFinalAmount } = dto;
+            const { type, discountAmount = 0, items, customerId, invoiceDate, dueDate, vatRate, totalAmount: dtoTotalAmount, finalAmount: dtoFinalAmount, exchangeId: exchangeCode } = dto;
+
+            let actualExchangeId: string | undefined;
+            if (exchangeCode) {
+                const exchange = await this.prisma.exchange.findUnique({ where: { code: exchangeCode } });
+                if (!exchange) {
+                    throw new BadRequestException(`Exchange with code ${exchangeCode} not found.`);
+                }
+                actualExchangeId = exchange.id;
+            }
 
             if (type === 'SALE') {
                 await this.transactionStockService.checkStockAvailability(userId, items, prisma);
@@ -45,6 +56,7 @@ export class TransactionsService {
                 calculatedFinalAmount,
                 type,
                 prisma,
+                exchangeCode, // Pass exchangeCode
             );
 
             console.log(`TransactionsService - createTransaction: customerPreviousBalance: ${previousBalance.toString()}, customerNewBalance: ${newBalance.toString()}`);
@@ -60,7 +72,7 @@ export class TransactionsService {
                     invoiceDate: invoiceDate ? new Date(invoiceDate) : null,
                     dueDate: dueDate ? new Date(dueDate) : null,
                     vatRate,
-                    currency,
+                    exchangeId: actualExchangeId, // Use actualExchangeId
                     customerPreviousBalance: previousBalance,
                     customerNewBalance: newBalance,
                 },
@@ -149,9 +161,19 @@ export class TransactionsService {
                 existingTransaction.finalAmount,
                 existingTransaction.type,
                 prisma,
+                existingTransaction.exchangeId, // Pass exchangeId
             );
 
-            const { type, discountAmount = 0, items, invoiceDate, dueDate, vatRate, currency, totalAmount: dtoTotalAmount, finalAmount: dtoFinalAmount } = dto;
+            const { type, discountAmount = 0, items, customerId, invoiceDate, dueDate, vatRate, totalAmount: dtoTotalAmount, finalAmount: dtoFinalAmount, exchangeId: exchangeCode } = dto;
+
+            let actualExchangeId: string | undefined;
+            if (exchangeCode) {
+                const exchange = await this.prisma.exchange.findUnique({ where: { code: exchangeCode } });
+                if (!exchange) {
+                    throw new BadRequestException(`Exchange with code ${exchangeCode} not found.`);
+                }
+                actualExchangeId = exchange.id;
+            }
 
             const calculatedTotalAmount = dtoTotalAmount !== undefined ? new Prisma.Decimal(dtoTotalAmount) : new Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
             const calculatedFinalAmount = dtoFinalAmount !== undefined ? new Prisma.Decimal(dtoFinalAmount) : new Prisma.Decimal(calculatedTotalAmount.minus(discountAmount));
@@ -195,6 +217,7 @@ export class TransactionsService {
                 calculatedFinalAmount,
                 type,
                 prisma,
+                exchangeCode, // Pass exchangeCode
             );
 
             const updatedTransaction = await prisma.transaction.update({
@@ -208,7 +231,7 @@ export class TransactionsService {
                     invoiceDate: invoiceDate ? new Date(invoiceDate) : null,
                     dueDate: dueDate ? new Date(dueDate) : null,
                     vatRate,
-                    currency,
+                    exchangeId: actualExchangeId, // Use actualExchangeId
                     customerPreviousBalance: previousBalance,
                     customerNewBalance: newBalance,
                 },
@@ -244,6 +267,7 @@ export class TransactionsService {
                 transaction.finalAmount,
                 transaction.type,
                 prisma,
+                transaction.exchangeId, // Pass exchangeId
             );
 
             await prisma.transactionItem.deleteMany({ where: { transactionId } });

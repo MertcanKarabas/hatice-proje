@@ -21,6 +21,9 @@ let CurrencyController = class CurrencyController {
         await this.currencyService.updateRates();
         return { message: 'Currency rates updated successfully.' };
     }
+    async findAll() {
+        return this.currencyService.findAll();
+    }
 };
 exports.CurrencyController = CurrencyController;
 __decorate([
@@ -29,6 +32,12 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], CurrencyController.prototype, "updateRates", null);
+__decorate([
+    (0, common_1.Get)(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], CurrencyController.prototype, "findAll", null);
 exports.CurrencyController = CurrencyController = __decorate([
     (0, common_1.Controller)('currency'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

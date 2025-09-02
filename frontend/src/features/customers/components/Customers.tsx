@@ -116,6 +116,7 @@ const Customers: React.FC = () => {
                             <TableCell>Email</TableCell>
                             <TableCell>Tip</TableCell>
                             <TableCell>Bakiye</TableCell>
+                            <TableCell>Döviz</TableCell>
                             <TableCell>İşlemler</TableCell>
                         </TableRow>
                     </TableHead>
@@ -130,6 +131,7 @@ const Customers: React.FC = () => {
                                 <TableCell>{customer.email}</TableCell>
                                 <TableCell>{customer.type}</TableCell>
                                 <TableCell>{customer.balance < 0 ? `${Math.abs(customer.balance)} A` : `${customer.balance} B`}</TableCell>
+                                <TableCell>{customer.exchange?.code}</TableCell>
                                 <TableCell>
                                     <IconButton onClick={() => handleViewTransactions(customer.id)}>
                                         <VisibilityIcon />

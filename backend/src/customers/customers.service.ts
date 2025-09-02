@@ -35,7 +35,7 @@ export class CustomersService {
         return customer;
     }
 
-    
+
     async updateCustomer(userId: string, customerId: string, dto: CreateCustomerDto) {
         const customer = await this.findOne(userId, customerId);
         return this.customerRepository.update(customer.id, dto);

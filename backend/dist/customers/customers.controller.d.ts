@@ -10,6 +10,7 @@ export declare class CustomersController {
         createdAt: Date;
         updatedAt: Date;
         type: import(".prisma/client").$Enums.CustomerType;
+        exchangeId: string | null;
         commercialTitle: string;
         address: string;
         taxOffice: string | null;
@@ -24,6 +25,7 @@ export declare class CustomersController {
         createdAt: Date;
         updatedAt: Date;
         type: import(".prisma/client").$Enums.CustomerType;
+        exchangeId: string | null;
         commercialTitle: string;
         address: string;
         taxOffice: string | null;
@@ -38,6 +40,7 @@ export declare class CustomersController {
         createdAt: Date;
         updatedAt: Date;
         type: import(".prisma/client").$Enums.CustomerType;
+        exchangeId: string | null;
         commercialTitle: string;
         address: string;
         taxOffice: string | null;
@@ -52,6 +55,7 @@ export declare class CustomersController {
         createdAt: Date;
         updatedAt: Date;
         type: import(".prisma/client").$Enums.CustomerType;
+        exchangeId: string | null;
         commercialTitle: string;
         address: string;
         taxOffice: string | null;
@@ -77,7 +81,7 @@ export declare class CustomersController {
         invoiceDate: Date | null;
         dueDate: Date | null;
         vatRate: number | null;
-        currency: string | null;
+        exchangeId: string | null;
         profit: import("@prisma/client/runtime/library").Decimal | null;
         customerPreviousBalance: import("@prisma/client/runtime/library").Decimal | null;
         customerNewBalance: import("@prisma/client/runtime/library").Decimal | null;
@@ -96,7 +100,7 @@ export declare class CustomersController {
         invoiceDate: Date | null;
         dueDate: Date | null;
         vatRate: number | null;
-        currency: string | null;
+        exchangeId: string | null;
         profit: import("@prisma/client/runtime/library").Decimal | null;
         customerPreviousBalance: import("@prisma/client/runtime/library").Decimal | null;
         customerNewBalance: import("@prisma/client/runtime/library").Decimal | null;

@@ -15,7 +15,7 @@ interface TransactionFormState {
     invoiceDate: string;
     dueDate?: string;
     vatRate: number;
-    currency: string;
+    exchangeId?: string; // Added exchangeId
     type: 'SALE' | 'PURCHASE' | 'PAYMENT' | 'COLLECTION';
     discountAmount?: number;
     step: number;
@@ -28,7 +28,6 @@ const initialState: TransactionFormState = {
     invoiceDate: new Date().toISOString(),
     dueDate: new Date().toISOString(),
     vatRate: 20,
-    currency: 'TRY',
     type: 'SALE',
     step: 0,
     items: [],

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Controller, useForm } from 'react-hook-form';
 import {
@@ -10,18 +10,28 @@ import {
     Grid,
     Box
 } from '@mui/material';
-import type { CreatePaymentCollectionDtoFrontend } from '../../../types';
+import type { CreatePaymentCollectionDtoFrontend, Exchange } from '../../../types';
 import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { tr } from 'date-fns/locale';
 import { useCustomerPaymentCollection } from '../hooks/useCustomerPaymentCollection';
+import { getCurrencies } from '../../currencies/services/currencyService';
+import axiosClient from '../../../services/axiosClient';
 
 const CustomerPaymentCollection: React.FC = () => {
     const { customerId } = useParams<{ customerId: string }>();
     const { control, register, handleSubmit, setValue, formState: { errors } } = useForm<CreatePaymentCollectionDtoFrontend>();
     const { customer, loading, error, handleSubmit: handleHookSubmit } = useCustomerPaymentCollection(customerId);
+    const [currencies, setCurrencies] = useState<Exchange[]>([]);
 
     useEffect(() => {
+        getCurrencies(axiosClient).then((data) => {
+            setCurrencies(data);
+            if (data.length > 0) {
+                setValue('exchangeId', data[0].code); // Set default transaction currency to code
+            }
+        }).catch(console.error);
+
         if (customer) {
             setValue('customerId', customer.id);
             setValue('date', new Date().toISOString());
@@ -96,6 +106,15 @@ const CustomerPaymentCollection: React.FC = () => {
                             rows={4}
                             {...register('description')}
                         />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 20 }} component="div">
+                        <TextField select label="Para Birimi" {...register('exchangeId')} fullWidth>
+                            {currencies.map((currency) => (
+                                <MenuItem key={currency.id} value={currency.code}>
+                                    {currency.code}
+                                </MenuItem>
+                            ))}
+                        </TextField>
                     </Grid>
                     <Grid size={{ xs: 12, sm: 20 }} component="div">
                         <Button type="submit" variant="contained" color="primary" fullWidth>

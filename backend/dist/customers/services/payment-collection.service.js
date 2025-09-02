@@ -38,6 +38,7 @@ let PaymentCollectionService = class PaymentCollectionService {
             discountAmount: 0,
             invoiceDate: dto.date,
             items: [],
+            exchangeId: dto.exchangeId,
         };
         const transaction = await this.transactionsService.createTransaction(userId, createTransactionDto);
         return transaction;

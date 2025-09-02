@@ -15,7 +15,7 @@ export const generateTransactionSummaryPdf = (data: TransactionSummaryData) => {
     } catch (error) {
         console.error("Error loading custom font: ", error);
         doc.setFont('Helvetica');
-        alert("Uyarı: Özel karakterler PDF'te düzgün görüntülenemeyebilir çünkü font yüklenemedi.");
+        alert("Uyari: Özel karakterler PDF'te düzgün görüntülenemeyebilir çünkü font yüklenemedi.");
     }
 
     // --- PDF Content ---
@@ -37,11 +37,15 @@ export const generateTransactionSummaryPdf = (data: TransactionSummaryData) => {
     yOffset += 7;
     doc.text(`Tarih: ${new Date(data.invoiceDate).toLocaleDateString('tr-TR')}`, 14, yOffset);
     yOffset += 7;
+    if (data.transactionCurrencyCode) {
+        doc.text(`Para Birimi: ${data.transactionCurrencyCode}`, 14, yOffset);
+        yOffset += 7;
+    }
 
     if (data.type === 'COLLECTION' || data.type === 'PAYMENT') {
         doc.setFontSize(12);
         doc.setFont('Times', 'bold');
-        doc.text(`Miktar: ${Number(data.grandTotal ?? 0).toFixed(2)} TL`, 14, yOffset);
+        doc.text(`Miktar: ${Number(data.grandTotal ?? 0).toFixed(2)} ${data.transactionCurrencyCode ?? 'TL'}`, 14, yOffset);
         doc.setFontSize(10);
         doc.setFont('Times', 'normal');
         yOffset += 10;
@@ -67,10 +71,10 @@ export const generateTransactionSummaryPdf = (data: TransactionSummaryData) => {
                 product?.name ?? 'N/A',
                 item.quantity,
                 item.unit,
-                Number(item.price).toFixed(2),
-                productTotalPrice.toFixed(2),
-                vatAmount.toFixed(2),
-                (item.total ?? 0).toFixed(2),
+                `${Number(item.price).toFixed(2)} ${data.transactionCurrencyCode ?? 'TL'}`,
+                `${productTotalPrice.toFixed(2)} ${data.transactionCurrencyCode ?? 'TL'}`,
+                `${vatAmount.toFixed(2)} ${data.transactionCurrencyCode ?? 'TL'}`,
+                `${(item.total ?? 0).toFixed(2)} ${data.transactionCurrencyCode ?? 'TL'}`,
             ]);
         });
 
@@ -97,34 +101,34 @@ export const generateTransactionSummaryPdf = (data: TransactionSummaryData) => {
         const rightAlign = doc.internal.pageSize.width - 14;
 
         doc.text(`Toplam KDV:`, 14, yOffset);
-        doc.text(`${Number(data.totalVat ?? 0).toFixed(2)}`, rightAlign, yOffset, { align: 'right' });
+        doc.text(`${Number(data.totalVat ?? 0).toFixed(2)} ${data.transactionCurrencyCode ?? 'TL'}`, rightAlign, yOffset, { align: 'right' });
         yOffset += 7;
 
         doc.text(`Urunler Toplami:`, 14, yOffset);
-        doc.text(`${totalProductsPrice.toFixed(2)}`, rightAlign, yOffset, { align: 'right' });
+        doc.text(`${totalProductsPrice.toFixed(2)} ${data.transactionCurrencyCode ?? 'TL'}`, rightAlign, yOffset, { align: 'right' });
         yOffset += 10;
 
         doc.setFontSize(11);
         doc.setFont('Times', 'bold');
         doc.text(`Genel Toplam:`, 14, yOffset);
-        doc.text(`${Number(data.grandTotal ?? 0).toFixed(2)}`, rightAlign, yOffset, { align: 'right' });
+        doc.text(`${Number(data.grandTotal ?? 0).toFixed(2)} ${data.transactionCurrencyCode ?? 'TL'}`, rightAlign, yOffset, { align: 'right' });
 
     } else { // For COLLECTION and PAYMENT types, display balances differently
         const rightAlign = doc.internal.pageSize.width - 14;
 
-        doc.text(`Müşteri Eski Bakiye:`, 14, yOffset);
-        doc.text(`${Number(data.customerPreviousBalance ?? 0).toFixed(2)} TL`, rightAlign, yOffset, { align: 'right' });
+        doc.text(`Musteri Eski Bakiye:`, 14, yOffset);
+        doc.text(`${Number(data.customerPreviousBalance ?? 0).toFixed(2)} ${data.transactionCurrencyCode ?? 'TL'}`, rightAlign, yOffset, { align: 'right' });
         yOffset += 7;
 
-        doc.text(`Müşteri Yeni Bakiye:`, 14, yOffset);
-        doc.text(`${Number(data.customerNewBalance ?? 0).toFixed(2)} TL`, rightAlign, yOffset, { align: 'right' });
+        doc.text(`Musteri Yeni Bakiye:`, 14, yOffset);
+        doc.text(`${Number(data.customerNewBalance ?? 0).toFixed(2)} ${data.transactionCurrencyCode ?? 'TL'}`, rightAlign, yOffset, { align: 'right' });
         yOffset += 7;
 
-        doc.text(`Yukarıda belirtilen tutar TL hesabınıza işlenmiştir.`, 14, yOffset);
+        doc.text(`Yukarida belirtilen tutar ${data.transactionCurrencyCode ?? 'TL'} hesabiniza işlenmiştir.`, 14, yOffset);
         yOffset += 7;
 
         doc.text(`En Son Bakiyeniz:`, 14, yOffset);
-        doc.text(`${Number(data.customerNewBalance ?? 0).toFixed(2)} TL`, rightAlign, yOffset, { align: 'right' });
+        doc.text(`${Number(data.customerNewBalance ?? 0).toFixed(2)} ${data.transactionCurrencyCode ?? 'TL'}`, rightAlign, yOffset, { align: 'right' });
         yOffset += 7;
     }
 

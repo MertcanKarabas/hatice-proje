@@ -1,4 +1,4 @@
-import { IsEnum, IsNumber, IsOptional, IsString, ValidateNested, IsDateString } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString, ValidateNested, IsDateString, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateTransactionItemDto {
@@ -48,7 +48,7 @@ export class CreateTransactionDto {
 
   @IsOptional()
   @IsString()
-  currency?: string;
+  exchangeId?: string;
 
   @IsOptional()
   @IsNumber()

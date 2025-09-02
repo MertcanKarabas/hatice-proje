@@ -7,7 +7,6 @@ const fields = [
     { value: 'quantity', label: 'Adet', type: 'number' },
     { value: 'unit', label: 'Birim', type: 'string' },
     { value: 'price', label: 'Fiyat', type: 'number' },
-    { value: 'currency', label: 'Döviz', type: 'string' },
 ];
 
 const stringOperators = [

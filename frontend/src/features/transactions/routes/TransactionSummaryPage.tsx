@@ -32,7 +32,7 @@ const TransactionSummaryPage: React.FC = () => {
 
     const handleSaveTransaction = async () => {
         if (!customer) return;
-        const { customerId, type, items, invoiceDate, dueDate, vatRate, currency, discountAmount } = transactionInfo;
+        const { customerId, type, items, invoiceDate, dueDate, vatRate, exchangeId, discountAmount } = transactionInfo;
         
         const grandTotal = items?.reduce((acc, item) => acc + (item.total ?? 0), 0) ?? 0;
 
@@ -51,7 +51,7 @@ const TransactionSummaryPage: React.FC = () => {
             invoiceDate,
             dueDate,
             vatRate: Number(vatRate),
-            currency,
+            exchangeId, // Use exchangeId
             items: items?.map(item => ({
                 productId: item.productId,
                 quantity: item.quantity,

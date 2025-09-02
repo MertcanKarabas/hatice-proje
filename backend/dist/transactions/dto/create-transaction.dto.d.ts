@@ -13,7 +13,7 @@ export declare class CreateTransactionDto {
     invoiceDate?: string;
     dueDate?: string;
     vatRate?: number;
-    currency?: string;
+    exchangeId?: string;
     totalAmount?: number;
     finalAmount?: number;
     customerPreviousBalance?: number;

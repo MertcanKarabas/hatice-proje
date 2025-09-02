@@ -13,9 +13,11 @@ import { TransactionFilterService } from './services/transaction-filter.service'
 import { TransactionStockService } from './services/transaction-stock.service';
 import { CustomerBalanceService } from './services/customer-balance.service';
 import { ProfitCalculationService } from './services/profit-calculation.service';
+import { CurrencyService } from 'src/currency/currency.service'; // Import CurrencyService
+import { HttpModule } from '@nestjs/axios'; // Import HttpModule
 
 @Module({
-  imports: [StockModule],
+  imports: [StockModule, HttpModule], // Add HttpModule here
   providers: [
     TransactionsService,
     PrismaService,
@@ -35,6 +37,7 @@ import { ProfitCalculationService } from './services/profit-calculation.service'
     TransactionStockService,
     CustomerBalanceService,
     ProfitCalculationService,
+    CurrencyService, // Add CurrencyService to providers
   ],
   controllers: [TransactionsController],
   exports: [TransactionsService] // Export TransactionsService

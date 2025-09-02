@@ -22,12 +22,14 @@ const transaction_filter_service_1 = require("./services/transaction-filter.serv
 const transaction_stock_service_1 = require("./services/transaction-stock.service");
 const customer_balance_service_1 = require("./services/customer-balance.service");
 const profit_calculation_service_1 = require("./services/profit-calculation.service");
+const currency_service_1 = require("../currency/currency.service");
+const axios_1 = require("@nestjs/axios");
 let TransactionsModule = class TransactionsModule {
 };
 exports.TransactionsModule = TransactionsModule;
 exports.TransactionsModule = TransactionsModule = __decorate([
     (0, common_1.Module)({
-        imports: [stock_module_1.StockModule],
+        imports: [stock_module_1.StockModule, axios_1.HttpModule],
         providers: [
             transactions_service_1.TransactionsService,
             prisma_service_1.PrismaService,
@@ -47,6 +49,7 @@ exports.TransactionsModule = TransactionsModule = __decorate([
             transaction_stock_service_1.TransactionStockService,
             customer_balance_service_1.CustomerBalanceService,
             profit_calculation_service_1.ProfitCalculationService,
+            currency_service_1.CurrencyService,
         ],
         controllers: [transactions_controller_1.TransactionsController],
         exports: [transactions_service_1.TransactionsService]

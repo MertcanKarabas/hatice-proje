@@ -26,4 +26,8 @@ export class CreatePaymentCollectionDto {
   @IsString()
   @IsOptional()
   description?: string;
+
+  @IsString()
+  @IsOptional()
+  exchangeId?: string;
 }

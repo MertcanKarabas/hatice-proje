@@ -29,12 +29,6 @@ interface Props {
     initialData: ProductData | null;
 }
 
-const Currency = {
-    TRY: 'TRY',
-    USD: 'USD',
-    EUR: 'EUR',
-};
-
 const ProductUnit = {
     ADET: 'ADET',
     DESTE: 'DESTE',
@@ -48,7 +42,6 @@ interface FormState {
     description: string;
     quantity: string; // Formda string olarak tutmak daha kolaydır
     unit: keyof typeof ProductUnit; // Sadece tanımlı birimler seçilebilir
-    currency: keyof typeof Currency;
     isPackage: boolean;
     components: { componentId: string; quantity: number }[];
 }
@@ -57,7 +50,7 @@ interface FormState {
 const ProductFormDialog: React.FC<Props> = ({ open, onClose, initialData }) => {
     const getInitialState = (): FormState => ({
         name: '', price: '', sku: '', description: '',
-        quantity: '0', unit: 'ADET', currency: 'TRY', // Yeni alan için varsayılan değer
+        quantity: '0', unit: 'ADET', // Yeni alan için varsayılan değer
         isPackage: false, components: [],
     });
     const [error, setError] = useState<string>("");
@@ -80,7 +73,6 @@ const ProductFormDialog: React.FC<Props> = ({ open, onClose, initialData }) => {
                     description: initialData.description ?? '',
                     quantity: String(initialData.quantity ?? '0'),
                     unit: initialData.unit as keyof typeof ProductUnit ?? 'ADET',
-                    currency: initialData.currency as keyof typeof Currency ?? 'TRY',
                     isPackage: initialData.isPackage ?? false,
                     components: initialData.packageComponents?.map(c => ({ componentId: c.component.id, quantity: c.quantity })) ?? [],
                 });
@@ -199,12 +191,6 @@ const ProductFormDialog: React.FC<Props> = ({ open, onClose, initialData }) => {
 
                 <Box sx={{ display: 'flex', gap: 2 }}>
                     <TextField label="Fiyat" name="price" fullWidth margin="dense" type='number' value={form.price} onChange={handleChange} required InputProps={{ inputProps: { min: 0 } }} />
-                    <FormControl fullWidth margin="dense">
-                        <InputLabel>Para Birimi</InputLabel>
-                        <Select name="currency" value={form.currency} label="Para Birimi" onChange={handleSelectChange}>
-                            {Object.keys(Currency).map((c) => <MenuItem key={c} value={c}>{c}</MenuItem>)}
-                        </Select>
-                    </FormControl>
                 </Box>
 
                 <TextField label="Açıklama" name="description" fullWidth margin="dense" multiline rows={3} value={form.description} onChange={handleChange} />

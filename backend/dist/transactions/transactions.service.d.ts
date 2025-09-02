@@ -7,6 +7,7 @@ import { ITransactionFilterService } from './interfaces/transaction-filter.servi
 import { TransactionStockService } from './services/transaction-stock.service';
 import { CustomerBalanceService } from './services/customer-balance.service';
 import { ProfitCalculationService } from './services/profit-calculation.service';
+import { CurrencyService } from 'src/currency/currency.service';
 export declare class TransactionsService {
     private readonly transactionRepository;
     private readonly transactionItemRepository;
@@ -15,7 +16,8 @@ export declare class TransactionsService {
     private readonly transactionStockService;
     private readonly customerBalanceService;
     private readonly profitCalculationService;
-    constructor(transactionRepository: ITransactionRepository, transactionItemRepository: ITransactionItemRepository, prisma: PrismaService, transactionFilterService: ITransactionFilterService, transactionStockService: TransactionStockService, customerBalanceService: CustomerBalanceService, profitCalculationService: ProfitCalculationService);
+    private readonly currencyService;
+    constructor(transactionRepository: ITransactionRepository, transactionItemRepository: ITransactionItemRepository, prisma: PrismaService, transactionFilterService: ITransactionFilterService, transactionStockService: TransactionStockService, customerBalanceService: CustomerBalanceService, profitCalculationService: ProfitCalculationService, currencyService: CurrencyService);
     createTransaction(userId: string, dto: CreateTransactionDto): Promise<{
         id: string;
         userId: string;
@@ -30,7 +32,7 @@ export declare class TransactionsService {
         invoiceDate: Date | null;
         dueDate: Date | null;
         vatRate: number | null;
-        currency: string | null;
+        exchangeId: string | null;
         profit: Prisma.Decimal | null;
         customerPreviousBalance: Prisma.Decimal | null;
         customerNewBalance: Prisma.Decimal | null;
@@ -49,7 +51,7 @@ export declare class TransactionsService {
         invoiceDate: Date | null;
         dueDate: Date | null;
         vatRate: number | null;
-        currency: string | null;
+        exchangeId: string | null;
         profit: Prisma.Decimal | null;
         customerPreviousBalance: Prisma.Decimal | null;
         customerNewBalance: Prisma.Decimal | null;
@@ -68,7 +70,7 @@ export declare class TransactionsService {
         invoiceDate: Date | null;
         dueDate: Date | null;
         vatRate: number | null;
-        currency: string | null;
+        exchangeId: string | null;
         profit: Prisma.Decimal | null;
         customerPreviousBalance: Prisma.Decimal | null;
         customerNewBalance: Prisma.Decimal | null;
@@ -88,7 +90,7 @@ export declare class TransactionsService {
         invoiceDate: Date | null;
         dueDate: Date | null;
         vatRate: number | null;
-        currency: string | null;
+        exchangeId: string | null;
         profit: Prisma.Decimal | null;
         customerPreviousBalance: Prisma.Decimal | null;
         customerNewBalance: Prisma.Decimal | null;

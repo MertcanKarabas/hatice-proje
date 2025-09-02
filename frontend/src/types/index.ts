@@ -1,3 +1,10 @@
+export interface Exchange {
+    id: string;
+    name: string;
+    code: string;
+    rate: number;
+}
+
 export interface Customer {
     id: string;
     commercialTitle: string;
@@ -8,6 +15,8 @@ export interface Customer {
     email: string;
     type: 'SALES' | 'PURCHASE';
     balance: number;
+    exchangeId?: string;
+    exchange?: Exchange;
     createdAt?: string;
     updatedAt?: string;
     userId?: string;
@@ -20,7 +29,6 @@ export interface Product {
     quantity: number;
     unit: string;
     price: number;
-    currency: string;
     description: string;
     isPackage: boolean;
     packageComponents: { component: Product; quantity: number }[];
@@ -32,7 +40,8 @@ export interface Transaction {
     invoiceDate: string;
     dueDate: string;
     vatRate: number;
-    currency: string;
+    exchangeId?: string;
+    exchange?: Exchange;
     type: 'SALE' | 'PURCHASE' | 'PAYMENT' | 'COLLECTION';
     totalAmount: number;
     discountAmount: number;
@@ -67,6 +76,7 @@ export interface TransactionSummaryData {
     grandTotal: number;
     customerPreviousBalance?: number;
     customerNewBalance?: number;
+    transactionCurrencyCode?: string; // Added transactionCurrencyCode
 }
 
 export interface CreateTransactionDtoFrontend {
@@ -74,7 +84,7 @@ export interface CreateTransactionDtoFrontend {
     invoiceDate: string;
     dueDate?: string;
     vatRate: number;
-    currency: string;
+    exchangeId?: string;
     type: 'SALE' | 'PURCHASE' | 'PAYMENT' | 'COLLECTION';
     items: { productId: string; quantity: number; price: number; unit: string; vatRate: number; }[];
     discountAmount: number;
@@ -97,4 +107,5 @@ export interface CreatePaymentCollectionDtoFrontend {
     amount: number;
     date: string;
     description?: string;
+    exchangeId?: string;
 }

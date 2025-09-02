@@ -50,4 +50,35 @@ export class CurrencyService implements OnModuleInit {
       create: { name: 'Euro', code: 'EUR', rate: eurToTryRate },
     });
   }
+
+  async findAll() {
+    return this.prisma.exchange.findMany();
+  }
+
+  async getRate(currencyCode: string): Promise<Prisma.Decimal> {
+    const exchange = await this.prisma.exchange.findUnique({
+      where: { code: currencyCode },
+    });
+    if (!exchange) {
+      throw new Error(`Exchange rate for ${currencyCode} not found.`);
+    }
+    return exchange.rate;
+  }
+
+  async convertAmount(
+    amount: Prisma.Decimal,
+    fromCurrencyCode: string,
+    toCurrencyCode: string,
+  ): Promise<Prisma.Decimal> {
+    if (fromCurrencyCode === toCurrencyCode) {
+      return amount;
+    }
+
+    const fromRate = await this.getRate(fromCurrencyCode);
+    const toRate = await this.getRate(toCurrencyCode);
+
+    // Convert amount to TRY first, then to target currency
+    const amountInTry = amount.times(fromRate);
+    return amountInTry.div(toRate);
+  }
 }

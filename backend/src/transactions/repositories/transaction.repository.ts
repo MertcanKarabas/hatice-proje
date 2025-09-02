@@ -22,6 +22,7 @@ export class TransactionRepository extends BaseRepository<Transaction> implement
         },
         payments: true,
         discounts: true,
+        exchange: true, // Include exchange
       },
       orderBy: {
         createdAt: 'desc',
@@ -44,6 +45,7 @@ export class TransactionRepository extends BaseRepository<Transaction> implement
         },
         payments: true,
         discounts: true,
+        exchange: true, // Include exchange
       },
     });
   }
@@ -60,6 +62,7 @@ export class TransactionRepository extends BaseRepository<Transaction> implement
         },
         payments: true,
         discounts: true,
+        exchange: true, // Include exchange
       },
       orderBy: {
         createdAt: 'desc',

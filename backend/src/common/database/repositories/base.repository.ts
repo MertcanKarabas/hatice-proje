@@ -3,10 +3,10 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { IBaseRepository } from 'src/common/interfaces/base.repository.interface';
 
 export abstract class BaseRepository<T> implements IBaseRepository<T> {
-  constructor(protected readonly prisma: PrismaService, protected readonly modelName: string) {}
+  constructor(protected readonly prisma: PrismaService, protected readonly modelName: string) { }
 
-  async findById(id: string): Promise<T | null> {
-    return this.prisma[this.modelName].findUnique({ where: { id } });
+  async findById(id: string, include?: any): Promise<T | null> {
+    return this.prisma[this.modelName].findUnique({ where: { id }, include });
   }
 
   async findAll(): Promise<T[]> {

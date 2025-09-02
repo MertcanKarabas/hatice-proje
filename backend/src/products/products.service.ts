@@ -27,7 +27,7 @@ export class ProductsService {
     }
     return product;
   }
-
+  
   async createProduct(userId: string, dto: CreateProductDto) {
     const { components, ...productData } = dto;
 

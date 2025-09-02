@@ -45,4 +45,9 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreatePaymentCollectionDto.prototype, "description", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreatePaymentCollectionDto.prototype, "exchangeId", void 0);
 //# sourceMappingURL=create-payment-collection.dto.js.map

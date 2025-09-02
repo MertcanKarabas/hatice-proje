@@ -8,4 +8,5 @@ export declare class CreateCustomerDto {
     taxNumber?: string;
     email?: string;
     balance?: Prisma.Decimal;
+    exchangeId?: string;
 }

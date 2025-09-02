@@ -30,7 +30,6 @@ const Products: React.FC = () => {
         { field: 'quantity', headerName: 'Adet', flex: 1 },
         { field: 'unit', headerName: 'Birim', flex: 1 },
         { field: 'price', headerName: 'Fiyat', flex: 1 },
-        { field: 'currency', headerName: 'Döviz', flex: 1 },
         {
             field: 'actions',
             headerName: 'İşlemler',

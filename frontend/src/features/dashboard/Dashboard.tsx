@@ -70,7 +70,7 @@ const validateTransaction = (data: unknown): Transaction | null => {
         invoiceDate: typeof transaction.invoiceDate === 'string' ? transaction.invoiceDate : '',
         dueDate: typeof transaction.dueDate === 'string' ? transaction.dueDate : '',
         vatRate: typeof transaction.vatRate === 'number' ? transaction.vatRate : 0,
-        currency: typeof transaction.currency === 'string' ? transaction.currency : '',
+        exchangeId: typeof transaction.exchangeId === 'string' ? transaction.exchangeId : undefined,
         type: (transaction.type === 'SALE' || transaction.type === 'PURCHASE' || transaction.type === 'PAYMENT' || transaction.type === 'COLLECTION') ? transaction.type : 'SALE',
         totalAmount: typeof transaction.totalAmount === 'string' ? Number(transaction.totalAmount) : transaction.totalAmount as number,
         discountAmount: typeof transaction.discountAmount === 'string' ? Number(transaction.discountAmount) : transaction.discountAmount as number,

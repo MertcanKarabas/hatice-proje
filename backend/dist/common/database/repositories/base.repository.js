@@ -6,8 +6,8 @@ class BaseRepository {
         this.prisma = prisma;
         this.modelName = modelName;
     }
-    async findById(id) {
-        return this.prisma[this.modelName].findUnique({ where: { id } });
+    async findById(id, include) {
+        return this.prisma[this.modelName].findUnique({ where: { id }, include });
     }
     async findAll() {
         return this.prisma[this.modelName].findMany();

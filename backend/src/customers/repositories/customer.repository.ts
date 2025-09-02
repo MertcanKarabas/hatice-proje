@@ -10,9 +10,21 @@ export class CustomerRepository extends BaseRepository<Customer> implements ICus
     super(prisma, 'customer');
   }
 
+  async findById(id: string): Promise<Customer | null> {
+    return this.prisma.customer.findUnique({
+      where: { id },
+      include: {
+        exchange: true,
+      },
+    });
+  }
+
   async findAllByUser(whereClause: Prisma.CustomerWhereInput): Promise<Customer[]> {
     return this.prisma.customer.findMany({
       where: whereClause,
+      include: {
+        exchange: true,
+      },
       orderBy: {
         commercialTitle: 'asc',
       },

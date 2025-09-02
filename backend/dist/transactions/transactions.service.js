@@ -19,8 +19,9 @@ const transaction_filter_service_interface_1 = require("./interfaces/transaction
 const transaction_stock_service_1 = require("./services/transaction-stock.service");
 const customer_balance_service_1 = require("./services/customer-balance.service");
 const profit_calculation_service_1 = require("./services/profit-calculation.service");
+const currency_service_1 = require("../currency/currency.service");
 let TransactionsService = class TransactionsService {
-    constructor(transactionRepository, transactionItemRepository, prisma, transactionFilterService, transactionStockService, customerBalanceService, profitCalculationService) {
+    constructor(transactionRepository, transactionItemRepository, prisma, transactionFilterService, transactionStockService, customerBalanceService, profitCalculationService, currencyService) {
         this.transactionRepository = transactionRepository;
         this.transactionItemRepository = transactionItemRepository;
         this.prisma = prisma;
@@ -28,10 +29,19 @@ let TransactionsService = class TransactionsService {
         this.transactionStockService = transactionStockService;
         this.customerBalanceService = customerBalanceService;
         this.profitCalculationService = profitCalculationService;
+        this.currencyService = currencyService;
     }
     async createTransaction(userId, dto) {
         return this.prisma.$transaction(async (prisma) => {
-            const { type, discountAmount = 0, items, customerId, invoiceDate, dueDate, vatRate, currency, totalAmount: dtoTotalAmount, finalAmount: dtoFinalAmount } = dto;
+            const { type, discountAmount = 0, items, customerId, invoiceDate, dueDate, vatRate, totalAmount: dtoTotalAmount, finalAmount: dtoFinalAmount, exchangeId: exchangeCode } = dto;
+            let actualExchangeId;
+            if (exchangeCode) {
+                const exchange = await this.prisma.exchange.findUnique({ where: { code: exchangeCode } });
+                if (!exchange) {
+                    throw new common_1.BadRequestException(`Exchange with code ${exchangeCode} not found.`);
+                }
+                actualExchangeId = exchange.id;
+            }
             if (type === 'SALE') {
                 await this.transactionStockService.checkStockAvailability(userId, items, prisma);
             }
@@ -41,7 +51,7 @@ let TransactionsService = class TransactionsService {
             if (type === 'SALE') {
                 profit = await this.profitCalculationService.calculateProfit(items, prisma);
             }
-            const { previousBalance, newBalance } = await this.customerBalanceService.updateCustomerBalance(customerId, calculatedFinalAmount, type, prisma);
+            const { previousBalance, newBalance } = await this.customerBalanceService.updateCustomerBalance(customerId, calculatedFinalAmount, type, prisma, exchangeCode);
             console.log(`TransactionsService - createTransaction: customerPreviousBalance: ${previousBalance.toString()}, customerNewBalance: ${newBalance.toString()}`);
             const transaction = await prisma.transaction.create({
                 data: {
@@ -55,7 +65,7 @@ let TransactionsService = class TransactionsService {
                     invoiceDate: invoiceDate ? new Date(invoiceDate) : null,
                     dueDate: dueDate ? new Date(dueDate) : null,
                     vatRate,
-                    currency,
+                    exchangeId: actualExchangeId,
                     customerPreviousBalance: previousBalance,
                     customerNewBalance: newBalance,
                 },
@@ -123,8 +133,16 @@ let TransactionsService = class TransactionsService {
             if (existingTransaction.type === 'SALE' || existingTransaction.type === 'PURCHASE') {
                 await this.transactionStockService.revertStockForTransaction(userId, existingTransaction.items, existingTransaction.type, prisma);
             }
-            await this.customerBalanceService.revertCustomerBalance(existingTransaction.customerId, existingTransaction.finalAmount, existingTransaction.type, prisma);
-            const { type, discountAmount = 0, items, invoiceDate, dueDate, vatRate, currency, totalAmount: dtoTotalAmount, finalAmount: dtoFinalAmount } = dto;
+            await this.customerBalanceService.revertCustomerBalance(existingTransaction.customerId, existingTransaction.finalAmount, existingTransaction.type, prisma, existingTransaction.exchangeId);
+            const { type, discountAmount = 0, items, customerId, invoiceDate, dueDate, vatRate, totalAmount: dtoTotalAmount, finalAmount: dtoFinalAmount, exchangeId: exchangeCode } = dto;
+            let actualExchangeId;
+            if (exchangeCode) {
+                const exchange = await this.prisma.exchange.findUnique({ where: { code: exchangeCode } });
+                if (!exchange) {
+                    throw new common_1.BadRequestException(`Exchange with code ${exchangeCode} not found.`);
+                }
+                actualExchangeId = exchange.id;
+            }
             const calculatedTotalAmount = dtoTotalAmount !== undefined ? new client_1.Prisma.Decimal(dtoTotalAmount) : new client_1.Prisma.Decimal(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
             const calculatedFinalAmount = dtoFinalAmount !== undefined ? new client_1.Prisma.Decimal(dtoFinalAmount) : new client_1.Prisma.Decimal(calculatedTotalAmount.minus(discountAmount));
             let profit = null;
@@ -155,7 +173,7 @@ let TransactionsService = class TransactionsService {
                     });
                 }
             }
-            const { previousBalance, newBalance } = await this.customerBalanceService.updateCustomerBalance(existingTransaction.customerId, calculatedFinalAmount, type, prisma);
+            const { previousBalance, newBalance } = await this.customerBalanceService.updateCustomerBalance(existingTransaction.customerId, calculatedFinalAmount, type, prisma, exchangeCode);
             const updatedTransaction = await prisma.transaction.update({
                 where: { id: transactionId },
                 data: {
@@ -167,7 +185,7 @@ let TransactionsService = class TransactionsService {
                     invoiceDate: invoiceDate ? new Date(invoiceDate) : null,
                     dueDate: dueDate ? new Date(dueDate) : null,
                     vatRate,
-                    currency,
+                    exchangeId: actualExchangeId,
                     customerPreviousBalance: previousBalance,
                     customerNewBalance: newBalance,
                 },
@@ -187,7 +205,7 @@ let TransactionsService = class TransactionsService {
             if (transaction.type === 'SALE' || transaction.type === 'PURCHASE') {
                 await this.transactionStockService.revertStockForTransaction(userId, transaction.items, transaction.type, prisma);
             }
-            await this.customerBalanceService.revertCustomerBalance(transaction.customerId, transaction.finalAmount, transaction.type, prisma);
+            await this.customerBalanceService.revertCustomerBalance(transaction.customerId, transaction.finalAmount, transaction.type, prisma, transaction.exchangeId);
             await prisma.transactionItem.deleteMany({ where: { transactionId } });
             await prisma.transaction.delete({ where: { id: transactionId } });
         });
@@ -202,6 +220,7 @@ exports.TransactionsService = TransactionsService = __decorate([
         transaction_filter_service_interface_1.ITransactionFilterService,
         transaction_stock_service_1.TransactionStockService,
         customer_balance_service_1.CustomerBalanceService,
-        profit_calculation_service_1.ProfitCalculationService])
+        profit_calculation_service_1.ProfitCalculationService,
+        currency_service_1.CurrencyService])
 ], TransactionsService);
 //# sourceMappingURL=transactions.service.js.map

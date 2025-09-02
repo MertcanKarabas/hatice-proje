@@ -22,7 +22,7 @@ export declare class PaymentCollectionService {
         invoiceDate: Date | null;
         dueDate: Date | null;
         vatRate: number | null;
-        currency: string | null;
+        exchangeId: string | null;
         profit: Prisma.Decimal | null;
         customerPreviousBalance: Prisma.Decimal | null;
         customerNewBalance: Prisma.Decimal | null;

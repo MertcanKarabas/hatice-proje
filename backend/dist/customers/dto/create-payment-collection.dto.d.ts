@@ -8,4 +8,5 @@ export declare class CreatePaymentCollectionDto {
     type: PaymentCollectionType;
     date: string;
     description?: string;
+    exchangeId?: string;
 }

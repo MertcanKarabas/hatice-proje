@@ -12,6 +12,8 @@ model Customer {
   email           String?  @unique
   phone           String?  // Telefon No
   balance         Decimal  @db.Decimal(18, 2) @default(0)
+  exchangeId      String?
+  exchange        Exchange? @relation(fields: [exchangeId], references: [id])
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   userId          String

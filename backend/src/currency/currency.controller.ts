@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards } from '@nestjs/common';
+import { Controller, Post, UseGuards, Get } from '@nestjs/common';
 import { CurrencyService } from './currency.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
@@ -11,5 +11,10 @@ export class CurrencyController {
   async updateRates() {
     await this.currencyService.updateRates();
     return { message: 'Currency rates updated successfully.' };
+  }
+
+  @Get()
+  async findAll() {
+    return this.currencyService.findAll();
   }
 }

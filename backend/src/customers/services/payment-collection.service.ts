@@ -32,6 +32,7 @@ export class PaymentCollectionService {
         discountAmount: 0,
         invoiceDate: dto.date, // Use the date from the DTO
         items: [], // Payment/Collection transactions don't have items
+        exchangeId: dto.exchangeId, // Pass exchangeId
     };
 
     const transaction = await this.transactionsService.createTransaction(userId, createTransactionDto);

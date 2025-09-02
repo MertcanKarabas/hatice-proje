@@ -57,11 +57,11 @@ const TransactionsList: React.FC = () => {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>ID</TableCell>
-                            <TableCell>Müşteri ID</TableCell>
+                            <TableCell>Müşteri Ünvanı</TableCell>
                             <TableCell>İşlem Tipi</TableCell>
                             <TableCell>Toplam Tutar</TableCell>
                             <TableCell>Son Tutar</TableCell>
+                            <TableCell>Para Birimi</TableCell>
                             <TableCell>Kar</TableCell>
                             <TableCell>Tarih</TableCell>
                             <TableCell>İşlemler</TableCell>
@@ -70,11 +70,11 @@ const TransactionsList: React.FC = () => {
                     <TableBody>
                         {transactions.map((transaction) => (
                             <TableRow key={transaction.id}>
-                                <TableCell>{transaction.id}</TableCell>
                                 <TableCell>{transaction.customer?.commercialTitle ?? transaction.customerId}</TableCell>
                                 <TableCell>{localizeTransactionType(transaction.type)}</TableCell>
                                 <TableCell>{Number(transaction.totalAmount).toFixed(2)}</TableCell>
                                 <TableCell>{Number(transaction.finalAmount).toFixed(2)}</TableCell>
+                                <TableCell>{transaction.exchange?.code}</TableCell>
                                 <TableCell>{transaction.type === 'SALE' ? Number(transaction.profit ?? 0).toFixed(2) : '-'}</TableCell>
                                 <TableCell>{new Date(transaction.createdAt).toLocaleDateString()}</TableCell>
                                 <TableCell>

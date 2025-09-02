@@ -29,6 +29,7 @@ let TransactionRepository = class TransactionRepository extends base_repository_
                 },
                 payments: true,
                 discounts: true,
+                exchange: true,
             },
             orderBy: {
                 createdAt: 'desc',
@@ -50,6 +51,7 @@ let TransactionRepository = class TransactionRepository extends base_repository_
                 },
                 payments: true,
                 discounts: true,
+                exchange: true,
             },
         });
     }
@@ -65,6 +67,7 @@ let TransactionRepository = class TransactionRepository extends base_repository_
                 },
                 payments: true,
                 discounts: true,
+                exchange: true,
             },
             orderBy: {
                 createdAt: 'desc',
