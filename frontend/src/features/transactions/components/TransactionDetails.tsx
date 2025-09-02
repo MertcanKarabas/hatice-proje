@@ -136,15 +136,15 @@ const TransactionDetails: React.FC = () => {
                         </TableRow>
                         <TableRow>
                             <TableCell component="th" scope="row">Toplam Tutar:</TableCell>
-                            <TableCell>{Number(transaction.totalAmount).toFixed(2)}</TableCell>
+                            <TableCell>{Number(transaction.totalAmount).toFixed(2)} {transaction.exchange?.code || 'TRY'}</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell component="th" scope="row">İndirim Tutarı:</TableCell>
-                            <TableCell>{Number(transaction.discountAmount).toFixed(2)}</TableCell>
+                            <TableCell>{Number(transaction.discountAmount).toFixed(2)} {transaction.exchange?.code || 'TRY'}</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell component="th" scope="row">Son Tutar:</TableCell>
-                            <TableCell>{Number(transaction.finalAmount).toFixed(2)}</TableCell>
+                            <TableCell>{Number(transaction.finalAmount).toFixed(2)} {transaction.exchange?.code || 'TRY'}</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell component="th" scope="row">Oluşturulma Tarihi:</TableCell>
