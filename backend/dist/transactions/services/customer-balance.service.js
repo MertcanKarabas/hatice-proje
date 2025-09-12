@@ -19,7 +19,7 @@ let CustomerBalanceService = class CustomerBalanceService {
         this.prisma = prisma;
         this.currencyService = currencyService;
     }
-    async updateCustomerBalance(customerId, finalAmount, transactionType, prismaTransaction, transactionExchangeId) {
+    async updateCustomerBalance(customerId, finalAmount, transactionType, prismaTransaction, transactionCurrencyCode) {
         var _a;
         if (!customerId)
             return { previousBalance: new client_1.Prisma.Decimal(0), newBalance: new client_1.Prisma.Decimal(0) };
@@ -29,10 +29,10 @@ let CustomerBalanceService = class CustomerBalanceService {
         });
         if (customer) {
             const customerBalanceCurrencyCode = ((_a = customer.exchange) === null || _a === void 0 ? void 0 : _a.code) || 'TRY';
-            const transactionCurrencyCode = transactionExchangeId || 'TRY';
+            const effectiveTransactionCurrencyCode = transactionCurrencyCode || 'TRY';
             let convertedAmount = finalAmount;
-            if (transactionCurrencyCode !== customerBalanceCurrencyCode) {
-                convertedAmount = await this.currencyService.convertAmount(finalAmount, transactionCurrencyCode, customerBalanceCurrencyCode);
+            if (effectiveTransactionCurrencyCode !== customerBalanceCurrencyCode) {
+                convertedAmount = await this.currencyService.convertAmount(finalAmount, effectiveTransactionCurrencyCode, customerBalanceCurrencyCode);
             }
             const previousBalance = new client_1.Prisma.Decimal(customer.balance);
             let newBalance = new client_1.Prisma.Decimal(customer.balance);
@@ -53,7 +53,7 @@ let CustomerBalanceService = class CustomerBalanceService {
         }
         return { previousBalance: new client_1.Prisma.Decimal(0), newBalance: new client_1.Prisma.Decimal(0) };
     }
-    async revertCustomerBalance(customerId, finalAmount, transactionType, prismaTransaction, transactionExchangeId) {
+    async revertCustomerBalance(customerId, finalAmount, transactionType, prismaTransaction, transactionCurrencyCode) {
         var _a;
         if (!customerId)
             return;
@@ -63,10 +63,10 @@ let CustomerBalanceService = class CustomerBalanceService {
         });
         if (customer) {
             const customerBalanceCurrencyCode = ((_a = customer.exchange) === null || _a === void 0 ? void 0 : _a.code) || 'TRY';
-            const transactionCurrencyCode = transactionExchangeId || 'TRY';
+            const effectiveTransactionCurrencyCode = transactionCurrencyCode || 'TRY';
             let convertedAmount = finalAmount;
-            if (transactionCurrencyCode !== customerBalanceCurrencyCode) {
-                convertedAmount = await this.currencyService.convertAmount(finalAmount, transactionCurrencyCode, customerBalanceCurrencyCode);
+            if (effectiveTransactionCurrencyCode !== customerBalanceCurrencyCode) {
+                convertedAmount = await this.currencyService.convertAmount(finalAmount, effectiveTransactionCurrencyCode, customerBalanceCurrencyCode);
             }
             let oldBalance = new client_1.Prisma.Decimal(customer.balance);
             if (transactionType === client_1.TransactionType.SALE) {

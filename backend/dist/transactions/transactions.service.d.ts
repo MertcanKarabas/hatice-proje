@@ -37,7 +37,7 @@ export declare class TransactionsService {
         customerPreviousBalance: Prisma.Decimal | null;
         customerNewBalance: Prisma.Decimal | null;
     }>;
-    getTransactionsByUser(userId: string, field?: string, operator?: string, value?: string, endValue?: string): Promise<{
+    getTransactionsByUser(userId: string, customerId?: string, field?: string, operator?: string, value?: string, endValue?: string): Promise<{
         id: string;
         userId: string;
         createdAt: Date;
@@ -76,6 +76,11 @@ export declare class TransactionsService {
         customerNewBalance: Prisma.Decimal | null;
     }>;
     getProfitLast30Days(userId: string): Promise<Prisma.Decimal>;
+    getSalesOverview(userId: string): Promise<{
+        today: number | Prisma.Decimal;
+        thisWeek: number | Prisma.Decimal;
+        thisMonth: number | Prisma.Decimal;
+    }>;
     updateTransaction(userId: string, transactionId: string, dto: CreateTransactionDto): Promise<{
         id: string;
         userId: string;

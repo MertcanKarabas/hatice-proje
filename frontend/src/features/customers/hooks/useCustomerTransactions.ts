@@ -3,7 +3,14 @@ import { getTransactions } from '../../transactions/services/transactionService'
 import axiosClient from '../../../services/axiosClient';
 import type { Transaction } from '../../../types';
 
-export const useCustomerTransactions = (customerId: string | undefined, filter?: Record<string, string | number>) => {
+interface Filter {
+    field: string;
+    operator: string;
+    value: string;
+    endValue?: string;
+}
+
+export const useCustomerTransactions = (customerId: string | undefined, filter?: Filter) => {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -16,8 +23,17 @@ export const useCustomerTransactions = (customerId: string | undefined, filter?:
         try {
             const params: Record<string, string | number> = {
                 customerId,
-                ...(filter || {}),
             };
+
+            if (filter && (filter.value || filter.endValue)) {
+                params.field = filter.field;
+                params.operator = filter.operator;
+                params.value = filter.value;
+                if (filter.endValue) {
+                    params.endValue = filter.endValue;
+                }
+            }
+
             const response = await getTransactions(axiosClient, params);
             setTransactions(response);
         } catch (err) {

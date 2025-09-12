@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { AxiosError } from 'axios';
-import { getCustomers, getProducts, getTransactions, getProfitLast30Days } from '../../services/dashboard';
+import { getCustomers, getProducts, getTransactions, getProfitLast30Days, getSalesOverview } from '../../services/dashboard';
 import axiosClient from '../../services/axiosClient';
 import { localizeTransactionType } from '../transactions/services/localization.service';
 import type { Customer, Product, Transaction } from '../../types';
@@ -112,7 +112,6 @@ const Dashboard: React.FC = () => {
             try {
                 const rawCustomersData = (await getCustomers(axiosClient)) ?? [];
                 const customersData = rawCustomersData.map(validateCustomer).filter(Boolean) as Customer[];
-                console.log('customersData received in Dashboard:', customersData);
                 setTotalCustomers(customersData.length);
 
                 const productsResponse = (await getProducts(axiosClient)) ?? { data: [] };
@@ -121,7 +120,6 @@ const Dashboard: React.FC = () => {
 
                 const rawTransactionsData = (await getTransactions(axiosClient)) ?? [];
                 const transactionsData = rawTransactionsData.map(validateTransaction).filter(Boolean) as Transaction[];
-                console.log('transactionsData received in Dashboard:', transactionsData);
                 setTotalTransactions(transactionsData.length);
 
                 // Calculate total revenue
@@ -157,12 +155,8 @@ const Dashboard: React.FC = () => {
                 }));
 
                 // Sales overview
-                const todaySales = transactionsData.filter((t: Transaction) => t.createdAt && new Date(t.createdAt).toISOString().split('T')[0] === todayString).reduce((sum: number, t: Transaction) => sum + (Number(t.finalAmount ?? 0)), 0);
-                setSalesOverview({
-                    today: todaySales,
-                    thisWeek: revenue * 0.2, // Placeholder, needs proper backend aggregation
-                    thisMonth: revenue * 0.5, // Placeholder, needs proper backend aggregation
-                });
+                const salesOverviewData = await getSalesOverview(axiosClient);
+                setSalesOverview(salesOverviewData);
 
                 // New customers (last 3)
                 const sortedNewCustomers = customersData.sort((a: Customer, b: Customer) => {

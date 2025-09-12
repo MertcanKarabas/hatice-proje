@@ -15,24 +15,24 @@ export class CustomerBalanceService {
     finalAmount: Prisma.Decimal,
     transactionType: TransactionType,
     prismaTransaction: any,
-    transactionExchangeId?: string, // New parameter
+    transactionCurrencyCode?: string, // Renamed parameter
   ): Promise<{ previousBalance: Prisma.Decimal; newBalance: Prisma.Decimal }> {
     if (!customerId) return { previousBalance: new Prisma.Decimal(0), newBalance: new Prisma.Decimal(0) };
 
     const customer = await prismaTransaction.customer.findUnique({
       where: { id: customerId },
-      include: { exchange: true }, // Include exchange to get customer's balance currency
+      include: { exchange: true },
     });
 
     if (customer) {
-      const customerBalanceCurrencyCode = customer.exchange?.code || 'TRY'; // Default to TRY
-      const transactionCurrencyCode = transactionExchangeId || 'TRY'; // Default to TRY
+      const customerBalanceCurrencyCode = customer.exchange?.code || 'TRY';
+      const effectiveTransactionCurrencyCode = transactionCurrencyCode || 'TRY';
 
       let convertedAmount = finalAmount;
-      if (transactionCurrencyCode !== customerBalanceCurrencyCode) {
+      if (effectiveTransactionCurrencyCode !== customerBalanceCurrencyCode) {
         convertedAmount = await this.currencyService.convertAmount(
           finalAmount,
-          transactionCurrencyCode,
+          effectiveTransactionCurrencyCode,
           customerBalanceCurrencyCode,
         );
       }
@@ -61,7 +61,7 @@ export class CustomerBalanceService {
     finalAmount: Prisma.Decimal,
     transactionType: TransactionType,
     prismaTransaction: any,
-    transactionExchangeId?: string, // New parameter
+    transactionCurrencyCode?: string, // Renamed parameter
   ): Promise<void> {
     if (!customerId) return;
 
@@ -72,13 +72,13 @@ export class CustomerBalanceService {
 
     if (customer) {
       const customerBalanceCurrencyCode = customer.exchange?.code || 'TRY';
-      const transactionCurrencyCode = transactionExchangeId || 'TRY';
+      const effectiveTransactionCurrencyCode = transactionCurrencyCode || 'TRY';
 
       let convertedAmount = finalAmount;
-      if (transactionCurrencyCode !== customerBalanceCurrencyCode) {
+      if (effectiveTransactionCurrencyCode !== customerBalanceCurrencyCode) {
         convertedAmount = await this.currencyService.convertAmount(
           finalAmount,
-          transactionCurrencyCode,
+          effectiveTransactionCurrencyCode,
           customerBalanceCurrencyCode,
         );
       }

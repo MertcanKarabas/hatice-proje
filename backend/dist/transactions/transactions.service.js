@@ -52,7 +52,6 @@ let TransactionsService = class TransactionsService {
                 profit = await this.profitCalculationService.calculateProfit(items, prisma);
             }
             const { previousBalance, newBalance } = await this.customerBalanceService.updateCustomerBalance(customerId, calculatedFinalAmount, type, prisma, exchangeCode);
-            console.log(`TransactionsService - createTransaction: customerPreviousBalance: ${previousBalance.toString()}, customerNewBalance: ${newBalance.toString()}`);
             const transaction = await prisma.transaction.create({
                 data: {
                     userId,
@@ -96,8 +95,8 @@ let TransactionsService = class TransactionsService {
             return transaction;
         });
     }
-    async getTransactionsByUser(userId, field, operator, value, endValue) {
-        const whereClause = await this.transactionFilterService.buildWhereClause(userId, field, operator, value, endValue);
+    async getTransactionsByUser(userId, customerId, field, operator, value, endValue) {
+        const whereClause = await this.transactionFilterService.buildWhereClause(userId, customerId, field, operator, value, endValue);
         return this.transactionRepository.getTransactionsByUser(whereClause);
     }
     async getTransactionById(userId, transactionId) {
@@ -121,11 +120,70 @@ let TransactionsService = class TransactionsService {
         });
         return (_a = result._sum.profit) !== null && _a !== void 0 ? _a : new client_1.Prisma.Decimal(0);
     }
+    async getSalesOverview(userId) {
+        const today = new Date();
+        const startOfToday = new Date(today.setHours(0, 0, 0, 0));
+        const endOfToday = new Date(today.setHours(23, 59, 59, 999));
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - today.getDay());
+        startOfWeek.setHours(0, 0, 0, 0);
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
+        endOfWeek.setHours(23, 59, 59, 999);
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        endOfMonth.setHours(23, 59, 59, 999);
+        const todaySales = await this.prisma.transaction.aggregate({
+            _sum: {
+                finalAmount: true,
+            },
+            where: {
+                userId,
+                type: 'SALE',
+                createdAt: {
+                    gte: startOfToday,
+                    lte: endOfToday,
+                },
+            },
+        });
+        const thisWeekSales = await this.prisma.transaction.aggregate({
+            _sum: {
+                finalAmount: true,
+            },
+            where: {
+                userId,
+                type: 'SALE',
+                createdAt: {
+                    gte: startOfWeek,
+                    lte: endOfWeek,
+                },
+            },
+        });
+        const thisMonthSales = await this.prisma.transaction.aggregate({
+            _sum: {
+                finalAmount: true,
+            },
+            where: {
+                userId,
+                type: 'SALE',
+                createdAt: {
+                    gte: startOfMonth,
+                    lte: endOfMonth,
+                },
+            },
+        });
+        return {
+            today: todaySales._sum.finalAmount || 0,
+            thisWeek: thisWeekSales._sum.finalAmount || 0,
+            thisMonth: thisMonthSales._sum.finalAmount || 0,
+        };
+    }
     async updateTransaction(userId, transactionId, dto) {
         return this.prisma.$transaction(async (prisma) => {
+            var _a;
             const existingTransaction = await prisma.transaction.findUnique({
                 where: { id: transactionId, userId },
-                include: { items: true },
+                include: { items: true, exchange: true },
             });
             if (!existingTransaction) {
                 throw new common_1.NotFoundException(`Transaction with ID ${transactionId} not found or access denied.`);
@@ -133,7 +191,7 @@ let TransactionsService = class TransactionsService {
             if (existingTransaction.type === 'SALE' || existingTransaction.type === 'PURCHASE') {
                 await this.transactionStockService.revertStockForTransaction(userId, existingTransaction.items, existingTransaction.type, prisma);
             }
-            await this.customerBalanceService.revertCustomerBalance(existingTransaction.customerId, existingTransaction.finalAmount, existingTransaction.type, prisma, existingTransaction.exchangeId);
+            await this.customerBalanceService.revertCustomerBalance(existingTransaction.customerId, existingTransaction.finalAmount, existingTransaction.type, prisma, (_a = existingTransaction.exchange) === null || _a === void 0 ? void 0 : _a.code);
             const { type, discountAmount = 0, items, customerId, invoiceDate, dueDate, vatRate, totalAmount: dtoTotalAmount, finalAmount: dtoFinalAmount, exchangeId: exchangeCode } = dto;
             let actualExchangeId;
             if (exchangeCode) {
@@ -195,9 +253,10 @@ let TransactionsService = class TransactionsService {
     }
     async deleteTransaction(userId, transactionId) {
         await this.prisma.$transaction(async (prisma) => {
+            var _a;
             const transaction = await prisma.transaction.findUnique({
                 where: { id: transactionId, userId },
-                include: { items: true },
+                include: { items: true, exchange: true },
             });
             if (!transaction) {
                 throw new common_1.NotFoundException(`Transaction with ID ${transactionId} not found or access denied.`);
@@ -205,7 +264,7 @@ let TransactionsService = class TransactionsService {
             if (transaction.type === 'SALE' || transaction.type === 'PURCHASE') {
                 await this.transactionStockService.revertStockForTransaction(userId, transaction.items, transaction.type, prisma);
             }
-            await this.customerBalanceService.revertCustomerBalance(transaction.customerId, transaction.finalAmount, transaction.type, prisma, transaction.exchangeId);
+            await this.customerBalanceService.revertCustomerBalance(transaction.customerId, transaction.finalAmount, transaction.type, prisma, (_a = transaction.exchange) === null || _a === void 0 ? void 0 : _a.code);
             await prisma.transactionItem.deleteMany({ where: { transactionId } });
             await prisma.transaction.delete({ where: { id: transactionId } });
         });

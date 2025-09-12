@@ -10,21 +10,12 @@ exports.TransactionFilterService = void 0;
 const common_1 = require("@nestjs/common");
 const client_1 = require("@prisma/client");
 let TransactionFilterService = class TransactionFilterService {
-    async buildWhereClause(userId, field, operator, value, endValue) {
+    async buildWhereClause(userId, customerId, field, operator, value, endValue) {
         const where = { userId };
-        console.log('Received field:', field);
-        console.log('Received operator:', operator);
-        console.log('Received value:', value);
-        if (!field) {
-            console.log('Filter: field is missing.');
-            return where;
+        if (customerId) {
+            where.customerId = customerId;
         }
-        if (!operator) {
-            console.log('Filter: operator is missing.');
-            return where;
-        }
-        if (value === undefined || value === '') {
-            console.log('Filter: value is undefined or empty.');
+        if (!field || !operator || value === undefined || value === '') {
             return where;
         }
         const allowedFields = ['customer.commercialTitle', 'type', 'createdAt', 'finalAmount'];
@@ -104,7 +95,6 @@ let TransactionFilterService = class TransactionFilterService {
                     break;
             }
         }
-        console.log('Generated whereClause:', JSON.stringify(where, null, 2));
         return where;
     }
 };

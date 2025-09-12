@@ -26,9 +26,9 @@ let TransactionsController = class TransactionsController {
         console.log('Creating transaction for user:', userId, 'with data:', dto);
         return this.transactionsService.createTransaction(userId, dto);
     }
-    async findAll(req, field, operator, value, endValue) {
+    async findAll(req, customerId, field, operator, value, endValue) {
         const userId = req.user.userId;
-        return this.transactionsService.getTransactionsByUser(userId, field, operator, value, endValue);
+        return this.transactionsService.getTransactionsByUser(userId, customerId, field, operator, value, endValue);
     }
     async getTransactionById(req, id) {
         const userId = req.user.userId;
@@ -42,6 +42,10 @@ let TransactionsController = class TransactionsController {
         const userId = req.user.userId;
         const profit = await this.transactionsService.getProfitLast30Days(userId);
         return { profit };
+    }
+    async getSalesOverview(req) {
+        const userId = req.user.userId;
+        return this.transactionsService.getSalesOverview(userId);
     }
     async update(req, id, dto) {
         const userId = req.user.userId;
@@ -65,12 +69,13 @@ __decorate([
 __decorate([
     (0, common_1.Get)(),
     __param(0, (0, common_1.Req)()),
-    __param(1, (0, common_1.Query)('field')),
-    __param(2, (0, common_1.Query)('operator')),
-    __param(3, (0, common_1.Query)('value')),
-    __param(4, (0, common_1.Query)('endValue')),
+    __param(1, (0, common_1.Query)('customerId')),
+    __param(2, (0, common_1.Query)('field')),
+    __param(3, (0, common_1.Query)('operator')),
+    __param(4, (0, common_1.Query)('value')),
+    __param(5, (0, common_1.Query)('endValue')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, String, String, String]),
+    __metadata("design:paramtypes", [Object, String, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], TransactionsController.prototype, "findAll", null);
 __decorate([
@@ -88,6 +93,13 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], TransactionsController.prototype, "getProfitLast30Days", null);
+__decorate([
+    (0, common_1.Get)('stats/sales-overview'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], TransactionsController.prototype, "getSalesOverview", null);
 __decorate([
     (0, common_1.Put)(':id'),
     __param(0, (0, common_1.Req)()),

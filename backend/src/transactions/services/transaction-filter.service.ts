@@ -4,23 +4,14 @@ import { Prisma, TransactionType } from '@prisma/client';
 
 @Injectable()
 export class TransactionFilterService implements ITransactionFilterService {
-  async buildWhereClause(userId: string, field?: string, operator?: string, value?: string, endValue?: string): Promise<Prisma.TransactionWhereInput> {
+  async buildWhereClause(userId: string, customerId?: string, field?: string, operator?: string, value?: string, endValue?: string): Promise<Prisma.TransactionWhereInput> {
     const where: Prisma.TransactionWhereInput = { userId };
 
-    console.log('Received field:', field);
-    console.log('Received operator:', operator);
-    console.log('Received value:', value);
+    if (customerId) {
+      where.customerId = customerId;
+    }
 
-    if (!field) {
-      console.log('Filter: field is missing.');
-      return where;
-    }
-    if (!operator) {
-      console.log('Filter: operator is missing.');
-      return where;
-    }
-    if (value === undefined || value === '') { // Handle empty string values for filter
-      console.log('Filter: value is undefined or empty.');
+    if (!field || !operator || value === undefined || value === '') {
       return where;
     }
 
@@ -50,7 +41,6 @@ export class TransactionFilterService implements ITransactionFilterService {
         }
         where.type = value as TransactionType;
     } else if (field === 'createdAt') {
-        // value is expected to be in 'YYYY-MM-DD' format from the frontend
         const startDate = new Date(`${value}T00:00:00.000Z`);
         if (isNaN(startDate.getTime())) {
             throw new BadRequestException('Geçersiz tarih formatı.');
@@ -102,7 +92,6 @@ export class TransactionFilterService implements ITransactionFilterService {
                 break;
         }
     }
-    console.log('Generated whereClause:', JSON.stringify(where, null, 2));
     return where;
   }
 }

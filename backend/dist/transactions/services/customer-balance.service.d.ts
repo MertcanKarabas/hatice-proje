@@ -5,9 +5,9 @@ export declare class CustomerBalanceService {
     private readonly prisma;
     private readonly currencyService;
     constructor(prisma: PrismaService, currencyService: CurrencyService);
-    updateCustomerBalance(customerId: string, finalAmount: Prisma.Decimal, transactionType: TransactionType, prismaTransaction: any, transactionExchangeId?: string): Promise<{
+    updateCustomerBalance(customerId: string, finalAmount: Prisma.Decimal, transactionType: TransactionType, prismaTransaction: any, transactionCurrencyCode?: string): Promise<{
         previousBalance: Prisma.Decimal;
         newBalance: Prisma.Decimal;
     }>;
-    revertCustomerBalance(customerId: string, finalAmount: Prisma.Decimal, transactionType: TransactionType, prismaTransaction: any, transactionExchangeId?: string): Promise<void>;
+    revertCustomerBalance(customerId: string, finalAmount: Prisma.Decimal, transactionType: TransactionType, prismaTransaction: any, transactionCurrencyCode?: string): Promise<void>;
 }

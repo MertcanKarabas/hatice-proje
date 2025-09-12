@@ -22,7 +22,7 @@ export declare class TransactionsController {
         customerPreviousBalance: import("@prisma/client/runtime/library").Decimal | null;
         customerNewBalance: import("@prisma/client/runtime/library").Decimal | null;
     }>;
-    findAll(req: any, field?: string, operator?: string, value?: string, endValue?: string): Promise<{
+    findAll(req: any, customerId?: string, field?: string, operator?: string, value?: string, endValue?: string): Promise<{
         id: string;
         userId: string;
         createdAt: Date;
@@ -64,6 +64,11 @@ export declare class TransactionsController {
     }>;
     getProfitLast30Days(req: any): Promise<{
         profit: import("@prisma/client/runtime/library").Decimal;
+    }>;
+    getSalesOverview(req: any): Promise<{
+        today: number | import("@prisma/client/runtime/library").Decimal;
+        thisWeek: number | import("@prisma/client/runtime/library").Decimal;
+        thisMonth: number | import("@prisma/client/runtime/library").Decimal;
     }>;
     update(req: any, id: string, dto: CreateTransactionDto): Promise<{
         id: string;

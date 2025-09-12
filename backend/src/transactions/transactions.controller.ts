@@ -18,13 +18,14 @@ export class TransactionsController {
     @Get()
     async findAll(
         @Req() req,
+        @Query('customerId') customerId?: string,
         @Query('field') field?: string,
         @Query('operator') operator?: string,
         @Query('value') value?: string,
         @Query('endValue') endValue?: string,
     ) {
         const userId = req.user.userId;
-        return this.transactionsService.getTransactionsByUser(userId, field, operator, value, endValue);
+        return this.transactionsService.getTransactionsByUser(userId, customerId, field, operator, value, endValue);
     }
 
     @Get(':id')
@@ -42,6 +43,12 @@ export class TransactionsController {
         const userId = req.user.userId;
         const profit = await this.transactionsService.getProfitLast30Days(userId);
         return { profit };
+    }
+
+    @Get('stats/sales-overview')
+    async getSalesOverview(@Request() req) {
+        const userId = req.user.userId;
+        return this.transactionsService.getSalesOverview(userId);
     }
 
     @Put(':id')

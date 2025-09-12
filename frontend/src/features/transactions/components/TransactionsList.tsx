@@ -17,6 +17,8 @@ import { useNavigate } from 'react-router-dom';
 import { localizeTransactionType } from '../services/localization.service';
 import TransactionFilter from './TransactionFilter';
 import { useTransactions } from '../hooks/useTransactions';
+import { deleteTransaction } from '../services/transactionService';
+import axiosClient from '../../../services/axiosClient';
 
 interface FilterState {
     field: string;
@@ -40,6 +42,18 @@ const TransactionsList: React.FC = () => {
 
     const handleNewTransaction = () => {
         void navigate('/transactions/new');
+    };
+
+    const handleDelete = async (id: string) => {
+        if (window.confirm('Bu işlemi silmek istediğinizden emin misiniz?')) {
+            try {
+                await deleteTransaction(axiosClient, id);
+                fetchTransactions(); // Refresh the list
+            } catch (error) {
+                console.error('İşlem silinirken hata oluştu:', error);
+                alert('İşlem silinirken bir hata oluştu.');
+            }
+        }
     };
 
     return (
@@ -80,6 +94,9 @@ const TransactionsList: React.FC = () => {
                                 <TableCell>
                                     <Button variant="outlined" size="small" onClick={() => handleViewDetails(transaction.id)}>
                                         Detayları Görüntüle
+                                    </Button>
+                                    <Button variant="outlined" size="small" color="error" sx={{ ml: 1 }} onClick={() => { void handleDelete(transaction.id); }}>
+                                        Sil
                                     </Button>
                                 </TableCell>
                             </TableRow>
