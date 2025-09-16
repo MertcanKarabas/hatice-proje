@@ -21,6 +21,9 @@ const AppHeader: React.FC = () => {
           <Button color="inherit" component={Link} to="/transactions">
             İşlemler
           </Button>
+          <Button color="inherit" component={Link} to="/reports">
+            Raporlar
+          </Button>
         </Box>
       </Toolbar>
     </AppBar>

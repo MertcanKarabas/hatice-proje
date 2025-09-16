@@ -70,6 +70,10 @@ export declare class TransactionsController {
         thisWeek: number | import("@prisma/client/runtime/library").Decimal;
         thisMonth: number | import("@prisma/client/runtime/library").Decimal;
     }>;
+    getChartData(req: any, startDate: string, endDate: string, dataTypes: string): Promise<{
+        [key: string]: string | number;
+        date: string;
+    }[]>;
     update(req: any, id: string, dto: CreateTransactionDto): Promise<{
         id: string;
         userId: string;

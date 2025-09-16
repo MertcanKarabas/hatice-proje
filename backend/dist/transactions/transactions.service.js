@@ -178,6 +178,71 @@ let TransactionsService = class TransactionsService {
             thisMonth: thisMonthSales._sum.finalAmount || 0,
         };
     }
+    async getChartData(userId, startDate, endDate, dataTypes) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        const chartData = new Map();
+        const transactionTypesToFetch = [];
+        if (dataTypes.includes('sales') || dataTypes.includes('profit'))
+            transactionTypesToFetch.push(client_1.TransactionType.SALE);
+        if (dataTypes.includes('purchases'))
+            transactionTypesToFetch.push(client_1.TransactionType.PURCHASE);
+        if (dataTypes.includes('collections'))
+            transactionTypesToFetch.push(client_1.TransactionType.COLLECTION);
+        if (dataTypes.includes('payments'))
+            transactionTypesToFetch.push(client_1.TransactionType.PAYMENT);
+        if (transactionTypesToFetch.length > 0) {
+            const transactions = await this.prisma.transaction.findMany({
+                where: {
+                    userId,
+                    type: { in: transactionTypesToFetch },
+                    createdAt: {
+                        gte: start,
+                        lte: end,
+                    },
+                },
+                select: {
+                    createdAt: true,
+                    finalAmount: true,
+                    profit: true,
+                    type: true,
+                },
+                orderBy: {
+                    createdAt: 'asc',
+                },
+            });
+            transactions.forEach(t => {
+                const date = t.createdAt.toISOString().split('T')[0];
+                if (!chartData.has(date)) {
+                    const initialDayData = { date };
+                    dataTypes.forEach(type => {
+                        if (type !== 'date') {
+                            initialDayData[type] = 0;
+                        }
+                    });
+                    chartData.set(date, initialDayData);
+                }
+                const dayData = chartData.get(date);
+                if (dataTypes.includes('profit')) {
+                    dayData.profit = (Number(dayData.profit) || 0) + Number(t.profit || 0);
+                }
+                if (dataTypes.includes('sales') && t.type === 'SALE') {
+                    dayData.sales = (Number(dayData.sales) || 0) + Number(t.finalAmount || 0);
+                }
+                if (dataTypes.includes('purchases') && t.type === 'PURCHASE') {
+                    dayData.purchases = (Number(dayData.purchases) || 0) + Number(t.finalAmount || 0);
+                }
+                if (dataTypes.includes('collections') && t.type === 'COLLECTION') {
+                    dayData.collections = (Number(dayData.collections) || 0) + Number(t.finalAmount || 0);
+                }
+                if (dataTypes.includes('payments') && t.type === 'PAYMENT') {
+                    dayData.payments = (Number(dayData.payments) || 0) + Number(t.finalAmount || 0);
+                }
+            });
+        }
+        return Array.from(chartData.values());
+    }
     async updateTransaction(userId, transactionId, dto) {
         return this.prisma.$transaction(async (prisma) => {
             var _a;

@@ -22,6 +22,7 @@
     "@reduxjs/toolkit": "^2.8.2",
     "@tailwindcss/vite": "^4.1.12",
     "@tanstack/react-query": "^5.83.0",
+    "@types/recharts": "^1.8.29",
     "axios": "^1.10.0",
     "dat": "^14.0.3",
     "date-fns": "^4.1.0",
@@ -33,6 +34,7 @@
     "react-hook-form": "^7.60.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.7.0",
+    "recharts": "^3.2.0",
     "tailwindcss": "^4.1.12"
   },
   "devDependencies": {

@@ -23,7 +23,6 @@ let TransactionsController = class TransactionsController {
     }
     async create(req, dto) {
         const userId = req.user.userId;
-        console.log('Creating transaction for user:', userId, 'with data:', dto);
         return this.transactionsService.createTransaction(userId, dto);
     }
     async findAll(req, customerId, field, operator, value, endValue) {
@@ -46,6 +45,10 @@ let TransactionsController = class TransactionsController {
     async getSalesOverview(req) {
         const userId = req.user.userId;
         return this.transactionsService.getSalesOverview(userId);
+    }
+    async getChartData(req, startDate, endDate, dataTypes) {
+        const userId = req.user.userId;
+        return this.transactionsService.getChartData(userId, startDate, endDate, dataTypes.split(','));
     }
     async update(req, id, dto) {
         const userId = req.user.userId;
@@ -100,6 +103,16 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], TransactionsController.prototype, "getSalesOverview", null);
+__decorate([
+    (0, common_1.Get)('stats/charts'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('startDate')),
+    __param(2, (0, common_1.Query)('endDate')),
+    __param(3, (0, common_1.Query)('dataTypes')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, String, String]),
+    __metadata("design:returntype", Promise)
+], TransactionsController.prototype, "getChartData", null);
 __decorate([
     (0, common_1.Put)(':id'),
     __param(0, (0, common_1.Req)()),

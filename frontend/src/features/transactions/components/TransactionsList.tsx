@@ -90,7 +90,7 @@ const TransactionsList: React.FC = () => {
                                 <TableCell>{Number(transaction.finalAmount).toFixed(2)}</TableCell>
                                 <TableCell>{transaction.exchange?.code}</TableCell>
                                 <TableCell>{transaction.type === 'SALE' ? Number(transaction.profit ?? 0).toFixed(2) : '-'}</TableCell>
-                                <TableCell>{new Date(transaction.createdAt).toLocaleDateString()}</TableCell>
+                                <TableCell>{new Date(transaction.createdAt).toLocaleDateString('tr-TR', { year: 'numeric', month: '2-digit', day: '2-digit' })}</TableCell>
                                 <TableCell>
                                     <Button variant="outlined" size="small" onClick={() => handleViewDetails(transaction.id)}>
                                         Detayları Görüntüle

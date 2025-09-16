@@ -81,6 +81,10 @@ export declare class TransactionsService {
         thisWeek: number | Prisma.Decimal;
         thisMonth: number | Prisma.Decimal;
     }>;
+    getChartData(userId: string, startDate: string, endDate: string, dataTypes: string[]): Promise<{
+        [key: string]: string | number;
+        date: string;
+    }[]>;
     updateTransaction(userId: string, transactionId: string, dto: CreateTransactionDto): Promise<{
         id: string;
         userId: string;

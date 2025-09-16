@@ -148,11 +148,11 @@ const TransactionDetails: React.FC = () => {
                         </TableRow>
                         <TableRow>
                             <TableCell component="th" scope="row">Oluşturulma Tarihi:</TableCell>
-                            <TableCell>{new Date(transaction.createdAt).toLocaleString()}</TableCell>
+                            <TableCell>{new Date(transaction.createdAt).toLocaleDateString('tr-TR', { year: 'numeric', month: '2-digit', day: '2-digit' })}</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell component="th" scope="row">Güncelleme Tarihi:</TableCell>
-                            <TableCell>{new Date(transaction.updatedAt).toLocaleString()}</TableCell>
+                            <TableCell>{new Date(transaction.updatedAt).toLocaleDateString('tr-TR', { year: 'numeric', month: '2-digit', day: '2-digit' })}</TableCell>
                         </TableRow>
                         {transaction.customerPreviousBalance !== undefined && transaction.customerNewBalance !== undefined && (
                             <>

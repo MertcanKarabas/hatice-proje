@@ -12,6 +12,7 @@ import TransactionSummaryPage from '../features/transactions/routes/TransactionS
 import CustomerPaymentCollection from '../features/customers/components/CustomerPaymentCollection';
 import TransactionsList from '../features/transactions/components/TransactionsList';
 import TransactionDetails from '../features/transactions/components/TransactionDetails';
+import ReportsPage from '../features/reports/components/ReportsPage';
 
 export const router = createBrowserRouter([
   {
@@ -65,6 +66,10 @@ export const router = createBrowserRouter([
       {
         path: 'transactions/summary',
         element: <TransactionSummaryPage />
+      },
+      {
+        path: 'reports',
+        element: <ReportsPage />,
       }
     ],
   },

@@ -11,7 +11,6 @@ export class TransactionsController {
     @Post()
     async create(@Req() req, @Body() dto: CreateTransactionDto) {
         const userId = req.user.userId;
-        console.log('Creating transaction for user:', userId, 'with data:', dto);
         return this.transactionsService.createTransaction(userId, dto);
     }
 
@@ -28,6 +27,7 @@ export class TransactionsController {
         return this.transactionsService.getTransactionsByUser(userId, customerId, field, operator, value, endValue);
     }
 
+    
     @Get(':id')
     async getTransactionById(@Request() req, @Param('id') id: string) {
         const userId = req.user.userId;
@@ -49,6 +49,17 @@ export class TransactionsController {
     async getSalesOverview(@Request() req) {
         const userId = req.user.userId;
         return this.transactionsService.getSalesOverview(userId);
+    }
+
+    @Get('stats/charts')
+    async getChartData(
+        @Request() req,
+        @Query('startDate') startDate: string,
+        @Query('endDate') endDate: string,
+        @Query('dataTypes') dataTypes: string,
+    ) {
+        const userId = req.user.userId;
+        return this.transactionsService.getChartData(userId, startDate, endDate, dataTypes.split(','));
     }
 
     @Put(':id')
